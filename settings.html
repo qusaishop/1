@@ -106,7 +106,27 @@
 
     .hint{ margin-top:8px; color:var(--muted); font-size:.9rem; text-align:center }
     .spacer{ height:40px }
-  </style>
+  
+/* === Fix: Prevent ugly wrapping on mobile & keep LTR data readable === */
+.info-card{ grid-template-columns: 120px 1fr; }
+.info-card .value{ min-width:0; word-break: normal; overflow-wrap: anywhere; }
+.info-card .value .copyable, .info-card .value .badge{ white-space: normal; max-width:100%; }
+
+/* On narrow screens, stack label/value vertically for more width */
+@media(max-width: 560px){
+  .info-card{ grid-template-columns: 1fr; align-items: start; }
+  .label{ text-align: right; }
+  .value{ justify-content: flex-start; }
+}
+
+/* Ensure numbers, emails, IDs are shown LTR inside RTL page */
+#email, #phone, #webuid, #balance, #totalspent{
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
+</style>
 </head>
 <body>
   <div id="headerContainer"></div>
