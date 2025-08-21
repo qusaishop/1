@@ -283,7 +283,6 @@ body.dark-mode .footer-title{
     const p = document.createElement("p"); p.textContent = desc; box.appendChild(p);
     footer.appendChild(box);
   });
-  document.getElementById("footerContainer").appendChild(footer);
 
   // ===== بطاقات العروض =====
   function createOfferBox({ type, jewels, offer, imgSrc, imgAlt }) {
@@ -301,7 +300,7 @@ body.dark-mode .footer-title{
   const offersBox = document.createElement("div"); offersBox.className = "offers-box";
   const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
   const topupOffers = [
-    { jewels: 830, imgSrc: "https://file.yallapay.live/country/2022/0221172850768.png", imgAlt: "110 الماس" },
+    { jewels: 820, imgSrc: "https://file.yallapay.live/country/2022/0221172850768.png", imgAlt: "110 الماس" },
     { jewels: 2320, imgSrc: "https://file.yallapay.live/country/2022/0221172850768.png", imgAlt: "340 الماس" },
     { jewels: 5150, imgSrc: "https://file.yallapay.live/country/2022/0221172850768.png", imgAlt: "570 الماس" },
     { jewels: 13580, imgSrc: "https://file.yallapay.live/country/2022/0221172850768.png", imgAlt: "1024 الماس" },
@@ -423,7 +422,7 @@ if (breakdownLines.length === 0) {
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const stateDoc = await firebase.firestore().collection("freefire").doc("state").get();
+      const stateDoc = await firebase.firestore().collection("yala").doc("state").get();
       if (stateDoc.exists) {
         const stateData = stateDoc.data();
         Object.entries(stateData.topup || {}).forEach(([jewels, status]) => {

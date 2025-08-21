@@ -69,6 +69,22 @@ function showSessionExpiredModal() {
   showSessionModal("صلاحية الجلسة منتهية يرجى إعادة تسجيل الدخول");
 }
 
+/* ======= تحكم باللودر أثناء الشراء ======= */
+function showPreloader() {
+  const pre = document.getElementById('preloader');
+  if (!pre) return;
+  pre.classList.remove('hidden');
+  pre.style.display = 'flex';
+  pre.style.opacity = '1';
+}
+
+function hidePreloader() {
+  const pre = document.getElementById('preloader');
+  if (!pre) return;
+  pre.classList.add('hidden');
+  setTimeout(() => { pre.style.display = 'none'; }, 600);
+}
+
 /* ============ توليد وتدوير sessionKey بعد الطلب ============ */
 const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const SYMBOLS = "!@#$%&";
@@ -214,8 +230,19 @@ async function sendOrder() {
 
   const currentUrl = window.location.href;
 
-  // Purchase
+  // ====== Purchase (مع اللودر وتعطيل الزر) ======
+  const submitBtn = document.querySelector('.send-button');
   try {
+    // إظهار اللودر وتعطيل الزر
+    showPreloader();
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.dataset._oldText = submitBtn.textContent;
+      submitBtn.textContent = 'جاري المعالجة...';
+      submitBtn.style.opacity = '0.7';
+      submitBtn.style.pointerEvents = 'none';
+    }
+
     const response = await fetch("https://qousaistorepubgprice.qusaistore33.workers.dev/", {
       method: "POST",
       headers: {
@@ -271,6 +298,15 @@ async function sendOrder() {
   } catch (err) {
     console.error("Worker Error:", err);
     showToast("❌ حدث خطأ أثناء الشراء", "error");
+  } finally {
+    // إخفاء اللودر وإرجاع حالة الزر مهما حصل
+    hidePreloader();
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset._oldText || 'شراء';
+      submitBtn.style.opacity = '';
+      submitBtn.style.pointerEvents = '';
+    }
   }
 }
 
@@ -293,9 +329,16 @@ function showConfirmation(code) {
     justify-content: center; align-items: center;`;
 
   const container = document.createElement("div");
+
+  // ✅ نحدد الألوان حسب الثيم الحالي
+  const isDark = document.body.classList.contains("dark-mode");
   container.style = `
-    background: white; padding: 25px 35px; border-radius: 12px;
-    text-align: center; max-width: 90vw;`;
+    background: ${isDark ? "#0f172a" : "white"};
+    color: ${isDark ? "#e6edf3" : "#111"};
+    padding: 25px 35px; border-radius: 12px;
+    text-align: center; max-width: 90vw;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+  `;
 
   const lottie = document.createElement("dotlottie-player");
   lottie.setAttribute("src", "https://lottie.host/e254b369-8819-4942-b33f-b3b699f9bc28/32zzWRxzaZ.lottie");
@@ -307,7 +350,7 @@ function showConfirmation(code) {
   lottie.addEventListener("complete", () => { lottie.pause(); });
 
   const message = document.createElement("p");
-  message.style = "font-size: 20px;";
+  message.style = "font-size: 20px; margin: 10px 0;";
   message.innerText = "✅ تم استلام طلبك بنجاح";
 
   const codeParagraph = document.createElement("p");
@@ -317,8 +360,10 @@ function showConfirmation(code) {
   reloadButton.innerHTML = "🔄 إعادة تحميل الصفحة";
   reloadButton.style = `
     margin-top: 15px; padding: 10px 25px;
-    background: #28a745; color: white; border: none;
-    border-radius: 8px; cursor: pointer;`;
+    background: ${isDark ? "#0369a1" : "#28a745"};
+    color: white; border: none;
+    border-radius: 8px; cursor: pointer;
+  `;
   reloadButton.onclick = () => location.reload();
 
   container.appendChild(lottie);
@@ -328,6 +373,7 @@ function showConfirmation(code) {
   overlay.appendChild(container);
   document.body.appendChild(overlay);
 }
+
 
 // ✅ عند تحميل الصفحة سننتظر onAuthStateChanged لتحديد useruid ثم ننادي loadPrices()
 document.addEventListener('DOMContentLoaded', () => {
