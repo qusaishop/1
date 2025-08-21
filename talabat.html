@@ -13,6 +13,98 @@
 <script src="header.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+
+
+<style>
+/* ==== Dark Mode for talabat page ==== */
+body.dark-mode .content-container{
+  background:#0f172a;
+  color:#e6edf3;
+  box-shadow:0 8px 22px rgba(0,0,0,0.35);
+  border:1px solid #334155;
+  border-radius:16px;
+  padding:20px;
+}
+
+/* العنوان والأيقونة */
+body.dark-mode .content-container h2{
+  color:#7dd3fc;
+}
+body.dark-mode .content-container h2 i{
+  color:#38bdf8;
+}
+
+/* قائمة الطلبات */
+body.dark-mode .orders-list{
+  background:#0b1220;
+  border:1px solid #334155;
+  color:#e6edf3;
+  border-radius:14px;
+  padding:12px;
+}
+body.dark-mode .orders-list::-webkit-scrollbar-track{ background:#0b1220; }
+body.dark-mode .orders-list::-webkit-scrollbar-thumb{ background:#0ea5e9; }
+
+/* الفوتر ومربعات الأيقونات */
+body.dark-mode .footerContainer{
+  background:linear-gradient(135deg,#0e7490,#083344);
+  box-shadow:0 8px 18px rgba(0,0,0,0.35);
+}
+body.dark-mode .footer-title{
+  color:#e6edf3;
+}
+body.dark-mode .icon-box{
+  background:#0f172a;
+  color:#e6edf3;
+  box-shadow:0 6px 14px rgba(0,0,0,0.30);
+  border:1px solid #334155;
+}
+body.dark-mode .icon-box i{ color:#7dd3fc; }
+body.dark-mode .icon-box h3{ color:#e6edf3; }
+body.dark-mode .icon-box p{ color:#cbd5e1; }
+
+
+/* Dark mode style for order cards */
+body.dark-mode .order-card {
+  background: #1a2234;        /* خلفية داكنة */
+  color: #e6edf3;             /* النصوص فاتحة */
+  border: 1px solid #334155;  /* إطار أنعم */
+}
+
+body.dark-mode .order-card .order-header {
+  background: #0f172a;        /* تمييز الهيدر داخل الكارد */
+  color: #e6edf3;
+}
+
+body.dark-mode .order-card .order-status {
+  color: #fbbf24;             /* أصفر للتأكيد */
+}
+
+body.dark-mode .order-card .order-details {
+  background: #0b1220;
+  color: #dbe2ea;
+}
+
+/* تحسين النصوص في تفاصيل الطلب للوضع الداكن */
+body.dark-mode .order-card .order-details {
+  background: #0b1220;
+  color: #ffffff;              /* جعل النص أبيض واضح */
+}
+
+body.dark-mode .order-card .order-details p,
+body.dark-mode .order-card .order-details li,
+body.dark-mode .order-card .order-details strong,
+body.dark-mode .order-card .order-details span {
+  color: #ffffff !important;   /* ضمان أن كل النصوص تكون بيضاء */
+}
+
+body.dark-mode .order-card .order-details strong {
+  color: #93c5fd !important;   /* تمييز النص الغامق بلون أزرق فاتح */
+}
+
+</style>
+
+
 <title>طلباتي</title>
 </head>
 <body>
@@ -24,86 +116,100 @@
 <div id="ordersContainer"></div>
 <div style="height: 50px;"></div>
 <div id="footerContainer"></div>
-  <script>
-  const contentContainer = document.createElement('div');
-  contentContainer.className = 'content-container';
+<script>
+  // 1) فعّل الثيم المحفوظ مبكرًا قدر الإمكان
+  (function(){
+    try{
+      if(localStorage.getItem('theme') === 'dark'){
+        document.body.classList.add('dark-mode');
+      }
+    }catch(e){}
+  })();
 
-  // العنوان والأيقونة: "طلباتي"
-  const heading = document.createElement('h2');
-  const icon = document.createElement('i');
-  icon.className = 'fas fa-history';
-  heading.appendChild(icon);
-  heading.append(' طلباتي:');
-  contentContainer.appendChild(heading);
-
-  // قائمة الطلبات
-  const ordersList = document.createElement('div');
-  ordersList.id = 'ordersList';
-  ordersList.className = 'orders-list';
-  contentContainer.appendChild(ordersList);
-
-  // عند تحميل الـ DOM: نضيف المحتوى داخل #ordersContainer
+  // 2) انتظر DOMContentLoaded لضمان جاهزية العناصر وملفات defer (مثل header.js)
   window.addEventListener('DOMContentLoaded', () => {
+    // إنشاء الحاوية الرئيسية للمحتوى
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'content-container';
+
+    // العنوان + الأيقونة
+    const heading = document.createElement('h2');
+    const icon = document.createElement('i');
+    // Font Awesome v6
+    icon.className = 'fa-solid fa-history';
+    heading.appendChild(icon);
+    heading.append(' طلباتي:');
+    contentContainer.appendChild(heading);
+
+    // قائمة الطلبات
+    const ordersList = document.createElement('div');
+    ordersList.id = 'ordersList';
+    ordersList.className = 'orders-list';
+    contentContainer.appendChild(ordersList);
+
+    // إدراج المحتوى في مكانه
     const container = document.getElementById('ordersContainer');
     if (container) {
       container.appendChild(contentContainer);
     } else {
       console.error('لم يتم العثور على العنصر بالمعرف "ordersContainer"');
     }
-  });
 
-  // ====== الفوتر ومربعات الأيقونات (المزايا) ======
-  const footer = document.createElement('footer');
-  footer.className = 'footerContainer';
+    // ====== بناء الفوتر ومربعات الأيقونات ======
+    const footer = document.createElement('footer');
+    footer.className = 'footerContainer';
 
-  const footerTitle = document.createElement('h2');
-  footerTitle.className = 'footer-title';
-  footerTitle.textContent = 'لماذا تختارنا؟';
-  footer.appendChild(footerTitle);
+    const footerTitle = document.createElement('h2');
+    footerTitle.className = 'footer-title';
+    footerTitle.textContent = 'لماذا تختارنا؟';
+    footer.appendChild(footerTitle);
+
+    // استخدم البيانات العالمية إن وُجدت وإلا افتراضي
 
 
+    data.forEach(({ iconClass, title, desc }) => {
+      const box = document.createElement('div');
+      box.className = 'icon-box';
 
-  // بناء مربعات الأيقونات داخل الفوتر
-  iconBoxesData.forEach(({ iconClass, title, desc }) => {
-    const box = document.createElement('div');
-    box.className = 'icon-box';
+      const i = document.createElement('i');
+      i.className = iconClass;
+      box.appendChild(i);
 
-    const i = document.createElement('i');
-    i.className = iconClass;
-    box.appendChild(i);
+      const h3 = document.createElement('h3');
+      h3.textContent = title;
+      box.appendChild(h3);
 
-    const h3 = document.createElement('h3');
-    h3.textContent = title;
-    box.appendChild(h3);
+      const p = document.createElement('p');
+      p.textContent = desc;
+      box.appendChild(p);
 
-    const p = document.createElement('p');
-    p.textContent = desc;
-    box.appendChild(p);
+      footer.appendChild(box);
+    });
 
-    footer.appendChild(box);
-  });
-
-  // إضافة الفوتر أسفل الصفحة (يمكنك تغييره حسب هيكلة صفحتك)
-  document.getElementById('footerContainer')?.appendChild(footer);
-
-  // ====== دوال مساعدة كانت مشوّهة ======
-  // تبديل تحديد عرض/بكج/خيار
-  function toggleOffer(el) {
-    el.classList.toggle('selected');
-  }
-
-  // إظهار تفاصيل الطلب برقم/كود
-  function showOrderDetails(orderCode) {
-    const detailsEl = document.getElementById('orderDetails');
-    if (!detailsEl) return;
-
-    if (orderCode) {
-      detailsEl.style.display = 'block';
-      detailsEl.innerHTML = '<p>تفاصيل الطلب لكود: <strong>' + orderCode + '</strong></p>';
-    } else {
-      detailsEl.style.display = 'none';
-      detailsEl.innerHTML = '';
+    const footerMount = document.getElementById('footerContainer');
+    if (footerMount) {
+      footerMount.appendChild(footer);
     }
-  }  </script>
+
+    // ====== دوال مساعدة ======
+    window.toggleOffer = function(el) {
+      el.classList.toggle('selected');
+    };
+
+    window.showOrderDetails = function(orderCode) {
+      const detailsEl = document.getElementById('orderDetails');
+      if (!detailsEl) return; // تأكد من وجود العنصر
+
+      if (orderCode) {
+        detailsEl.style.display = 'block';
+        detailsEl.innerHTML = '<p>تفاصيل الطلب لكود: <strong>' + orderCode + '</strong></p>';
+      } else {
+        detailsEl.style.display = 'none';
+        detailsEl.innerHTML = '';
+      }
+    };
+  });
+</script>
+
 </body>
 </html>

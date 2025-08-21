@@ -13,7 +13,7 @@
 
   <style>
     :root{
-      --primary:#00aaff;           /* أزرق سماوي غامق */
+      --primary:#00aaff;
       --primary-2:#008ecc;
       --bg:#f4faff;
       --card:#ffffff;
@@ -27,11 +27,25 @@
       --danger:#ef4444;
     }
 
+    /* الوضع الداكن: نعدّل المتغيرات والألوان العامة */
+    body.dark-mode{
+      --bg:#0f172a;
+      --card:#111827;
+      --text:#e5e7eb;
+      --muted:#a3a3a3;
+      --border: rgba(102,217,255,.25);
+      --shadow: 0 12px 35px rgba(0,0,0,.55);
+      --ring: 0 0 0 3px rgba(102,217,255,.25);
+    }
+
     body {
       font-family: 'Cairo', sans-serif;
       margin: 0;
       background: linear-gradient(180deg,#f0faff,#e6f7ff);
       color: var(--text);
+    }
+    body.dark-mode{
+      background: linear-gradient(180deg,#0b1220,#0b172a);
     }
 
     .main-content { flex: 1; padding: 28px; }
@@ -58,10 +72,12 @@
       border:1px solid var(--border);
       border-radius:14px;
       padding:12px 14px;
-      display:grid; grid-template-columns:160px 1fr;
+      display:grid; grid-template-columns:120px 1fr;   /* قلّلنا عرض عمود الوسم لتوسيع عمود القيمة */
       align-items:center; gap:10px 12px;
       transition:.15s;
     }
+    body.dark-mode .info-card{ background:#1a2234; border-color: var(--border); }
+
     .info-card:hover{
       transform: translateY(-1px);
       box-shadow: 0 10px 24px rgba(0,170,255,.15);
@@ -71,16 +87,35 @@
     .label{ color: var(--muted); font-weight:700; display:flex; gap:10px; }
     .label i{ color: var(--primary) }
 
-    .value{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .badge{ background:#e6f7ff; border:1px dashed var(--primary); padding:3px 10px; border-radius:999px; font-weight:700; color: var(--primary-2); }
+    .value{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      min-width:0;                     /* يسمح للعنصر أن ينضغط داخل الشبكة */
+      word-break: normal;
+      overflow-wrap: anywhere;         /* التفاف آمن للكلمات/الرموز الطويلة */
+      max-width:100%;
+    }
+
+    .badge{
+      background:#e6f7ff; border:1px dashed var(--primary);
+      padding:3px 10px; border-radius:999px; font-weight:700; color: var(--primary-2);
+    }
+    body.dark-mode .badge{
+      background: #0f2a35; border-color: var(--primary);
+      color:#9adfff;
+    }
 
     .copyable{
       font-weight:700; cursor:pointer;
       padding:2px 8px; border-radius:8px;
       transition:.15s;
       position: relative;
+      white-space: normal;
+      max-width:100%;
+      overflow-wrap:anywhere;
     }
     .copyable:hover{ background:#e6f7ff; color: var(--primary-2); }
+    body.dark-mode .copyable:hover{ background:#0f2a35; }
+
     .copyable.copied{ box-shadow: var(--ring); }
     .copyable.copied::after{
       content:"✓"; position:absolute; right:-16px; top:-6px;
@@ -96,37 +131,52 @@
       box-shadow:0 8px 18px rgba(0,167,255,.25);
     }
     #resetBtn:hover { opacity:.9 }
+    body.dark-mode #resetBtn{ background: linear-gradient(135deg,#0099ff,#00cccc); }
 
     .toast{
       position:fixed; left:50%; top:18px; transform:translateX(-50%);
       background:#111; color:#fff; padding:10px 14px; border-radius:12px;
       box-shadow:0 12px 28px rgba(0,0,0,.18); font-size:.95rem; z-index:9999;
     }
+    body.dark-mode .toast{ background:#0e1525; color:#e6edf3; }
     @media(max-width:560px){ .toast{ top:auto; bottom:16px } }
 
     .hint{ margin-top:8px; color:var(--muted); font-size:.9rem; text-align:center }
     .spacer{ height:40px }
-  
-/* === Fix: Prevent ugly wrapping on mobile & keep LTR data readable === */
-.info-card{ grid-template-columns: 120px 1fr; }
-.info-card .value{ min-width:0; word-break: normal; overflow-wrap: anywhere; }
-.info-card .value .copyable, .info-card .value .badge{ white-space: normal; max-width:100%; }
 
-/* On narrow screens, stack label/value vertically for more width */
-@media(max-width: 560px){
-  .info-card{ grid-template-columns: 1fr; align-items: start; }
-  .label{ text-align: right; }
-  .value{ justify-content: flex-start; }
-}
+    /* على الشاشات الصغيرة: نجعل الوسم فوق القيمة للحصول على عرض أكبر للقيمة */
+    @media(max-width:560px){
+      .info-card{ grid-template-columns:1fr; align-items:start; }
+      .label{ text-align:right; }
+      .value{ justify-content:flex-start; }
+    }
 
-/* Ensure numbers, emails, IDs are shown LTR inside RTL page */
-#email, #phone, #webuid, #balance, #totalspent{
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: left;
-}
+    /* جعل الحقول الرقمية/البريد/المعرف LTR لعرض سليم داخل RTL */
+    #email, #phone, #webuid, #balance, #totalspent{
+      direction:ltr;
+      unicode-bidi:isolate;
+      text-align:left;
+    }
 
-</style>
+    /* زر تبديل الوضع داخل الإعدادات */
+    .theme-toggle{
+      width:100%;
+      margin-top:14px;
+      padding:12px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:1rem;
+      font-weight:700;
+      background: linear-gradient(135deg,#6a6a6a,#444);
+      color:#fff;
+      box-shadow:0 8px 18px rgba(0,0,0,.25);
+    }
+    .theme-toggle:hover{ opacity:.9 }
+    body.dark-mode .theme-toggle{
+      background: linear-gradient(135deg,#999,#666);
+    }
+  </style>
 </head>
 <body>
   <div id="headerContainer"></div>
@@ -151,6 +201,9 @@
 
       <button id="resetBtn"><i class="fa-solid fa-key"></i> إعادة تعيين كلمة المرور</button>
       <div id="msg" style="margin-top:12px; text-align:center; color:var(--success);"></div>
+
+      <!-- زر تبديل الوضع الداكن داخل الإعدادات -->
+      <button id="themeToggle" class="theme-toggle" type="button">🌙 الوضع الداكن</button>
     </div>
   </div>
   <div id="footerContainer"></div>
@@ -161,7 +214,8 @@
   <script src="header.js" defer></script>
 
   <script>
-    const firebaseConfig={ /* كما هو */ 
+    // --- Firebase ---
+    const firebaseConfig={
       apiKey:"AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
       authDomain:"qusaystore-ec327.firebaseapp.com",
       projectId:"qusaystore-ec327",
@@ -192,6 +246,7 @@
       }
     }
 
+    // تحميل بيانات المستخدم
     auth.onAuthStateChanged(async (user)=>{
       if(!user){ location.href="login.html"; return }
       email.textContent=user.email||"--";
@@ -216,21 +271,56 @@
       }
     });
 
+    // إعادة تعيين كلمة المرور
     resetBtn.onclick=async()=>{
       const user=auth.currentUser;
       if(!user||!user.email)return;
-      try{ await auth.sendPasswordResetEmail(user.email);
-        msg.textContent="📨 تم إرسال رابط إعادة التعيين إلى بريدك."; }
-      catch{ msg.textContent="حدث خطأ أثناء الإرسال."; }
+      try{
+        await auth.sendPasswordResetEmail(user.email);
+        msg.textContent="📨 تم إرسال رابط إعادة التعيين إلى بريدك.";
+      }catch{
+        msg.textContent="حدث خطأ أثناء الإرسال.";
+      }
     }
 
+    // النسخ السريع
     document.addEventListener('click',async e=>{
       const t=e.target.closest('.copyable'); if(!t)return;
-      try{ await copyText(t.dataset.copy||t.textContent);
+      try{
+        await copyText(t.dataset.copy||t.textContent);
         t.classList.add('copied'); showToast('تم النسخ');
         setTimeout(()=>t.classList.remove('copied'),1000);
       }catch{ showToast('تعذر النسخ',false) }
     });
+
+    // --- تبديل الوضع الداكن مع التخزين في localStorage ---
+    const themeToggle=document.getElementById('themeToggle');
+    const THEME_KEY='theme';
+
+    function applySavedTheme(){
+      const saved=localStorage.getItem(THEME_KEY);
+      if(saved==='dark'){
+        document.body.classList.add('dark-mode');
+      }else{
+        document.body.classList.remove('dark-mode');
+      }
+      updateThemeToggleText();
+    }
+
+    function updateThemeToggleText(){
+      const isDark = document.body.classList.contains('dark-mode');
+      themeToggle.textContent = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
+    }
+
+    themeToggle.addEventListener('click', ()=>{
+      document.body.classList.toggle('dark-mode');
+      const isDark=document.body.classList.contains('dark-mode');
+      localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+      updateThemeToggleText();
+    });
+
+    // طبّق الحالة المحفوظة عند التحميل
+    applySavedTheme();
   </script>
 </body>
 </html>

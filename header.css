@@ -760,3 +760,109 @@ padding-left: 45px;
     font-size: 1rem;
   }
 }
+
+
+/* ====== Dark Mode overrides for header & sidebar ====== */
+body.dark-mode {
+  background: linear-gradient(180deg,#0b1220,#0b172a);
+}
+
+/* الهيدر */
+body.dark-mode .top-header {
+  background-color: #0f172a;            /* أزرق داكن جدًا */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+body.dark-mode #hamburger span {
+  background: #e6edf3;
+}
+body.dark-mode #hamburger:hover span {
+  background: #cbd5e1;
+}
+
+/* الشعار: يظل كما هو، لكن إن احتجت عكس الألوان ضع فلتر هنا */
+/* body.dark-mode .top-header img { filter: brightness(0.95) contrast(1.05); } */
+
+/* الرصيد داخل الهيدر */
+body.dark-mode .header-balance {
+  color: #ffffff;
+  background-color: rgba(80, 80, 80, 0.85);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+body.dark-mode .header-balance i {
+  color: #ffd166; /* ذهبي أنعم */
+}
+
+/* القائمة الجانبية */
+body.dark-mode #sidebar {
+  background: #0f172a;                  /* خلفية داكنة للقائمة */
+  box-shadow: 4px 0 12px rgba(0,0,0,0.35);
+}
+body.dark-mode #sidebar ul li:hover {
+  background: rgba(255,255,255,0.08);
+}
+body.dark-mode #sidebar ul li i,
+body.dark-mode #sidebar ul li a {
+  color: #e6edf3;
+}
+
+/* بطاقات/حاويات عامة تُستخدم أسفل الهيدر (إن وُجدت) */
+body.dark-mode .content-container {
+  background: #101826;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+}
+body.dark-mode label { color: #e6edf3; }
+body.dark-mode label i { color: #66d9ff; }
+body.dark-mode select {
+  background: #0e1623;
+  color: #e6edf3;
+  border-color: #334155;
+}
+body.dark-mode select:focus {
+  border-color: #66d9ff;
+  box-shadow: 0 0 5px rgba(102,217,255,0.35);
+}
+
+/* أزرار الأدلّة/المرفقات */
+body.dark-mode .btn-show-proof {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+  color: #e6edf3;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+}
+
+/* أقسام الدعم والفوتر */
+body.dark-mode .support-section {
+  background-color: #0b1220;
+  border-top-color: #1f2937;
+}
+body.dark-mode .support-title { color: #e6edf3; }
+body.dark-mode .support-icons .support-icon {
+  background-color: #0f172a;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+}
+body.dark-mode .support-icon:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.45);
+}
+
+/* صندوق الأيقونات أسفل الصفحة */
+body.dark-mode .footer-icons {
+  background: linear-gradient(135deg, #0e7490, #083344);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+body.dark-mode .icon-box {
+  background-color: #0f172a;
+  color: #e6edf3;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.30);
+}
+body.dark-mode .icon-box i { color: #7dd3fc; }
+body.dark-mode .icon-box:hover i { color: #38bdf8; }
+body.dark-mode .icon-box h3 { color: #e6edf3; }
+body.dark-mode .icon-box p { color: #cbd5e1; }
+
+/* حقوق وشيفرات الروابط السفلية */
+body.dark-mode .support-rights { color: #cbd5e1; }
+body.dark-mode .support-rights a { color: #7dd3fc; }
+body.dark-mode .support-rights a:hover { text-decoration: underline; }
+
+
+
+

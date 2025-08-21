@@ -1049,3 +1049,128 @@ input[type="number"]#amount, input[type="text"]#userId {
   unicode-bidi: isolate;
   display: inline-block;
 }
+
+
+/* ================== Dark Mode – Overrides ================== */
+body.dark-mode{
+  background:#0b1220;          /* خلفية الصفحة */
+  color:#e6edf3;
+}
+
+/* الحاوية الرئيسية */
+body.dark-mode .container{
+  background:#0f172a;
+  color:#e6edf3;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+  border:1px solid #334155;
+}
+
+/* الحقول والأزرار */
+body.dark-mode input[type="text"],
+body.dark-mode select{
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+}
+body.dark-mode .send-button{
+  background:#0369a1;
+  color:#e6edf3;
+}
+body.dark-mode .send-button:hover{ background:#0ea5e9; }
+
+/* مربعات العروض */
+body.dark-mode .offer-box{
+  background:#101826;
+  color:#e6edf3;
+  border-color:#334155;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+body.dark-mode .offer-box:hover{ border-color:#38bdf8; }
+body.dark-mode .offer-box.selected{
+  background:#0f172a;
+  border-color:#22c55e;   /* أخضر الاختيار */
+  color:#d1fae5;
+}
+
+/* شبكة الدفع */
+body.dark-mode .payment-option{
+  background:#0f172a;
+  border-color:#334155;
+  color:#e6edf3;
+}
+
+/* القسيمة والمبلغ المختار */
+body.dark-mode #selected-amount-container{
+  background:#0f172a;
+  border-color:#334155;
+  color:#ffffff;
+}
+body.dark-mode .voucher{
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+}
+body.dark-mode .voucher::before,
+body.dark-mode .voucher::after{
+  background:#0b1220;
+  box-shadow:0 0 0 2px #334155;
+}
+body.dark-mode #selected-amount .item-name{ color:#7dd3fc; }
+body.dark-mode #selected-amount .item-price{ color:#e6edf3; }
+body.dark-mode #selected-amount strong{ color:#ffffff; }
+
+/* المودال والتوست */
+body.dark-mode .modal-content{
+  background:#111827;
+  color:#e6edf3;
+}
+body.dark-mode #toast{
+  background:#0f172a;
+  color:#e6edf3;
+}
+
+/* منطقة الرفع */
+body.dark-mode .upload-area{
+  background:transparent;
+  border-color:#334155;
+  color:#cbd5e1;
+}
+body.dark-mode .upload-area:hover{ background:#0f172a; }
+body.dark-mode .upload-area svg{ fill:#94a3b8; }
+
+/* عنوانيْن وأقسام */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3{ color:#7dd3fc; }
+body.dark-mode .section-title{ color:#7dd3fc; }
+
+/* (اختياري) توحيد خلفية قسم لماذا تختارنا مع الصناديق */
+body.dark-mode .footer-icons{
+  background:#0f172a !important;
+  border:1px solid #334155;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+}
+body.dark-mode .footer-title{ color:#e6edf3 !important; }
+
+
+/* Dark mode for the offers section */
+body.dark-mode .offers-box{
+  background:#0f172a;          /* نفس خلفيات الصناديق الداكنة */
+  border-color:#334155;
+  color:#e6edf3;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+}
+
+body.dark-mode .offers-box label{
+  color:#7dd3fc;               /* عنوان القسم داخل الحاوية */
+}
+
+/* (اختياري) لو أردت تباينًا أعلى داخل الشبكة */
+body.dark-mode .offers-grid{ color:#e6edf3; }
+
+/* عنوان "المبلغ المطلوب" في الوضع الداكن */
+body.dark-mode #selected-amount-container h2{
+  color: #ffffff !important;
+  opacity: 1 !important; /* لو كان عليه شفافية قديمة */
+}

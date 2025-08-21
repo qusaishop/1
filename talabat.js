@@ -1,4 +1,4 @@
-
+// ===== Firebase init =====
 const firebaseConfig = {
   apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
   authDomain: "qusaystore-ec327.firebaseapp.com",
@@ -13,26 +13,32 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+// فعّل الثيم المحفوظ مبكرًا (اختياري)
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
+  } catch (e) {}
+});
+
 firebase.auth().onAuthStateChanged(user => {
   if (!user) {
     alert("يجب تسجيل الدخول أولاً");
     window.location.href = "index.html";
   } else {
-    // ✅ تحميل الطلبات فقط عندما يكون المستخدم جاهز
+    // ✅ تحميل الطلبات بعد تأكد تسجيل الدخول
     loadOrdersFromFirebaseLive(user);
   }
 });
 
 let unsubscribeOrderList = [];
 
-
-// ضع هذه الدالة أعلى الملف (مثلاً بعد التعريفات مباشرة)
+// ===== Skeleton shimmer while loading =====
 function showOrdersSkeleton(count = 3) {
   const list = document.getElementById("ordersList");
   if (!list) return;
-  // امسح أي قديم
   list.querySelectorAll(".order-card.loading").forEach(n => n.remove());
-  // أضف عناصر لمعة
   for (let i = 0; i < count; i++) {
     const sk = document.createElement("div");
     sk.className = "order-card loading";
@@ -40,25 +46,21 @@ function showOrdersSkeleton(count = 3) {
   }
 }
 
-
-
 function loadOrdersFromFirebaseLive(user) {
   const ordersList = document.getElementById("ordersList");
-  ordersList.innerHTML = "";
+  if (!ordersList) return;
 
-  // ✅ أظهر اللمعة مباشرةً
+  ordersList.innerHTML = "";
   showOrdersSkeleton(1);
 
-  unsubscribeOrderList.forEach(unsub => unsub());
+  unsubscribeOrderList.forEach(unsub => unsub && unsub());
   unsubscribeOrderList = [];
 
   const ordersRef = db.collection("orders").where("userId", "==", user.uid);
 
   const unsub = ordersRef.onSnapshot(async (snapshot) => {
-    // ✅ قبل البناء الحقيقي، احذف الـ placeholders
+    // إزالة اللمعات قبل البناء
     ordersList.querySelectorAll(".order-card.loading").forEach(n => n.remove());
-
-    let ordersArray = [];
 
     const promises = snapshot.docs.map(async (doc) => {
       const orderData = doc.data();
@@ -72,9 +74,7 @@ function loadOrdersFromFirebaseLive(user) {
       };
     });
 
-    ordersArray = await Promise.all(promises);
-
-    ordersArray.sort((a, b) => {
+    const ordersArray = (await Promise.all(promises)).sort((a, b) => {
       const tA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
       const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
       return tB - tA;
@@ -83,16 +83,16 @@ function loadOrdersFromFirebaseLive(user) {
     renderOrders(ordersArray);
   }, (err) => {
     console.error(err);
-    // في حال الخطأ، على الأقل أزل اللمعات
     ordersList.querySelectorAll(".order-card.loading").forEach(n => n.remove());
   });
 
   unsubscribeOrderList.push(unsub);
 }
 
-
 function renderOrders(orders) {
   const ordersList = document.getElementById("ordersList");
+  if (!ordersList) return;
+
   ordersList.innerHTML = "";
 
   orders.forEach(order => {
@@ -125,7 +125,6 @@ function renderOrders(orders) {
     else if (status === "تم_الشحن") statusClass = "تم_الشحن";
 
     const card = document.createElement("div");
-    card.className = "order-card flash-in";
     card.className = "order-card";
     card.id = `order-${code}`;
 
@@ -133,7 +132,7 @@ function renderOrders(orders) {
       <div class="order-header" onclick="toggleDetails('${code}')">
         <div>
           <strong>كود الطلب:</strong> ${code}<br>
-          🎮 <strong>${playerId}</strong> | 💵 <strong>${total}</strong>
+          🎮 <strong>${playerId || "-"}</strong> | 💵 <strong>${total || "-"}</strong>
         </div>
         <div class="order-status ${statusClass}">
           ${status === "تم_الشحن" ? "تم الشحن" : (status || "قيد المعالجة")}
@@ -143,7 +142,7 @@ function renderOrders(orders) {
       <div class="order-details" id="details-${code}" style="display:none;">
         <p><strong>🆔 معرف اللاعب:</strong> ${playerId || "غير متوفر"}</p>
         <p><strong>🎁 العروض:</strong> ${offersFormatted || "-"}</p>
-        <p><strong>💵 المجموع:</strong> ${total}</p>
+        <p><strong>💵 المجموع:</strong> ${total || "-"}</p>
         <p><strong>📅 تاريخ الإرسال:</strong> ${formattedDate}</p>
         ${
           proof
@@ -225,6 +224,7 @@ async function showOrderDetails(code) {
   });
 }
 
+// ✅ أبقِ هذا الحدث للاتفاقية فقط — بدون استدعاء loadOrdersFromFirebaseLive هنا
 window.addEventListener("DOMContentLoaded", () => {
   const agreed = localStorage.getItem('userAgreementAccepted');
   if (agreed !== 'true') {
@@ -235,10 +235,10 @@ window.addEventListener("DOMContentLoaded", () => {
       box.style.justifyContent = 'center';
     }
   }
-  loadOrdersFromFirebaseLive();
 });
 
 function toggleDetails(code) {
   const d = document.getElementById(`details-${code}`);
-  d.style.display = d.style.display === 'block' ? 'none' : 'block';
+  if (!d) return;
+  d.style.display = (d.style.display === 'block') ? 'none' : 'block';
 }

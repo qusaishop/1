@@ -215,6 +215,77 @@
         padding: 6px 10px;
       }
     }
+
+    /* ====== Dark Mode for Reviews page ====== */
+body.dark-mode main{
+  background:#0f172a;
+  box-shadow:0 6px 18px rgba(0,0,0,.45);
+  color:#e6edf3;
+}
+
+/* عناوين وأسماء */
+body.dark-mode .user-name,
+body.dark-mode .review-user{
+  color:#7dd3fc;
+}
+
+/* النجوم */
+body.dark-mode .stars{ color:#64748b; }
+body.dark-mode .stars .selected,
+body.dark-mode .review-stars{ color:#fbbf24; text-shadow:0 0 6px #fbbf2499; }
+
+/* الحقول */
+body.dark-mode textarea{
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+}
+body.dark-mode textarea:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 8px #38bdf855;
+}
+
+/* الأزرار */
+body.dark-mode button{
+  background: linear-gradient(135deg,#0ea5e9,#0369a1);
+  color:#e6edf3;
+}
+body.dark-mode button:hover:not(:disabled){
+  background:#0b83c6;
+}
+body.dark-mode button:disabled{
+  background-color:#1f3b54;
+}
+
+/* فلاتر التقييم */
+body.dark-mode .rating-filter{
+  background:#0e1623;
+  border-color:#334155;
+  color:#e6edf3;
+}
+body.dark-mode .rating-filter:hover{
+  background:#0c1420;
+}
+body.dark-mode .rating-filter.active{
+  background:#0ea5e9;
+  border-color:#0ea5e9;
+  color:#0b1220;
+}
+
+/* عناصر كل مراجعة */
+body.dark-mode .review-code{
+  background:rgba(56,189,248,.12);
+  color:#cbd5e1;
+}
+body.dark-mode .review-text{ color:#dbe2ea; }
+body.dark-mode .review-date{ color:#94a3b8; }
+
+/* سكرول القائمة */
+body.dark-mode .reviews-list::-webkit-scrollbar-track{ background:#0b1220; }
+body.dark-mode .reviews-list::-webkit-scrollbar-thumb{
+  background:#0ea5e9;
+}
+
   </style>
 </head>
 <body>
@@ -571,6 +642,12 @@ document.addEventListener('DOMContentLoaded', () => {
   filterReviews(0); // عرض الكل
 });
 
+  (function(){
+    try{
+      const saved = localStorage.getItem('theme');
+      if(saved === 'dark'){ document.body.classList.add('dark-mode'); }
+    }catch(e){}
+  })();
   </script>
 </body>
 </html>

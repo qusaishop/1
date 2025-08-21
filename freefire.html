@@ -59,6 +59,104 @@
       position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
       background:rgba(0,0,0,.35); color:#fff; font-weight:700; border-radius:12px;
     }
+
+/* ====== Dark Mode for Free Fire page ====== */
+body.dark-mode{ background:#0b1220; color:#e6edf3; }
+
+/* الصندوق الرئيسي */
+body.dark-mode .main-white-box{
+  background:#0f172a !important;
+  color:#e6edf3 !important;
+  border:1px solid #334155 !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+}
+
+/* صندوق مُعرّف اللاعب */
+body.dark-mode .player-id-box{
+  background:#0f172a !important;
+  border-color:#334155 !important;
+  color:#e6edf3 !important;
+}
+body.dark-mode .player-id-box label{ color:#e6edf3 !important; }
+body.dark-mode .player-id-box input{
+  background:#0b1220 !important;
+  color:#e6edf3 !important;
+  border-color:#334155 !important;
+}
+
+/* صندوق المبلغ المختار */
+body.dark-mode #selected-amount-container{
+  background:#0f172a !important;
+  border-color:#334155 !important;
+  color:#ffffff !important;
+}
+body.dark-mode #selected-amount-container .voucher,
+body.dark-mode #selected-amount-container .voucher .line,
+body.dark-mode #selected-amount-container .voucher .price{
+  color:#ffffff !important;
+}
+
+/* بطاقات العروض */
+body.dark-mode .offer-box{
+  background:#101826 !important;
+  border:1px solid #334155 !important;
+  color:#e6edf3 !important;
+}
+body.dark-mode .offer-box span{ color:#e6edf3 !important; }
+body.dark-mode .offer-box.selected{ outline:2px solid #38bdf8; }
+body.dark-mode .offer-box.disabled .unavailable-badge{ background:rgba(0,0,0,.45); }
+
+/* عناوين الأقسام */
+body.dark-mode .section-title{ color:#7dd3fc !important; }
+
+/* زر الشراء */
+body.dark-mode .send-button{
+  background:#0369a1 !important;
+  color:#e6edf3 !important;
+}
+body.dark-mode .send-button:hover{ background:#0ea5e9 !important; }
+
+/* التوست */
+body.dark-mode #toast{
+  background:#0f172a !important;
+  color:#e6edf3 !important;
+}
+
+/* النافذة المنبثقة (دليل المعرف) */
+body.dark-mode #popup > div{
+  background:#111827 !important;
+  color:#e6edf3 !important;
+}
+
+/* محاكاة شيمر أخفت في الوضع الداكن إن وُجد */
+body.dark-mode .offer-box.loading{ background:#162032 !important; }
+
+/* === اجعل خلفية قسم لماذا تختارنا مثل الخلفيات الأخرى === */
+
+/* وضع فاتح: لون مسطح مطابق لصناديق الصفحة */
+.footer-icons{
+  background: #f9f9f9 !important;  /* بديل للتدرّج */
+  border: 1px solid #e0e6f7;        /* نفس حدود الصناديق الفاتحة */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* تباين عنوان القسم على الخلفية الفاتحة */
+.footer-title{
+  color: #0b1220 !important;
+}
+
+/* وضع داكن: لون مسطح مطابق لصناديق الوضع الداكن */
+body.dark-mode .footer-icons{
+  background: #0f265a !important;   /* بديل للتدرّج الداكن */
+  border-color: #334155;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+}
+
+/* نص العنوان في الوضع الداكن */
+body.dark-mode .footer-title{
+  color: #e6edf3 !important;
+}
+
   </style> </head>
  <body>
   <div id="headerContainer"></div>
@@ -133,7 +231,7 @@
         </div>
 
         <!-- ✅ Turnstile -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="light"></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="auto"></div>
 
         <button class="send-button" style="margin-top:20px; padding:10px 20px; font-size:18px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer;" type="submit">شراء</button>
       </div>
@@ -144,6 +242,19 @@
   </form>
 
   <script>
+
+
+(function(){
+  try{
+    var saved = localStorage.getItem('theme');
+    if(saved === 'dark'){
+      document.body.classList.add('dark-mode');
+      // لو رغبت فرض Turnstile داكنًا دومًا:
+      var t = document.querySelector('.cf-turnstile');
+      if(t) t.setAttribute('data-theme','dark');
+    }
+  }catch(e){}
+})();
   // ===== Footer =====
   const footer = document.createElement("footer");
   footer.className = "footer-icons";
@@ -163,6 +274,7 @@
     { iconClass: "fas fa-undo", title: "الغاء الطلبات", desc: "يمكنك الغاء اي طلب قبل اتمام عملية الدفع عبر التواصل مع الدعم الفني" },
     { iconClass: "fas fa-server", title: "تخزين للطلبات", desc: "يتم وضع الطلبات في سيرفرات لعدم فقدانها تحت اي ضرف" }
   ];
+
   iconBoxesData.forEach(({ iconClass, title, desc }) => {
     const box = document.createElement("div");
     box.className = "icon-box";
@@ -336,6 +448,9 @@ if (breakdownLines.length === 0) {
       }
     } catch (e) { console.error("❌ فشل في جلب حالة العروض:", e); }
   });
+
+
+  
   </script>
  </body>
 </html>

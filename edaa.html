@@ -88,6 +88,90 @@
     .preview{margin-top:10px;font-size:.92rem;color:#1d4ed8;word-break:break-all}
     .turnstile-wrap{margin-top:8px}
     .hidden{display:none!important}
+
+    /* ==== Dark Mode for edaa page ==== */
+body.dark-mode {
+  background:#0b1220;
+  color:#e6edf3;
+}
+
+body.dark-mode main {
+  background:#0f172a;
+  color:#e6edf3;
+  border-radius:16px;
+  padding:16px;
+}
+
+body.dark-mode .where { color:#7dd3fc; }
+
+body.dark-mode .search-container input {
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+}
+body.dark-mode .search-container input:focus {
+  border-color:#38bdf8;
+  box-shadow:0 0 5px rgba(56,189,248,0.4);
+}
+body.dark-mode .search-container button {
+  background:#0369a1;
+}
+body.dark-mode .search-container button:hover {
+  background:#0ea5e9;
+}
+
+body.dark-mode .card {
+  background:#1a2234;
+  color:#f1f5f9;
+  border-color:#334155;
+}
+body.dark-mode .card:hover {
+  box-shadow:0 10px 24px rgba(0,0,0,.5);
+}
+body.dark-mode .card h2 { color:#e6edf3; }
+
+body.dark-mode .no-results { color:#94a3b8; }
+
+/* المودال */
+body.dark-mode .modal-content {
+  background:#111827;
+  color:#e6edf3;
+}
+body.dark-mode .modal-title { color:#7dd3fc; }
+body.dark-mode .info-item {
+  background:#0f172a;
+  border-color:#334155;
+  color:#e6edf3;
+}
+body.dark-mode .calc .field {
+  background:#0f172a;
+  border-color:#334155;
+}
+body.dark-mode .calc label { color:#cbd5e1; }
+body.dark-mode .calc input {
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+}
+body.dark-mode .calc input:focus {
+  border-color:#38bdf8;
+  box-shadow:0 0 5px rgba(56,189,248,0.4);
+}
+body.dark-mode .rate-line .mini { color:#cbd5e1; }
+body.dark-mode .rate-line .chip {
+  background:#0b172a;
+  border-color:#334155;
+  color:#e6edf3;
+}
+body.dark-mode .btn-outline {
+  background:#0b1220;
+  color:#e6edf3;
+  border-color:#334155;
+}
+body.dark-mode .btn-primary {
+  background:linear-gradient(135deg,#0ea5e9,#0369a1);
+}
+
   </style>
 </head>
 <body>
@@ -516,6 +600,15 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
     methodModal.addEventListener('click', (e)=>{ if(e.target===methodModal) closeModalFn(); });
 
     watchCountries();
+
+
+    (function(){
+  try {
+    if(localStorage.getItem('theme') === 'dark'){
+      document.body.classList.add('dark-mode');
+    }
+  }catch(e){}
+})();
   </script>
 </body>
 </html>
