@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>صفحة التعليقات والتقييمات</title>
+<!-- Firebase SDK بالترتيب الصحيح -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="header.css">
+  <script src="header.js" defer></script>
+  <style>
+    /* Reset بسيط */
+    * {
+      box-sizing: border-box;
+    }
+
+    main {
+      max-width: 700px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* نموذج التقييم */
+    .review-form {
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .user-name {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #007bff;
+    }
+    .stars {
+      display: flex;
+      justify-content: flex-start;
+      gap: 0;
+      font-size: 30px;
+      cursor: pointer;
+      color: #ccc;
+      user-select: none;
+    }
+    .stars .selected {
+      color: #ffb400; /* لون ذهبي */
+      text-shadow: 0 0 5px #ffb400aa;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-top: 15px;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 8px #007bff44;
+    }
+    .code-preview {
+      position: absolute;
+      bottom: -30px;
+      right: 0;
+      left: 0;
+      background-color: rgba(0, 123, 255, 0.1);
+      padding: 8px 15px;
+      border-radius: 8px;
+      color: #555;
+      font-size: 14px;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      display: none;
+    }
+    button {
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 12px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: block;
+      width: 100%;
+    }
+    button:disabled {
+      background-color: #a0c4ff;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+
+    /* تصفية التقييمات */
+    .rating-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .rating-filter {
+      background: #f0f2f5;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .rating-filter:hover {
+      background: #e0e3e7;
+    }
+    .rating-filter.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .rating-filter .stars {
+      font-size: 16px;
+      gap: 0;
+    }
+    .rating-filter .count {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* عرض التعليقات */
+    .reviews-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .review-item {
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
+    }
+    .review-item:last-child {
+      border-bottom: none;
+    }
+    .review-user {
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 5px;
+    }
+    .review-code {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+      background: rgba(0, 123, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      font-family: monospace;
+    }
+    .review-stars {
+      color: #ffb400;
+      margin-bottom: 8px;
+      font-size: 22px;
+      gap: 0;
+    }
+    .review-text {
+      font-size: 17px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: #444;
+    }
+    .review-date {
+      font-size: 13px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    /* Scrollbar لنظام عرض التعليقات */
+    .reviews-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reviews-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    .reviews-list::-webkit-scrollbar-thumb {
+      background: #007bff;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        margin: 20px 15px;
+        padding: 20px;
+      }
+      .stars {
+        font-size: 26px;
+      }
+      button {
+        font-size: 16px;
+      }
+      .rating-filters {
+        gap: 5px;
+      }
+      .rating-filter {
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="headerContainer"></div>
+<div id="sidebarContainer"></div>
+
+
+  <main>
+    <section class="review-form" aria-label="نموذج إضافة تقييم وتعليق">
+      <div class="user-name" id="currentUserName"></div>
+      <div class="stars" id="starRating" role="radiogroup" aria-label="اختر عدد النجوم من 1 إلى 5">
+        <i class="fa-regular fa-star" data-value="1" role="radio" aria-checked="false" tabindex="0" aria-label="1 نجمة"></i>
+        <i class="fa-regular fa-star" data-value="2" role="radio" aria-checked="false" tabindex="-1" aria-label="2 نجوم"></i>
+        <i class="fa-regular fa-star" data-value="3" role="radio" aria-checked="false" tabindex="-1" aria-label="3 نجوم"></i>
+        <i class="fa-regular fa-star" data-value="4" role="radio" aria-checked="false" tabindex="-1" aria-label="4 نجوم"></i>
+        <i class="fa-regular fa-star" data-value="5" role="radio" aria-checked="false" tabindex="-1" aria-label="5 نجوم"></i>
+      </div>
+      <textarea id="reviewText" placeholder="اكتب تعليقك هنا..." aria-label="نص التعليق"></textarea>
+      <div class="code-preview" id="codePreview"></div>
+      <button id="submitReview" disabled>إرسال التقييم</button>
+    </section>
+
+    <section class="rating-filters" id="ratingFilters">
+      <div class="rating-filter active" data-rating="0">
+        الكل
+      </div>
+      <div class="rating-filter" data-rating="5">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+        </div>
+        <span class="count" id="count-5">0</span>
+      </div>
+      <div class="rating-filter" data-rating="4">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+        </div>
+        <span class="count" id="count-4">0</span>
+      </div>
+      <div class="rating-filter" data-rating="3">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+        </div>
+        <span class="count" id="count-3">0</span>
+      </div>
+      <div class="rating-filter" data-rating="2">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+        </div>
+        <span class="count" id="count-2">0</span>
+      </div>
+      <div class="rating-filter" data-rating="1">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+          <i class="fa-regular fa-star"></i>
+        </div>
+        <span class="count" id="count-1">0</span>
+      </div>
+    </section>
+
+    <section class="reviews-list" id="reviewsList" aria-live="polite" aria-relevant="additions">
+      <!-- التعليقات ستظهر هنا -->
+    </section>
+  </main>
+
+
+
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+  authDomain: "qusaystore-ec327.firebaseapp.com",
+  projectId: "qusaystore-ec327",
+  storageBucket: "qusaystore-ec327.firebasestorage.app",
+  messagingSenderId: "701743074708",
+  appId: "1:701743074708:web:defc2de594567b6624d381",
+  measurementId: "G-00R4XQCB1V"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const stars = document.querySelectorAll('#starRating i');
+const reviewText = document.getElementById('reviewText');
+const submitBtn = document.getElementById('submitReview');
+const codePreview = document.getElementById('codePreview');
+const currentUserName = document.getElementById('currentUserName');
+const ratingFilters = document.getElementById('ratingFilters');
+let selectedRating = 0;
+let currentFilter = 0;
+let reviewsData = [];
+
+// عند تحميل الصفحة، تحقق إن كان المستخدم مسجلاً
+auth.onAuthStateChanged(user => {
+  if (user && user.emailVerified) {
+    db.collection('users').doc(user.uid).get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        currentUserName.textContent = `مرحباً ${data.username}`;
+      }
+    });
+    submitBtn.disabled = false;
+  } else {
+    currentUserName.textContent = 'يجب تسجيل الدخول لإضافة تعليق.';
+    submitBtn.disabled = true;
+  }
+});
+
+// ✅ إرسال التعليق من Firebase فقط
+submitBtn.addEventListener('click', () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("يجب تسجيل الدخول لإرسال تعليق.");
+    return;
+  }
+
+  db.collection('users').doc(user.uid).get().then(doc => {
+    const userName = doc.exists ? doc.data().username : 'مستخدم';
+
+    const review = {
+      rating: selectedRating,
+      comment: reviewText.value.trim(),
+      userName: userName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const reviewRef = db.collection('comments').doc();
+    const reviewId = reviewRef.id;
+
+    codePreview.textContent = `كود التقييم: ${reviewId.substring(0, 8)}`;
+    codePreview.style.display = 'block';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'جارٍ الإرسال...';
+
+    reviewRef.set(review)
+      .then(() => {
+        reviewText.value = '';
+        selectedRating = 0;
+        updateStars(0);
+        checkFormValid();
+        loadReviews();
+        submitBtn.textContent = 'تم الإرسال';
+        setTimeout(() => {
+          submitBtn.textContent = 'إرسال التقييم';
+          codePreview.style.display = 'none';
+        }, 1500);
+      })
+      .catch(err => {
+        alert('حدث خطأ أثناء الإرسال: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إرسال التقييم';
+        codePreview.style.display = 'none';
+      });
+  });
+});
+
+// تحديث نجوم التقييم
+function updateStars(rating) {
+  stars.forEach(star => {
+    const val = Number(star.getAttribute('data-value'));
+    if (val <= rating) {
+      star.classList.remove('fa-regular');
+      star.classList.add('fa-solid', 'selected');
+      star.setAttribute('aria-checked', 'true');
+      star.setAttribute('tabindex', '0');
+    } else {
+      star.classList.add('fa-regular');
+      star.classList.remove('fa-solid', 'selected');
+      star.setAttribute('aria-checked', 'false');
+      star.setAttribute('tabindex', '-1');
+    }
+  });
+}
+
+// تفعيل زر الإرسال
+function checkFormValid() {
+  submitBtn.disabled = !(selectedRating > 0 && reviewText.value.trim().length > 0);
+}
+
+// تصفية التعليقات حسب التقييم
+function filterReviews(rating) {
+  currentFilter = rating;
+  renderReviews();
+
+  document.querySelectorAll('.rating-filter').forEach(btn => {
+    if (Number(btn.getAttribute('data-rating')) === rating) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+// عرض التعليقات
+function renderReviews() {
+  const reviewsList = document.getElementById('reviewsList');
+  reviewsList.innerHTML = '';
+
+  if (reviewsData.length === 0) {
+    reviewsList.innerHTML = `<p>لا توجد تعليقات بعد.</p>`;
+    return;
+  }
+
+  const filteredReviews = currentFilter === 0
+    ? reviewsData
+    : reviewsData.filter(review => review.rating === currentFilter);
+
+  if (filteredReviews.length === 0) {
+    reviewsList.innerHTML = `<p>لا توجد تعليقات مع التقييم المحدد.</p>`;
+    return;
+  }
+
+  filteredReviews.forEach(data => {
+    const starsHTML = getStarsHTML(data.rating);
+    const comment = data.comment || '';
+    const date = data.createdAt ? data.createdAt.toDate().toLocaleString('ar-EG') : '';
+    const userName = data.userName || 'مستخدم';
+    const reviewCode = data.id ? data.id.substring(0, 8) : '';
+
+    const reviewItem = document.createElement('article');
+    reviewItem.className = 'review-item';
+    reviewItem.innerHTML = `
+      <div class="review-user">${escapeHTML(userName)}</div>
+      ${reviewCode ? `<div class="review-code">كود التقييم: ${reviewCode}</div>` : ''}
+      <div class="review-stars" aria-label="التقييم: ${data.rating} نجوم">${starsHTML}</div>
+      <p class="review-text">${escapeHTML(comment)}</p>
+      <time class="review-date" datetime="${data.createdAt ? data.createdAt.toDate().toISOString() : ''}">${date}</time>
+    `;
+
+    reviewsList.appendChild(reviewItem);
+  });
+}
+
+// تحديث عداد التقييمات
+function updateRatingCounts() {
+  const counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+
+  reviewsData.forEach(review => {
+    counts[review.rating]++;
+  });
+
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`count-${i}`).textContent = counts[i];
+  }
+}
+
+// أحداث النجوم
+stars.forEach(star => {
+  star.addEventListener('click', () => {
+    selectedRating = Number(star.getAttribute('data-value'));
+    updateStars(selectedRating);
+    checkFormValid();
+  });
+
+  star.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      selectedRating = Number(star.getAttribute('data-value'));
+      updateStars(selectedRating);
+      checkFormValid();
+    }
+  });
+
+  star.addEventListener('mouseover', () => {
+    updateStars(Number(star.getAttribute('data-value')));
+  });
+
+  star.addEventListener('mouseout', () => {
+    updateStars(selectedRating);
+  });
+});
+
+reviewText.addEventListener('input', checkFormValid);
+
+// تصفية حسب التقييم
+document.querySelectorAll('.rating-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const rating = Number(btn.getAttribute('data-rating'));
+    filterReviews(rating);
+  });
+});
+
+// تحميل التعليقات
+function loadReviews() {
+  const reviewsList = document.getElementById('reviewsList');
+  reviewsList.innerHTML = `<p>جاري تحميل التعليقات...</p>`;
+
+  db.collection('comments')
+    .orderBy('createdAt', 'desc')
+    .limit(30)
+    .get()
+    .then(snapshot => {
+      reviewsData = [];
+      if (snapshot.empty) {
+        reviewsList.innerHTML = `<p>لا توجد تعليقات بعد.</p>`;
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        reviewsData.push(data);
+      });
+
+      updateRatingCounts();
+      renderReviews();
+    })
+    .catch(err => {
+      reviewsList.innerHTML = `<p>حدث خطأ في تحميل التعليقات.</p>`;
+      console.error(err);
+    });
+}
+
+// عرض النجوم
+function getStarsHTML(rating) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += i <= rating
+      ? `<i class="fa-solid fa-star"></i>`
+      : `<i class="fa-regular fa-star"></i>`;
+  }
+  return html;
+}
+
+// حماية من XSS
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// تحميل التعليقات عند بداية الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+  loadReviews();
+  filterReviews(0); // عرض الكل
+});
+
+  </script>
+</body>
+</html>

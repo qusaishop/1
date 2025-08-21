@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إعدادات الحساب</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="loader.css">
+  <script src="loader.js" defer></script>
+
+  <style>
+    :root{
+      --primary:#00aaff;           /* أزرق سماوي غامق */
+      --primary-2:#008ecc;
+      --bg:#f4faff;
+      --card:#ffffff;
+      --text:#1e1e1e;
+      --muted:#5c5c5c;
+      --border: rgba(0,170,255,.25);
+      --shadow: 0 12px 35px rgba(0, 170, 255, .15);
+      --radius:16px;
+      --ring: 0 0 0 3px rgba(0,170,255,.25);
+      --success:#16a34a;
+      --danger:#ef4444;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      background: linear-gradient(180deg,#f0faff,#e6f7ff);
+      color: var(--text);
+    }
+
+    .main-content { flex: 1; padding: 28px; }
+    .container {
+      max-width: 900px;
+      margin: 34px auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    h2 { margin: 0 0 10px; color: var(--primary); font-size: 1.6rem; text-align:center }
+    .sub { text-align:center; color: var(--muted); margin-bottom: 22px }
+
+    .info-list{ display: grid; grid-template-columns: repeat(12,1fr); gap:14px; }
+    .col-6{ grid-column: span 6 }
+    .col-12{ grid-column: span 12 }
+    @media(max-width:720px){ .col-6{ grid-column: span 12 } }
+
+    .info-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 14px;
+      display:grid; grid-template-columns:160px 1fr;
+      align-items:center; gap:10px 12px;
+      transition:.15s;
+    }
+    .info-card:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,170,255,.15);
+      border-color: var(--primary);
+    }
+
+    .label{ color: var(--muted); font-weight:700; display:flex; gap:10px; }
+    .label i{ color: var(--primary) }
+
+    .value{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .badge{ background:#e6f7ff; border:1px dashed var(--primary); padding:3px 10px; border-radius:999px; font-weight:700; color: var(--primary-2); }
+
+    .copyable{
+      font-weight:700; cursor:pointer;
+      padding:2px 8px; border-radius:8px;
+      transition:.15s;
+      position: relative;
+    }
+    .copyable:hover{ background:#e6f7ff; color: var(--primary-2); }
+    .copyable.copied{ box-shadow: var(--ring); }
+    .copyable.copied::after{
+      content:"✓"; position:absolute; right:-16px; top:-6px;
+      background: var(--success); color:#fff; width:18px; height:18px;
+      border-radius:50%; display:grid; place-items:center; font-size:.75rem;
+    }
+
+    #resetBtn {
+      width:100%; padding:12px;
+      background: linear-gradient(135deg,#3fa6ff,#00cfff);
+      color:#fff; font-size:1rem;
+      border:none; border-radius:12px; cursor:pointer; margin-top:20px;
+      box-shadow:0 8px 18px rgba(0,167,255,.25);
+    }
+    #resetBtn:hover { opacity:.9 }
+
+    .toast{
+      position:fixed; left:50%; top:18px; transform:translateX(-50%);
+      background:#111; color:#fff; padding:10px 14px; border-radius:12px;
+      box-shadow:0 12px 28px rgba(0,0,0,.18); font-size:.95rem; z-index:9999;
+    }
+    @media(max-width:560px){ .toast{ top:auto; bottom:16px } }
+
+    .hint{ margin-top:8px; color:var(--muted); font-size:.9rem; text-align:center }
+    .spacer{ height:40px }
+  </style>
+</head>
+<body>
+  <div id="headerContainer"></div>
+  <div id="sidebarContainer"></div>
+  <div id="preloader"><div class="loader"></div></div>
+  <div class="spacer"></div>
+
+  <div class="main-content">
+    <div class="container">
+      <h2>إعدادات الحساب</h2>
+      <div class="sub">انقر على أي قيمة لنسخها مباشرة</div>
+
+      <div class="info-list">
+        <div class="info-card col-6"><div class="label"><i class="fa-regular fa-id-badge"></i> الاسم</div><div class="value"><span id="username" class="copyable"></span></div></div>
+        <div class="info-card col-6"><div class="label"><i class="fa-solid fa-signal"></i> المستوى</div><div class="value"><span id="level" class="copyable badge"></span></div></div>
+        <div class="info-card col-6"><div class="label"><i class="fa-regular fa-envelope"></i> البريد</div><div class="value"><span id="email" class="copyable"></span></div></div>
+        <div class="info-card col-6"><div class="label"><i class="fa-solid fa-mobile-screen"></i> الهاتف</div><div class="value"><span id="phone" class="copyable"></span></div></div>
+        <div class="info-card col-6"><div class="label"><i class="fa-solid fa-wallet"></i> الرصيد</div><div class="value"><span id="balance" class="copyable"></span><span class="badge">د.أ</span></div></div>
+        <div class="info-card col-6"><div class="label"><i class="fa-solid fa-coins"></i> إجمالي الإنفاق</div><div class="value"><span id="totalspent" class="copyable"></span><span class="badge">د.أ</span></div></div>
+        <div class="info-card col-12"><div class="label"><i class="fa-regular fa-hashtag"></i> معرف المستخدم</div><div class="value"><span id="webuid" class="copyable"></span></div></div>
+      </div>
+
+      <button id="resetBtn"><i class="fa-solid fa-key"></i> إعادة تعيين كلمة المرور</button>
+      <div id="msg" style="margin-top:12px; text-align:center; color:var(--success);"></div>
+    </div>
+  </div>
+  <div id="footerContainer"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="header.js" defer></script>
+
+  <script>
+    const firebaseConfig={ /* كما هو */ 
+      apiKey:"AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+      authDomain:"qusaystore-ec327.firebaseapp.com",
+      projectId:"qusaystore-ec327",
+      storageBucket:"qusaystore-ec327.firebasestorage.app",
+      messagingSenderId:"701743074708",
+      appId:"1:701743074708:web:defc2de594567b6624d381",
+      measurementId:"G-00R4XQCB1V"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth=firebase.auth();
+    const db=firebase.firestore();
+
+    function showToast(text,ok=true){
+      const t=document.createElement('div');
+      t.className='toast';
+      t.textContent=(ok?'✅ ':'❌ ')+text;
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),1800);
+    }
+
+    async function copyText(text){
+      text=(text||'').trim(); if(!text) throw new Error();
+      try{ await navigator.clipboard.writeText(text); return true }
+      catch{
+        const ta=document.createElement('textarea'); ta.value=text;
+        ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); document.body.removeChild(ta); return true;
+      }
+    }
+
+    auth.onAuthStateChanged(async (user)=>{
+      if(!user){ location.href="login.html"; return }
+      email.textContent=user.email||"--";
+      const uid=user.uid;
+      const doc=await db.collection("users").doc(uid).get();
+      if(doc.exists){
+        const d=doc.data();
+        username.textContent=d.username||"--";
+        level.textContent=d.level||"--";
+        totalspent.textContent=(d.totalspent??0).toString();
+        phone.textContent=d.phone||"--";
+        balance.textContent=(d.balance??0).toFixed(2);
+        webuid.textContent=d.webuid||"--";
+
+        username.dataset.copy=username.textContent;
+        level.dataset.copy=level.textContent;
+        email.dataset.copy=email.textContent;
+        phone.dataset.copy=phone.textContent;
+        webuid.dataset.copy=webuid.textContent;
+        balance.dataset.copy=balance.textContent;
+        totalspent.dataset.copy=totalspent.textContent;
+      }
+    });
+
+    resetBtn.onclick=async()=>{
+      const user=auth.currentUser;
+      if(!user||!user.email)return;
+      try{ await auth.sendPasswordResetEmail(user.email);
+        msg.textContent="📨 تم إرسال رابط إعادة التعيين إلى بريدك."; }
+      catch{ msg.textContent="حدث خطأ أثناء الإرسال."; }
+    }
+
+    document.addEventListener('click',async e=>{
+      const t=e.target.closest('.copyable'); if(!t)return;
+      try{ await copyText(t.dataset.copy||t.textContent);
+        t.classList.add('copied'); showToast('تم النسخ');
+        setTimeout(()=>t.classList.remove('copied'),1000);
+      }catch{ showToast('تعذر النسخ',false) }
+    });
+  </script>
+</body>
+</html>

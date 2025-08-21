@@ -1,0 +1,45 @@
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: #f0f4f8;
+  direction: rtl;
+}
+
+.auth-container {
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 20px;
+  border: 2px solid #0077cc;
+  border-radius: 12px;
+  background-color: #ffffff;
+  text-align: center;
+}
+
+.auth-container input {
+  width: 90%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1.5px solid #0077cc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.auth-buttons button {
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  margin: 5px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-buttons button:hover {
+  background-color: #005fa3;
+}
+
+#authStatus {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #444;
+}

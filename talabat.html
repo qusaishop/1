@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="talabat.js" defer></script>
+<link rel="stylesheet" href="header.css">
+<link rel="stylesheet" href="loader.css">
+<script src="loader.js" defer></script>
+<script src="header.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+<title>طلباتي</title>
+</head>
+<body>
+<div id="headerContainer"></div>
+<div id="sidebarContainer"></div>
+<div id="preloader">
+  <div class="loader"></div>
+</div>
+<div id="ordersContainer"></div>
+<div style="height: 50px;"></div>
+<div id="footerContainer"></div>
+  <script>
+  const contentContainer = document.createElement('div');
+  contentContainer.className = 'content-container';
+
+  // العنوان والأيقونة: "طلباتي"
+  const heading = document.createElement('h2');
+  const icon = document.createElement('i');
+  icon.className = 'fas fa-history';
+  heading.appendChild(icon);
+  heading.append(' طلباتي:');
+  contentContainer.appendChild(heading);
+
+  // قائمة الطلبات
+  const ordersList = document.createElement('div');
+  ordersList.id = 'ordersList';
+  ordersList.className = 'orders-list';
+  contentContainer.appendChild(ordersList);
+
+  // عند تحميل الـ DOM: نضيف المحتوى داخل #ordersContainer
+  window.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('ordersContainer');
+    if (container) {
+      container.appendChild(contentContainer);
+    } else {
+      console.error('لم يتم العثور على العنصر بالمعرف "ordersContainer"');
+    }
+  });
+
+  // ====== الفوتر ومربعات الأيقونات (المزايا) ======
+  const footer = document.createElement('footer');
+  footer.className = 'footerContainer';
+
+  const footerTitle = document.createElement('h2');
+  footerTitle.className = 'footer-title';
+  footerTitle.textContent = 'لماذا تختارنا؟';
+  footer.appendChild(footerTitle);
+
+
+
+  // بناء مربعات الأيقونات داخل الفوتر
+  iconBoxesData.forEach(({ iconClass, title, desc }) => {
+    const box = document.createElement('div');
+    box.className = 'icon-box';
+
+    const i = document.createElement('i');
+    i.className = iconClass;
+    box.appendChild(i);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = title;
+    box.appendChild(h3);
+
+    const p = document.createElement('p');
+    p.textContent = desc;
+    box.appendChild(p);
+
+    footer.appendChild(box);
+  });
+
+  // إضافة الفوتر أسفل الصفحة (يمكنك تغييره حسب هيكلة صفحتك)
+  document.getElementById('footerContainer')?.appendChild(footer);
+
+  // ====== دوال مساعدة كانت مشوّهة ======
+  // تبديل تحديد عرض/بكج/خيار
+  function toggleOffer(el) {
+    el.classList.toggle('selected');
+  }
+
+  // إظهار تفاصيل الطلب برقم/كود
+  function showOrderDetails(orderCode) {
+    const detailsEl = document.getElementById('orderDetails');
+    if (!detailsEl) return;
+
+    if (orderCode) {
+      detailsEl.style.display = 'block';
+      detailsEl.innerHTML = '<p>تفاصيل الطلب لكود: <strong>' + orderCode + '</strong></p>';
+    } else {
+      detailsEl.style.display = 'none';
+      detailsEl.innerHTML = '';
+    }
+  }  </script>
+</body>
+</html>

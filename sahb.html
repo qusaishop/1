@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>السحب النقدي</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <link rel="stylesheet" href="header.css" />
+
+  <script src="header.js" defer></script>
+  <style>
+    :root{
+      --brand:#0077cc; --brand-dark:#005fa3; --bg:#f7f8fb; --card:#ffffff;
+      --muted:#667085; --ring: rgba(0,119,204,.25); --success:#12b76a; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Cairo',sans-serif;margin:0;background:var(--bg);color:#111}
+    main{max-width:1200px;margin:20px auto;padding:0 16px}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1000px;margin:0 auto 12px}
+    .back-btn{display:none;background:#e9eef5;border:none;padding:10px 16px;border-radius:12px;cursor:pointer;font-weight:700;color:#1f2937}
+    .back-btn:hover{filter:brightness(.98)}
+    .where{font-weight:800;color:var(--brand)}
+    .search-container{max-width:1000px;margin:0 auto 16px;display:flex;gap:10px}
+    .search-container input{flex:1;padding:12px 14px;border:2px solid var(--brand);border-radius:9999px;font-size:1rem;outline:none;transition:.2s;background:#fff}
+    .search-container input:focus{box-shadow:0 0 0 6px var(--ring);border-color:var(--brand-dark)}
+    .search-container button{background:var(--brand);border:none;padding:12px 18px;border-radius:9999px;color:#fff;font-size:1rem;cursor:pointer;transition:.2s}
+    .search-container button:hover{background:var(--brand-dark)}
+    .categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;justify-content:center;max-width:1000px;margin:auto}
+    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 4px 16px rgba(16,24,40,.06);text-align:center;padding:18px;text-decoration:none;color:#111;transition:transform .25s ease,box-shadow .25s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(16,24,40,.12)}
+    .card img{width:180px;height:180px;object-fit:cover;object-position:center;margin-bottom:14px;border-radius:10px;user-select:none;background:#f3f4f6}
+    .card h2{font-weight:800;font-size:1.05rem;margin:0}
+    .no-results{text-align:center;font-size:1.05rem;color:#9aa4b2;margin-top:26px}
+    @media (max-width:768px){.categories{grid-template-columns:repeat(2,1fr)}}
+    .card.loading{position:relative;background:#f3f4f6;overflow:hidden;pointer-events:none}
+    .card.loading img,.card.loading h2{visibility:hidden}
+    .card.loading::after{content:'';position:absolute;top:0;right:-150px;width:100px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 1.2s infinite}
+    @keyframes shimmer{0%{right:-150px}100%{right:100%}}
+
+    /* المودال */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+    .modal.open{display:flex}
+    .modal-content{background:#fff;padding:18px;border-radius:16px;max-width:680px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.22)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .modal-title{font-size:1.15rem;font-weight:800}
+    .close{background:transparent;border:none;font-size:1.4rem;cursor:pointer}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:#eef6ff;color:#1e40af;border:1px solid #c7ddff;padding:6px 10px;border-radius:9999px;font-size:.85rem;margin-top:6px}
+
+    .info-list{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
+    .info-item{background:#f8fafc;border:1px solid #e6eef7;border-radius:12px;padding:10px}
+
+    /* نموذج السحب */
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 6px}
+    .field{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:8px 10px}
+    .field label{display:block;font-size:.85rem;color:#475467;margin-bottom:4px;font-weight:700}
+    .field input{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:1rem;outline:none;background:#fff}
+    .field input:focus{box-shadow:0 0 0 6px var(--ring);border-color:var(--brand)}
+
+    .calc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0}
+    .calc .field{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:8px 10px}
+    .rate-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 10px}
+    .rate-line .chip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:6px 10px}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .btn{border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
+    .btn-primary{background:var(--brand);color:#fff}
+    .btn-outline{background:#fff;border:1px solid #cbd5e1}
+    .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+    .turnstile-wrap{margin-top:8px}
+    .muted{color:#667085;font-size:.92rem}
+    .error{color:var(--danger);font-size:.9rem;margin-top:4px}
+  </style>
+</head>
+<body>
+<div id="headerContainer"></div>
+<div id="sidebarContainer"></div>
+
+  <main>
+    <div class="toolbar">
+      <button id="backBtn" class="back-btn"><i class="fa fa-arrow-right"></i> رجوع</button>
+      <div class="where" id="whereText">الدول المتاحة للسحب</div>
+      <div style="width:120px"></div>
+    </div>
+
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="ابحث داخل القائمة الحالية." aria-label="بحث"/>
+      <button id="searchButton" aria-label="زر البحث"><i class="fas fa-search"></i></button>
+    </div>
+
+    <section class="categories" id="grid"></section>
+    <p class="no-results" id="noResults" style="display:none;">لا توجد نتائج مطابقة.</p>
+  </main>
+
+  <!-- مودال تفاصيل طريقة السحب -->
+  <div class="modal" id="methodModal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">تفاصيل السحب</div>
+          <div id="fxBadge" class="badge" style="display:none;">
+            <i class="fa-solid fa-coins"></i><span id="fxText"></span>
+          </div>
+        </div>
+        <button class="close" id="closeModal">&times;</button>
+      </div>
+
+      <!-- بيانات المستلم -->
+      <div class="form" id="recipientForm">
+        <div class="field">
+          <label for="recipientId">رقم/معرّف المستلم</label>
+          <input type="text" id="recipientId" placeholder="مثال: 077xxxxxxx أو ID12345"/>
+          <div id="recipientIdErr" class="error" style="display:none;">أدخل رقمًا/معرّفًا صالحًا (3 أحرف على الأقل).</div>
+        </div>
+        <div class="field">
+          <label for="recipientName">اسم المستخدم</label>
+          <input type="text" id="recipientName" placeholder="الاسم كما سيظهر في التحويل"/>
+          <div id="recipientNameErr" class="error" style="display:none;">أدخل اسمًا صالحًا (3 أحرف على الأقل).</div>
+        </div>
+      </div>
+
+      <!-- الحاسبة: ندخل JOD ويعرض المبلغ المستلم بعملة الطريقة -->
+      <div class="calc">
+        <div class="field">
+          <label for="desiredJOD">سيُخصم من الموقع (JOD)</label>
+          <input type="number" id="desiredJOD" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+        <div class="field">
+          <label for="receiveCUR">سأستلم نقدا بقيمة (—)</label>
+          <input type="text" id="receiveCUR" placeholder="—" disabled/>
+        </div>
+      </div>
+
+      <div class="rate-line">
+        <div class="muted"><i class="fa-regular fa-circle-question"></i> السعر الحالي:</div>
+        <div class="chip" id="rateLine">—</div>
+      </div>
+
+      <div id="methodInfo" class="info-list"></div>
+
+      <div class="actions">
+        <button id="submitWithdrawBtn" class="btn btn-primary" disabled>تقديم طلب السحب</button>
+        <button id="cancelBtn" class="btn btn-outline">إلغاء</button>
+      </div>
+
+      <!-- Turnstile -->
+      <div class="turnstile-wrap">
+        <div class="cf-turnstile"
+             data-sitekey="0x4AAAAAABq9AqqUTLKhgB-u"
+             data-callback="onTurnstileSuccess"
+             data-expired-callback="onTurnstileExpired">
+        </div>
+      </div>
+
+      <div class="muted">※ يلزم تسجيل الدخول. الحسابات النهائية (عمولة/سعر صرف) تتم على الخادم.</div>
+    </div>
+  </div>
+
+  <script>
+    // ================= إعدادات عامة =================
+const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+      authDomain: "qusaystore-ec327.firebaseapp.com",
+      projectId: "qusaystore-ec327",
+      storageBucket: "qusaystore-ec327.firebasestorage.app",
+      messagingSenderId: "701743074708",
+      appId: "1:701743074708:web:defc2de594567b6624d381",
+      measurementId: "G-00R4XQCB1V"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Turnstile
+    window.turnstileToken = null;
+    window.onTurnstileSuccess = (token)=>{ window.turnstileToken = token; updateSubmitState(); };
+    window.onTurnstileExpired  = ()=>{ window.turnstileToken = null; updateSubmitState(); };
+
+    // ================= عناصر DOM =================
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const noResults = document.getElementById('noResults');
+    const backBtn = document.getElementById('backBtn');
+    const whereText = document.getElementById('whereText');
+
+    const methodModal = document.getElementById('methodModal');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const methodInfo = document.getElementById('methodInfo');
+
+    const fxBadge = document.getElementById('fxBadge');
+    const fxText  = document.getElementById('fxText');
+    const rateLine = document.getElementById('rateLine');
+
+    const desiredJOD = document.getElementById('desiredJOD');
+    const receiveCUR = document.getElementById('receiveCUR');
+
+    const recipientId   = document.getElementById('recipientId');
+    const recipientName = document.getElementById('recipientName');
+    const recipientIdErr = document.getElementById('recipientIdErr');
+    const recipientNameErr = document.getElementById('recipientNameErr');
+
+    const submitWithdrawBtn = document.getElementById('submitWithdrawBtn');
+
+    // ================= حالة وتنقّل =================
+    let currentCountry = null; // { id, data }
+    let countries = [];
+    let methods = [];
+    let currentMethod = null;
+
+    // FX
+    let fxCurrency = null;     // عملة طريقة السحب
+    let fxRatePerJOD = null;   // 1 JOD -> CUR
+
+    // ================= أدوات UI =================
+    function cardSkeleton(count=4){
+      grid.innerHTML='';
+      for(let i=0;i<count;i++){
+        const div=document.createElement('div');
+        div.className='card loading';
+        div.innerHTML='<img alt=""/><h2>—</h2>';
+        grid.appendChild(div);
+      }
+    }
+    function clearGrid(){ grid.innerHTML=''; }
+    function showNoResults(show){ noResults.style.display = show ? 'block' : 'none'; }
+    function openModal(){ methodModal.classList.add('open'); }
+    function closeModalFn(){
+      methodModal.classList.remove('open');
+      currentMethod = null; fxCurrency = null; fxRatePerJOD = null;
+      fxBadge.style.display='none'; fxText.textContent=''; rateLine.textContent='—';
+      desiredJOD.value=''; receiveCUR.value='';
+      recipientId.value=''; recipientName.value='';
+      recipientIdErr.style.display='none'; recipientNameErr.style.display='none';
+      updateSubmitState();
+      try { if (window.turnstile) turnstile.reset(); } catch(_){}
+    }
+
+    // ================= بحث =================
+    function applySearch(){
+      const q=(searchInput.value||'').trim().toLowerCase();
+      const list=currentCountry?methods:countries;
+      const filtered=list.filter(x=>(x.data.name||'').toLowerCase().includes(q));
+      currentCountry?renderMethods(filtered):renderCountries(filtered);
+    }
+    searchInput.addEventListener('input', applySearch);
+    searchButton.addEventListener('click', applySearch);
+
+    // ================= Firestore: الدول والطرق =================
+    function watchCountries(){
+      cardSkeleton();
+      return db.collection('withdrawCountries')
+        .where('active','==', true)
+        .orderBy('order','asc')
+        .onSnapshot(snap=>{
+          countries=snap.docs.map(d=>({id:d.id,data:d.data()}));
+          if(!currentCountry){ renderCountries(countries); applySearch(); }
+        }, err=>{ console.error('countries onSnapshot error:', err); });
+    }
+
+    async function enterCountry(c){
+      currentCountry=c;
+      whereText.textContent=`طرق السحب — ${c.data.name}`;
+      backBtn.style.display='inline-block';
+      cardSkeleton();
+
+      const snap=await db.collection('withdrawCountries').doc(c.id)
+                    .collection('methods')
+                    .where('active','==', true)
+                    .orderBy('name','asc')
+                    .get();
+
+      methods=snap.docs.map(d=>({id:d.id,data:d.data()}));
+      renderMethods(methods);
+    }
+
+    function goBack(){
+      currentCountry=null;
+      whereText.textContent='الدول المتاحة للسحب';
+      backBtn.style.display='none';
+      renderCountries(countries);
+    }
+    backBtn.addEventListener('click', goBack);
+
+    // ================= FX من الخادم =================
+    async function fetchFx(countryId, methodId){
+      const res = await fetch(`${WORKER_BASE}/withdraw/fx?countryId=${encodeURIComponent(countryId)}&methodId=${encodeURIComponent(methodId)}`);
+      const data = await res.json();
+      if (!res.ok || data.success !== true) throw new Error(data.error || 'تعذر جلب سعر الصرف');
+      return { currencyCode: data.currencyCode, ratePerJOD: Number(data.ratePerJOD), feeHint: data.feeHint || null };
+    }
+    function format4(n){ const s=(Math.round(n*10000)/10000).toFixed(4); return s.replace(/\.?0+$/,''); }
+
+    async function openMethod(m){
+      currentMethod = m;
+      modalTitle.textContent=`تفاصيل السحب — ${m.data.name||''}`;
+      methodInfo.innerHTML='';
+
+      try{
+        const fx = await fetchFx(currentCountry.id, m.id);
+        fxCurrency = fx.currencyCode;
+        fxRatePerJOD = fx.ratePerJOD;
+        const priceText = `1 JOD = ${format4(fxRatePerJOD)} ${fxCurrency}`;
+        fxText.textContent  = priceText;
+        rateLine.textContent= priceText;
+        fxBadge.style.display='inline-flex';
+        document.querySelector('label[for="receiveCUR"]').innerText = `سأستلم نقدا بقيمة (${fxCurrency})`;
+      }catch(e){
+        fxCurrency = null; fxRatePerJOD = null;
+        rateLine.textContent = 'فشل جلب السعر من الخادم';
+        fxBadge.style.display='none';
+        document.querySelector('label[for="receiveCUR"]').innerText = 'سأستلم نقدا بقيمة (—)';
+      }
+
+      const info=m.data.info||{};
+      const fields=[['الجهة', info.bank||info.agent],['الاسم', info.accountName],['رقم/معرّف', info.accountNumber||info.wallet],['IBAN', info.iban],['ملاحظات', info.note]].filter(([_,v])=>v);
+      methodInfo.innerHTML = fields.length
+        ? fields.map(([k,v])=>`<div class="info-item"><strong>${k}:</strong> <div>${v}</div></div>`).join('')
+        : '<div class="info-item">لا توجد تفاصيل متاحة.</div>';
+
+      desiredJOD.oninput = ()=>{
+        const v = Number(desiredJOD.value);
+        if (!fxRatePerJOD || !isFinite(v) || v<=0){ receiveCUR.value=''; }
+        else{ receiveCUR.value = (v * fxRatePerJOD).toFixed(2) + ' ' + (fxCurrency||''); }
+        updateSubmitState();
+      };
+
+      recipientId.oninput = ()=>{ recipientIdErr.style.display = recipientId.value.trim().length>=3 ? 'none':'block'; updateSubmitState(); };
+      recipientName.oninput = ()=>{ recipientNameErr.style.display = recipientName.value.trim().length>=3 ? 'none':'block'; updateSubmitState(); };
+
+      updateSubmitState();
+      openModal();
+    }
+
+    function amountsValid(){
+      const v = Number(desiredJOD.value);
+      return isFinite(v) && v > 0 && !!fxRatePerJOD;
+    }
+    function recipientValid(){
+      const idOk = (recipientId.value||'').trim().length >= 3;
+      const nameOk = (recipientName.value||'').trim().length >= 3;
+      return idOk && nameOk;
+    }
+    function updateSubmitState(){
+      submitWithdrawBtn.disabled = !(amountsValid() && !!window.turnstileToken && !!currentMethod && !!currentCountry && recipientValid());
+    }
+
+    // ================= تقديم طلب السحب =================
+    async function getIdTokenOrThrow(){
+      const user = auth.currentUser;
+      if(!user) throw new Error('يجب تسجيل الدخول أولاً.');
+      return await user.getIdToken(true);
+    }
+
+    async function handleSubmitWithdraw(country, method){
+      if(!amountsValid()) return alert('أدخل قيمة صحيحة بالدينار.');
+      if(!recipientValid()) return alert('أدخل رقم/معرّف واسم مستخدم صحيحين (٣ أحرف على الأقل).');
+      if(!window.turnstileToken) return alert('أكمل التحقق الأمني Turnstile.');
+
+      try {
+        const idToken = await getIdTokenOrThrow();
+
+        const body = {
+          countryId:  country?.id || "",
+          countryName: country?.data?.name || "",
+          methodId:   method?.id || "",
+          methodName: method?.data?.name || "",
+          desiredJOD: Number(desiredJOD.value),
+          payoutTarget: (recipientId.value||'').trim(),     // المطلوب بواسطة الباك-إند
+          payoutName:   (recipientName.value||'').trim(),   // معلومة إضافية
+          turnstileToken: window.turnstileToken
+        };
+
+        const res = await fetch(`${WORKER_BASE}/withdraw/submit`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + idToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        if(!res.ok || !data.success) throw new Error(data.error || 'فشل تقديم طلب السحب');
+
+        alert(
+          `تم تقديم طلب السحب.\n` +
+          `الكود: ${data.withdrawCode}\n` +
+          `سيُخصم: ${Number(data.amountJOD).toFixed(2)} JOD\n` +
+          `سيستلم: ${Number(data.amountCurrency).toFixed(2)} ${data.currency}\n` +
+          `(السعر: 1 JOD = ${Number(data.ratePerJOD).toFixed(4)} ${data.currency})`
+        );
+        closeModalFn();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'فشل تقديم الطلب');
+      }
+    }
+
+    // ================= رسم الشبكات =================
+    function renderCountries(list){
+      clearGrid();
+      list.forEach(c=>{
+        const a=document.createElement('a');
+        a.href='javascript:void(0)';
+        a.className='card';
+        a.dataset.title=c.data.name||'';
+        a.innerHTML=`<img src="${c.data.imageUrl||''}" alt="${c.data.name||''}"><h2>${c.data.name||''}</h2>`;
+        a.addEventListener('click',()=>enterCountry(c));
+        grid.appendChild(a);
+      });
+      showNoResults(list.length===0);
+    }
+
+    function renderMethods(list){
+      clearGrid();
+      list.forEach(m=>{
+        const a=document.createElement('a');
+        a.href='javascript:void(0)';
+        a.className='card';
+        a.dataset.title=m.data.name||'';
+        a.innerHTML=`<img src="${m.data.logoUrl||''}" alt="${m.data.name||''}"><h2>${m.data.name||''}</h2>`;
+        a.addEventListener('click',()=>{ submitWithdrawBtn.onclick = ()=>handleSubmitWithdraw(currentCountry, m); openMethod(m); });
+        grid.appendChild(a);
+      });
+      showNoResults(list.length===0);
+    }
+
+    // أحداث المودال
+    document.getElementById('closeModal').addEventListener('click', closeModalFn);
+    cancelBtn.addEventListener('click', closeModalFn);
+    methodModal.addEventListener('click', (e)=>{ if(e.target===methodModal) closeModalFn(); });
+
+    // تشغيل
+    watchCountries();
+  </script>
+</body>
+</html>

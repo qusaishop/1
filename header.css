@@ -1,0 +1,762 @@
+
+body {
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+  margin: 0;
+  padding-top: 60px; /* حتى لا يغطي الهيدر الصفحة */
+  background: #f2f2f2;
+  overflow-x: hidden;
+}
+#sidebar {
+  padding-top: 60px; /* مطابقة للهيدر */
+}
+
+.support-icon.whatsapp img {
+  filter: invert(44%) sepia(78%) saturate(442%) hue-rotate(85deg) brightness(90%) contrast(85%);
+}
+
+.support-icon.facebook img {
+  filter: invert(28%) sepia(89%) saturate(4184%) hue-rotate(197deg) brightness(90%) contrast(92%);
+}
+
+.support-icon.instagram img {
+  filter: invert(42%) sepia(71%) saturate(563%) hue-rotate(320deg) brightness(94%) contrast(100%);
+}
+
+.support-icon.telegram img {
+  filter: invert(48%) sepia(66%) saturate(3665%) hue-rotate(178deg) brightness(85%) contrast(105%);
+}
+
+.support-icon.email img {
+  filter: invert(33%) sepia(96%) saturate(7493%) hue-rotate(348deg) brightness(92%) contrast(90%);
+}
+
+
+
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 0;
+      direction: rtl;
+      background: linear-gradient(to bottom right, #f7f9fc, #e3f2fd);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: 70px; /* مساحة للشريط العلوي */
+    }
+
+    /* الشريط العلوي */
+.top-header {
+  display: flex;
+  justify-content: flex-start; /* اجعل العناصر تبدأ من اليسار */
+  align-items: center;
+  flex-direction: row; /* اجعل الاتجاه من اليسار لليمين */
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 70px;
+  background-color: #007BFF;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+padding-top: 0;
+padding-right: 15px;
+padding-bottom: 0;
+padding-left: 45px;
+  z-index: 1800;
+}
+
+    .top-header img {
+      height: 60px;
+      margin-left: auto; /* لدفع الصورة إلى أقصى اليمين */
+      cursor: pointer;
+    }
+
+    /* زر الهامبورغر داخل الهيدر */
+    #hamburger {
+      position: absolute;
+      left: 15px;           /* على اليسار داخل الهيدر */
+      top: 50%;             /* في منتصف ارتفاع الهيدر */
+      transform: translateY(-50%);
+      width: 30px;
+      height: 25px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 1900;
+    }
+    #hamburger span {
+      height: 4px;
+      background: #fff;     /* لأن الهيدر أزرق */
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+    #hamburger:hover span {
+      background: #e0e0e0;
+    }
+
+    /* القائمة الجانبية */
+    #sidebar {
+      text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      background: #007BFF;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1500;
+      padding-top: 70px; /* يساوي ارتفاع الهيدر */
+    }
+    #sidebar.active {
+      transform: translateX(0);
+    }
+    #sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #sidebar ul li {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+      border-radius: 6px;
+      user-select: none;
+    }
+    #sidebar ul li:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    #sidebar ul li i {
+      color: #fff;
+      font-size: 1.2rem;
+      min-width: 20px;
+      text-align: center;
+    }
+    #sidebar ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      width: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    
+    /* محتوى الصفحة */
+    .content-container {
+      max-width: 600px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    label i {
+      color: #007BFF;
+      font-size: 1.3rem;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    select:focus {
+      border-color: #007BFF;
+      box-shadow: 0 0 5px rgba(0,123,255,0.4);
+      outline: none;
+    }
+
+
+
+
+
+
+/* ====== Shimmer Loading for order cards ====== */
+.order-card.loading {
+  position: relative;
+  background: #f0f2f5;
+  border: none;
+  border-radius: 12px;
+  min-height: 100px; /* ✅ ارتفاع أقرب للكرت الحقيقي */
+  margin-bottom: 14px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+
+/* إخفاء محتوى البطاقة الحقيقي مؤقتًا إن وُجد */
+.order-card.loading > * {
+  visibility: hidden;
+}
+
+/* لمعان متحرك */
+.order-card.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -150px;
+  width: 120px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: orders-shimmer 1.2s infinite;
+}
+
+@keyframes orders-shimmer {
+  0%   { right: -150px; }
+  100% { right: 100%;   }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* تحسين شكل البطاقة */
+/* ====== Order Card (الكرت الخارجي) ====== */
+.order-card {
+  position: relative;
+  border: 1px solid transparent;             /* حد شفاف لكي يظهر تدرّج الإطار */
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,            /* أرضية بيضاء ناعمة */
+    radial-gradient(120% 120% at 100% 0%, #e0e7ff, #fce7f3 40%, #e0f2fe 80%) border-box; /* إطار متدرّج */
+  box-shadow:
+    0 10px 24px rgba(24, 39, 75, 0.08),
+    0 2px 6px rgba(24, 39, 75, 0.05);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  overflow: hidden;  /* لإخفاء توهج الزاوية داخل الحدود */
+}
+
+/* لمسة توهج لطيف في الزاوية العلوية اليمنى */
+.order-card::after {
+  content: "";
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle at center, rgba(0,123,255,.12), transparent 60%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* تفاعل الهوفر/الفوكس */
+.order-card:hover,
+.order-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 36px rgba(24, 39, 75, 0.14),
+    0 4px 10px rgba(24, 39, 75, 0.06);
+}
+
+/* ضغط بسيط عند النقر */
+.order-card:active {
+  transform: translateY(-1px);
+}
+
+/* تحسين الهوامش على الشاشات الصغيرة */
+@media (max-width: 600px) {
+  .order-card {
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+}
+
+/* رأس البطاقة */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50px; /* مسافة بين العناصر */
+}
+
+.order-header .order-status {
+  margin-right: auto; /* تدفعه باتجاه السهم */
+}
+
+.order-header i {
+  margin-left: 0;
+}
+/* حالات الطلب */
+.order-status {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.order-status.تم_الشحن {
+  background-color: #28a745;
+  color: white;
+}
+.order-status.مرفوض {
+  background-color: #dc3545;
+  color: white;
+}
+.order-status.قيد_المعالجة {
+  background-color: #17a2b8;
+  color: white;
+}
+
+/* تفاصيل الطلب */
+.order-details {
+  display: none;
+  margin-top: 15px;
+  background: #f8faff;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e0e6f7;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.order-details p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+.order-details strong {
+  color: #000;
+}
+
+/* أنيميشن */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-5px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* زر عرض الصورة */
+.btn-show-proof {
+  display: inline-block;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #007BFF, #0056b3);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-show-proof:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+
+
+
+
+.order-card.flash-in {
+  position: relative;
+  overflow: hidden;
+}
+.order-card.flash-in::after {
+  content: "";
+  position: absolute; inset: 0 100% 0 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: card-flash 0.6s ease forwards;
+}
+@keyframes card-flash {
+  to { inset: 0 -120% 0 120%; }
+}
+
+
+
+
+
+
+    @media (max-width: 600px) {
+      .content-container {
+        margin: 60px 15px;
+        padding: 20px;
+      }
+      #hamburger { left: 10px; }
+    }
+
+
+    
+.footer-title {
+  color: #ffffff;
+  font-size: 32px;
+  text-align: center;
+  margin-bottom: 40px;
+  font-weight: 700;
+  flex-basis: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+}
+
+.footer-icons {
+  background: linear-gradient(135deg, #0069d9, #0056b3);
+  padding: 60px 30px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.icon-box {
+  background-color: #fff;
+  width: 220px;
+  padding: 25px 20px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.icon-box:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+}
+
+.icon-box i {
+  font-size: 42px;
+  color: #007bff;
+  margin-bottom: 18px;
+  transition: color 0.3s ease;
+}
+
+.icon-box:hover i {
+  color: #0056b3;
+}
+
+.icon-box h3 {
+  font-size: 20px;
+  margin: 12px 0 8px;
+  color: #111;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.icon-box p {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .footer-icons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 30px 10px;
+    gap: 20px;
+  }
+
+  .icon-box {
+    width: 45%; /* بدلًا من 90% أو ثابت */
+    max-width: 180px;
+    padding: 15px 10px;
+  }
+
+  .icon-box i {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .icon-box h3 {
+    font-size: 16px;
+  }
+
+  .icon-box p {
+    font-size: 13px;
+  }
+
+  .footer-title {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-box {
+    width: 80%;
+    max-width: 160px;
+    padding: 12px 8px;
+  }
+
+  .icon-box i {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .icon-box h3 {
+    font-size: 14px;
+  }
+
+  .icon-box p {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .footer-title {
+    font-size: 20px;
+  }
+}
+
+
+
+
+.support-section {
+  background-color: #f8f9fa;
+  padding: 60px 20px;
+  text-align: center;
+  border-top: 2px solid #e0e0e0;
+}
+
+.support-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 35px;
+  color: #333;
+}
+
+.support-icons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.support-icon {
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  font-size: 26px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.support-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ألوان الأيقونات حسب المنصة */
+.support-icon.whatsapp { color: #25D366; }
+.support-icon.facebook { color: #3b5998; }
+.support-icon.instagram { color: #E1306C; }
+
+/* استجابة للموبايل */
+@media (max-width: 600px) {
+  .support-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+  }
+}
+
+.btn-show-proof {
+  display: inline-block;
+  padding: 0.5em 1em;
+  background: linear-gradient(135deg, #6D5BBA 0%, #8D58BF 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5em;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-show-proof:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.btn-show-proof:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-show-proof:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109,91,186,0.4);
+}
+
+.btn-show-proof {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  text-align: center;
+  background: linear-gradient(135deg, #007BFF 0%, #0056b3 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.btn-show-proof:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-show-proof:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.btn-show-proof:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
+}
+
+/* الرصيد داخل الهيدر */
+.header-balance {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.05rem; /* ✅ تكبير الخط */
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px; /* ✅ زيادة الحشوة */
+  border-radius: 25px;
+  gap: 8px;
+  margin-left: 12px; /* ✅ يحركه لليمين عند RTL */
+  white-space: nowrap;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.header-balance i {
+  color: gold;
+  font-size: 1.3rem; /* ✅ تكبير الأيقونة */
+}
+
+
+
+.support-rights {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+
+.support-rights a {
+  color: #007BFF;
+  text-decoration: none;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.support-rights a:hover {
+  text-decoration: underline;
+}
+
+.support-rights p {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+}
+
+
+/* الشعار */
+.top-header img {
+  height: 60px;
+  margin-left: auto;
+  cursor: pointer;
+  transition: height 0.3s ease;
+}
+
+/* زر الهامبورغر */
+#hamburger {
+  width: 30px;
+  height: 25px;
+  transition: all 0.3s ease;
+}
+
+/* الرصيد */
+.header-balance {
+  font-size: 1.05rem;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+/* ===== استجابة للشاشات المتوسطة ===== */
+@media (max-width: 992px) {
+  .top-header img {
+    height: 50px;
+  }
+  #hamburger {
+    width: 26px;
+    height: 22px;
+  }
+  .header-balance {
+    font-size: 0.95rem;
+    padding: 6px 12px;
+  }
+  .header-balance i {
+    font-size: 1.1rem;
+  }
+}
+
+/* ===== استجابة للشاشات الصغيرة (الموبايل) ===== */
+@media (max-width: 600px) {
+  .top-header img {
+    height: 40px;
+  }
+  #hamburger {
+    width: 22px;
+    height: 18px;
+  }
+  .header-balance {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+    gap: 6px;
+  }
+  .header-balance i {
+    font-size: 1rem;
+  }
+}

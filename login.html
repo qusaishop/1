@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تسجيل الدخول</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/css/intlTelInput.min.css" rel="stylesheet"/>
+<style>
+  :root{
+    --bg-start:#eef2ff;         /* indigo-50 */
+    --bg-end:#f5f3ff;           /* violet-50 */
+    --surface:#ffffff;
+    --text:#1f2937;             /* gray-800 */
+    --muted:#6b7280;            /* gray-500 */
+    --primary:#4f46e5;          /* indigo-600 */
+    --primary-2:#7c3aed;        /* violet-600 */
+    --ring:#a78bfa;             /* violet-400 */
+    --danger:#ef4444;
+    --success:#16a34a;
+    --shadow:0 10px 30px rgba(2,6,23,.10);
+    --shadow-lg:0 20px 50px rgba(2,6,23,.15);
+    --radius-xl:24px;
+    --radius-lg:16px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg-start:#0b1020;
+      --bg-end:#131a33;
+      --surface:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --primary:#818cf8;
+      --primary-2:#a78bfa;
+      --ring:#c4b5fd;
+      --danger:#f87171;
+      --success:#34d399;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --shadow-lg:0 20px 60px rgba(0,0,0,.45);
+    }
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'Cairo',sans-serif;
+    margin:0;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 100% -10%, rgba(167,139,250,.15), transparent 60%),
+      radial-gradient(1000px 600px at -10% 110%, rgba(129,140,248,.18), transparent 60%),
+      linear-gradient(135deg,var(--bg-start),var(--bg-end));
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+
+  /* Shell */
+  .auth-shell{
+    width:100%;
+    max-width:980px;
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:24px;
+  }
+  @media (max-width:880px){
+    .auth-shell{grid-template-columns:1fr}
+    .brand-side{display:none}
+  }
+
+  /* Brand side */
+  .brand-side{
+    background: linear-gradient(135deg, rgba(79,70,229,.85), rgba(124,58,237,.85)),url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1400&auto=format&fit=crop');background-position: center, center;background-repeat: no-repeat, no-repeat;background-size: auto, contain;
+    box-shadow:var(--shadow-lg);
+    border-radius:18px; overflow:hidden;
+    padding:36px 32px;
+    display:flex;flex-direction:column;justify-content:space-between;min-height:560px;
+    color:#fff;
+  }
+  .brand-logo{
+    display:flex;align-items:center;gap:12px;
+  }
+  .brand-logo .mark{
+    width:40px;height:40px;border-radius:12px;
+    background:#fff; color:var(--primary);
+    display:grid;place-items:center;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.15);
+  }
+  .brand-side h1{margin:0;font-size:1.35rem;font-weight:700}
+  .brand-cta{
+    margin-top:auto;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.25);
+    padding:18px;
+    border-radius:18px;
+    backdrop-filter: blur(6px);
+  }
+  .brand-cta p{margin:0 0 10px;color:#f3f4f6}
+  .brand-badges{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{
+    padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.25);
+    font-size:.85rem
+  }
+
+  /* Form side */
+  .form-side{
+    background:var(--surface);
+    border:1px solid rgba(2,6,23,.05);
+    border-radius:18px; overflow:hidden;
+    box-shadow:var(--shadow);
+    padding:28px 26px;
+  }
+  .header{
+    display:flex;align-items:center;gap:12px;margin-bottom:6px
+  }
+  .avatar{
+    width:48px;height:48px;border-radius:14px;
+    background:linear-gradient(135deg,#e9d5ff,#eff6ff);
+    display:grid;place-items:center;color:var(--primary)
+  }
+  .form-side h2{margin:0;font-size:1.6rem}
+  .subtitle{margin:4px 0 20px;color:var(--muted)}
+
+  /* Cards (login/register/reset) */
+  .login-box{padding:0;background:none;box-shadow:none;border-radius:0;max-width:none}
+  .card{
+    background:var(--surface);
+    border:1px solid rgba(2,6,23,.06);
+    border-radius:var(--radius-lg);
+    padding:22px;
+  }
+
+  .input-group{position:relative;margin-bottom:14px}
+  .input-group input{
+    width:100%;
+    padding:14px 44px;
+    border:1px solid rgba(2,6,23,.12);
+    border-radius:14px;
+    font-size:1rem;
+    background:#fff;
+    color:var(--text);
+    transition:border-color .2s, box-shadow .2s, background-color .2s;
+  }
+  .input-group input::placeholder{color:#94a3b8}
+  .input-group input:focus{
+    outline:none;
+    border-color:var(--ring);
+    box-shadow:0 0 0 4px rgba(167,139,250,.15);
+    background:#fff;
+  }
+  .input-group i{
+    position:absolute;top:50%;transform:translateY(-50%);color:#9aa3b2;font-size:16px
+  }
+  .input-group i.fa-lock, .input-group i.fa-envelope{right:14px}
+  .input-group .fa-phone{right:14px}
+  .eye-icon{left:14px;top:50%;transform:translateY(-50%);position:absolute;cursor:pointer;color:var(--primary)}
+
+  /* Buttons */
+  .stack{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%; padding:12px 14px; border-radius:14px; border:none;
+    font-size:1rem; cursor:pointer; transition:transform .06s ease, box-shadow .2s ease;
+    box-shadow: 0 6px 14px rgba(79,70,229,.08);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff}
+  .btn-secondary{
+    background:#fff; color:var(--text);
+    border:1px solid rgba(2,6,23,.12);
+  }
+  .btn-info{background:linear-gradient(135deg,#06b6d4,#22d3ee); color:#fff}
+  .btn-success{background:linear-gradient(135deg,#10b981,#34d399); color:#fff}
+
+  /* Helper links */
+  .help{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+  .help a{color:var(--primary);text-decoration:none;font-size:.95rem}
+  .help a:hover{text-decoration:underline}
+
+  .error-message{color:var(--danger);text-align:center;margin-top:8px}
+
+  /* Modals */
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:50}
+  .modal.hidden{display:none}
+  .modal-content{
+    background:var(--surface);border:1px solid rgba(2,6,23,.08);
+    padding:26px;border-radius:18px; box-shadow:var(--shadow-lg); width:min(92vw,420px); text-align:center
+  }
+  .modal-content p{color:var(--muted)}
+  .btn-login{width:100%; padding:12px 14px; border:none; border-radius:14px; cursor:pointer;
+             background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff}
+  .bottom-link{border:none}
+
+  /* Loader */
+  #pageLoader{position:fixed;inset:0;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;z-index:60}
+  #pageLoader.hidden{display:none}
+  .half-circle-spinner{width:60px;height:60px;position:relative}
+  .half-circle-spinner .circle{
+    position:absolute;width:100%;height:100%;border:5px solid transparent;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite
+  }
+  .half-circle-spinner .circle.circle-2{border-top-color:transparent;border-bottom-color:var(--primary-2);animation-delay:.3s}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Password strength */
+  .password-strength-bar{width:100%;height:6px;background-color:#e5e7eb;border-radius:4px;margin-top:8px;overflow:hidden}
+  .password-strength-bar #strengthIndicator{height:100%;width:0%;transition:width .35s ease, background-color .35s ease}
+  .strength-text{font-size:.9rem;margin-top:6px;color:var(--muted);text-align:right}
+
+  .hidden{display:none !important}
+
+  /* Phone input plugin tweaks */
+  .iti{width:100%;display:flex;flex-direction:row-reverse;align-items:center}
+  .iti__flag-container{margin-left:10px !important}
+  #phoneInput,#googlePhoneInput{direction:ltr;text-align:left}
+
+</style>
+
+<style id="polish-overrides">
+  :root{
+    --text:#0f172a;            /* slate-900 for stronger contrast */
+    --muted:#475569;           /* slate-600 */
+    --field-bg:#f8fafc;        /* slate-50 */
+    --field-border:#cbd5e1;    /* slate-300 */
+    --field-icon:#64748b;      /* slate-500 */
+  }
+  .form-side h2{ color: var(--text); }
+  .subtitle{ color: var(--muted); }
+
+  /* Input: make the icon feel INSIDE the field, and strengthen contrast */
+  .input-group{ position:relative; }
+  .input-group input{
+    background: var(--field-bg) !important;
+    border-color: var(--field-border) !important;
+    color: var(--text) !important;
+  }
+  .input-group input::placeholder{
+    color: #64748b !important; /* slate-500 */
+    opacity: .9;
+  }
+  /* RTL-aware padding so text doesn't collide with the icon on the right */
+  html[dir="rtl"] .input-group input{ padding-right: 52px !important; padding-left: 44px !important; }
+  html[dir="ltr"] .input-group input{ padding-left: 52px !important; padding-right: 44px !important; }
+
+  /* Icons as inset elements */
+  .input-group i{
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #ffffff; /* small chip to feel inset */
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+    color: var(--field-icon) !important;
+    pointer-events: none; /* don't block clicks */
+  }
+  /* place icon to the right for RTL, left for LTR */
+  html[dir="rtl"] .input-group i{ right: 8px !important; left: auto !important; }
+  html[dir="ltr"] .input-group i{ left: 8px !important; right: auto !important; }
+
+  /* Eye icon: align symmetrically as an inset chip on the opposite side */
+  .eye-icon{
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #ffffff;
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    color: var(--primary);
+  }
+  html[dir="rtl"] .eye-icon{ left: 8px !important; right: auto !important; }
+  html[dir="ltr"] .eye-icon{ right: 8px !important; left: auto !important; }
+
+  /* Focus ring polish */
+  .input-group input:focus{
+    border-color: var(--ring) !important;
+    box-shadow: 0 0 0 4px rgba(167,139,250,.18) !important;
+    background: #fff !important;
+  }
+
+  /* Stronger typography for labels and headings */
+  .brand-side h1{ color: #fff; }
+  .brand-cta p{ color: #eef2ff; }
+
+  /* Buttons: slightly darker text for secondary */
+  .btn-secondary{ color: var(--text) !important; }
+
+  /* Error text slightly darker for accessibility */
+  .error-message{ color: #b91c1c !important; } /* red-700 */
+</style>
+
+
+<style id="register-form-tweaks">
+  /* 1) Move intl-tel-input selector to the other side only in Register form */
+  #registerForm .iti{ flex-direction: row !important; } /* default LTR flow: flag on the left of input */
+  /* Keep some spacing to the right in RTL layout */
+  html[dir="rtl"] #registerForm .iti__flag-container{ margin-right: 10px !important; margin-left: 0 !important; }
+  html[dir="ltr"] #registerForm .iti__flag-container{ margin-left: 10px !important; margin-right: 0 !important; }
+
+  /* Ensure the tel input remains left-aligned numerically */
+  #registerForm #phoneInput{ direction:ltr !important; text-align:left !important; }
+
+  /* 2) Tighten spacing for password requirements */
+  #registerForm .password-criteria p{
+    margin: 3px 0 !important;
+    line-height: 1.25 !important;
+    font-size: 14px !important;
+  }
+
+  /* 3) Prevent field-side icons from stretching */
+  .input-group i, .eye-icon{
+    flex: 0 0 34px;
+    line-height: 1;
+    font-size: 16px;
+  }
+  /* Make sure chips keep their size and don't scale */
+  .input-group i, .eye-icon{
+    max-width: 34px; max-height: 34px;
+  }
+</style>
+
+
+<style id="quick-fixes-rtl-ux">
+  /* A) Fix "two eyes" + position and ensure only one visible controller */
+  #registerForm .eye-icon{
+    z-index: 2 !important;
+  }
+  /* Hide any direct eye icons injected as siblings to inputs */
+  #registerForm .input-group > i.fa-eye,
+  #registerForm .input-group > i.fa-eye-slash{ display:none !important; }
+
+  /* B) Move country selector to the opposite side inside Register only */
+  #registerForm .iti{
+    flex-direction: row-reverse !important; /* reverse DOM: input then flag */
+  }
+  /* In RTL, when flag moves to left edge, reserve padding-left for the chip */
+  html[dir="rtl"] #registerForm #phoneInput{
+    padding-left: 52px !important;
+    padding-right: 14px !important;
+  }
+  /* Ensure flag container sits flush on the left in RTL */
+  html[dir="rtl"] #registerForm .iti__flag-container{
+    left: 8px !important;
+    right: auto !important;
+    margin: 0 !important;
+    position: absolute !important;
+  }
+  /* Keep the input full width in the .input-group */
+  #registerForm .input-group{ padding-left: 46px; } /* space for flag chip */
+
+  /* C) Stabilize the right-side image panel height to avoid stretch */
+  .brand-side{
+    height: 640px;               /* stable, corporate feel */
+    min-height: 640px;
+    background-position: center;
+    background-size: cover;
+  }
+  @media (max-width: 880px){
+    .brand-side{ height: auto; min-height: unset; } /* hidden anyway on mobile */
+  }
+</style>
+
+
+<style id="final-eye-phone-patch">
+  /* Ensure only ONE eye icon in password field */
+  #registerForm .input-group .eye-icon{ position:absolute !important; top:50%; transform:translateY(-50%); }
+  #registerForm .input-group > i.fa-eye,
+  #registerForm .input-group > i.fa-eye-slash{ display:none !important; }
+
+  /* Place the eye icon inside input area */
+  html[dir="rtl"] #registerForm .eye-icon{ left:8px !important; right:auto !important; }
+  html[dir="ltr"] #registerForm .eye-icon{ right:8px !important; left:auto !important; }
+
+  /* Phone number input align right for RTL */
+  html[dir="rtl"] #registerForm #phoneInput{
+    direction: rtl !important;
+    text-align: right !important;
+    padding-right: 52px !important; /* space for phone icon */
+    padding-left: 14px !important;
+  }
+
+  /* Phone icon position fix for RTL */
+  html[dir="rtl"] #registerForm .fa-phone{
+    right: 8px !important;
+    left: auto !important;
+  }
+</style>
+
+
+<style id="eye-fix-strong">
+  /* Hide any stray eye icons outside the .eye-icon span */
+  #registerForm .input-group > i.fa-eye,
+  #registerForm .input-group > i.fa-eye-slash {
+    display: none !important;
+  }
+  /* Position .eye-icon inside the input field */
+  #registerForm .eye-icon {
+    position: absolute !important;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--field-border, #ccc);
+    cursor: pointer;
+    z-index: 2;
+  }
+  html[dir="rtl"] #registerForm .eye-icon {
+    left: 8px !important;
+    right: auto !important;
+  }
+  html[dir="ltr"] #registerForm .eye-icon {
+    right: 8px !important;
+    left: auto !important;
+  }
+</style>
+
+
+<style id="eye-only-one-override">
+  /* Make the chip be the span.eye-icon, not the inner <i> */
+  #registerForm .eye-icon{
+    position:absolute !important;
+    width:34px; height:34px;
+    display:inline-flex; align-items:center; justify-content:center;
+    top:50%; transform:translateY(-50%);
+    z-index:3;
+  }
+  html[dir="rtl"] #registerForm .eye-icon{ left:8px !important; right:auto !important; }
+  html[dir="ltr"] #registerForm .eye-icon{ right:8px !important; left:auto !important; }
+
+  /* Neutralize any styling applied to the inner <i> so it doesn't render as a second chip */
+  #registerForm .eye-icon i{
+    position: static !important;
+    width:auto !important; height:auto !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin:0 !important; padding:0 !important;
+  }
+
+  /* Hide any stray eye icons that might be direct children of .input-group */
+  #registerForm .input-group > i.fa-eye,
+  #registerForm .input-group > i.fa-eye-slash{ display:none !important; }
+
+  /* Force phone input typing from the right in RTL */
+  html[dir="rtl"] #registerForm #phoneInput{
+    direction: rtl !important;
+    text-align: right !important;
+    padding-right: 52px !important;
+    padding-left: 14px !important;
+  }
+</style>
+
+
+<style id="remove-eye-icons">
+  #registerForm .eye-icon,
+  #registerForm .input-group > i.fa-eye,
+  #registerForm .input-group > i.fa-eye-slash{ display:none !important; }
+</style>
+
+
+<style id="unify-register-login-widths">
+  #registerForm .input-group input,
+  #registerForm .iti,
+  #registerForm .iti input[type="tel"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+</style>
+
+
+<style id="force-register-fields-width">
+  /* Force same width, padding, and border radius as login form */
+  #registerForm .input-group,
+  #registerForm .input-group input,
+  #registerForm .iti,
+  #registerForm .iti input[type="tel"] {
+    width: 100% !important;
+    max-width: none !important;
+    display: block !important;
+  }
+
+  /* Ensure .iti container doesn't shrink */
+  #registerForm .iti {
+    flex: 1 1 auto !important;
+  }
+
+  /* Adjust input styles to match login form exactly */
+  #registerForm .input-group input,
+  #registerForm .iti input[type="tel"] {
+    padding: 14px 44px !important;
+    border-radius: 14px !important;
+  }
+</style>
+
+
+<style id="register-width-fix">
+  /* Remove group-level padding that was shrinking visual width */
+  #registerForm .input-group{ padding-left: 0 !important; padding-right: 0 !important; }
+
+  /* Make every input truly full-width */
+  #registerForm .input-group input{ width: 100% !important; display:block; }
+
+  /* Ensure the intl-tel-input wrapper spans the full width */
+  #registerForm .iti{ width: 100% !important; }
+  #registerForm .iti .iti__tel-input,
+  #registerForm input[type="tel"]{ width: 100% !important; }
+
+  /* Keep icon chips positioned without stealing width */
+  #registerForm .input-group i,
+  #registerForm .eye-icon{ position:absolute; }
+
+  /* Maintain phone input paddings for RTL without affecting container width */
+  html[dir="rtl"] #registerForm #phoneInput{
+    padding-right: 52px !important;
+    padding-left: 14px !important;
+  }
+</style>
+
+
+<style id="responsive-register-fields">
+  /* Ensure inputs and phone field scale fluidly on all screens */
+  #registerForm .input-group,
+  #registerForm .iti {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #registerForm input,
+  #registerForm .iti input[type="tel"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Adjust font sizes and paddings for smaller screens */
+  @media (max-width: 600px) {
+    #registerForm .input-group input {
+      font-size: 0.95rem !important;
+      padding: 12px 40px !important;
+    }
+    #registerForm .input-group i,
+    #registerForm .eye-icon {
+      width: 30px; height: 30px;
+      font-size: 14px;
+    }
+    #registerForm .password-criteria p {
+      font-size: 13px !important;
+    }
+  }
+
+  /* On very narrow screens, stack brand and form side */
+  @media (max-width: 880px) {
+    .auth-shell {
+      grid-template-columns: 1fr !important;
+    }
+    .brand-side {
+      display: none !important;
+    }
+  }
+</style>
+
+
+<style id="responsive-all-screens">
+  /* Prevent horizontal scroll */
+  html, body{ overflow-x:hidden; }
+
+  /* Fluid typography */
+  :root{
+    --fs-base: clamp(0.95rem, 0.9rem + 0.3vw, 1.05rem);
+    --fs-h2: clamp(1.25rem, 1.1rem + 1.2vw, 1.8rem);
+  }
+  body{ font-size: var(--fs-base); }
+  .form-side h2{ font-size: var(--fs-h2); }
+
+  /* Container: fluid with safe padding */
+  .auth-shell{ width:min(100%, 1120px); padding: clamp(12px, 2vw, 24px); gap: clamp(12px, 2.5vw, 24px); }
+
+  /* Brand panel: stable aspect without stretching */
+  .brand-side{
+    height: clamp(520px, 60vh, 700px);
+    min-height: unset;
+    border-radius: clamp(16px, 2vw, 24px);
+    background-position:center;
+    background-size:cover;
+  }
+
+  /* Form side padding scales */
+  .form-side{ padding: clamp(18px, 2.8vw, 28px); border-radius: clamp(14px, 2vw, 24px); }
+  .card{ padding: clamp(16px, 2.4vw, 22px); border-radius: clamp(12px, 2vw, 16px); }
+
+  /* Inputs & buttons: touch-friendly */
+  .input-group input{
+    min-height: clamp(44px, 5.2vh, 52px);
+    font-size: var(--fs-base);
+  }
+  .btn{ min-height: clamp(44px, 5.2vh, 52px); font-size: var(--fs-base); }
+
+  /* Eye/phone chips keep size on all screens */
+  .input-group i, .eye-icon{ width:34px; height:34px; }
+
+  /* Phone plugin never exceeds container */
+  .iti, .iti *{ max-width: 100% !important; box-sizing: border-box; }
+
+  /* Breakpoint: <= 1024px */
+  @media (max-width: 1024px){
+    .auth-shell{ width:min(100%, 980px); }
+  }
+
+  /* Breakpoint: <= 880px (stack layout) */
+  @media (max-width: 880px){
+    .brand-side{ display:block; height: 220px; }
+    .auth-shell{ grid-template-columns: 1fr; }
+    .form-side{ padding: clamp(16px, 4vw, 22px); }
+  }
+
+  /* Breakpoint: <= 640px */
+  @media (max-width: 640px){
+    .brand-side{ height: 180px; border-radius: 14px; }
+    .btn{ gap:8px; }
+  }
+
+  /* Breakpoint: <= 420px (small phones) */
+  @media (max-width: 420px){
+    .brand-side{ height: 150px; }
+    .input-group input{ padding: 12px 42px; }
+    .btn{ padding: 10px 12px; }
+    .modal-content{ width: 92vw; padding: 18px; border-radius: 14px; }
+  }
+
+  /* iOS zoom fix in inputs */
+  input, select, textarea{ font-size:16px; }
+</style>
+
+
+<style id="brand-side-image-fix">
+  /* Brand side image fills fully without heavy clipping */
+  .brand-side{
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 16px !important; /* softer corners */
+    overflow: hidden; /* ensure no scrollbars from background */
+    height: clamp(520px, 60vh, 700px);
+  }
+
+  /* Brighten headings and text for visibility on image background */
+  .brand-side h1,
+  .brand-side .brand-logo div,
+  .brand-side .brand-cta p,
+  .brand-side .brand-badges .badge{
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .brand-side .brand-cta p{ opacity: 1; }
+  .brand-side .badge{
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  /* Dark text for form headings */
+  .form-side h2,
+  .form-side .subtitle{
+    color: #0f172a !important;
+    text-shadow: none !important;
+  }
+</style>
+
+
+<style id="heading-contrast-fix">
+  .form-side h2, #registerForm h3, #resetForm h3{ color:#0f172a !important; } /* slate-900 */
+  .brand-side h1, .brand-side .subtitle{ color:#ffffff !important; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+</style>
+
+
+<style id="white-headings-fix">
+  /* Ensure headings are visible on light backgrounds, and stay white in dark mode */
+  #loginForm h2,
+  #resetForm h2,
+  #registerForm h2,
+  #resetForm h3,
+  #registerForm h3 {
+    color: #0f172a !important; /* dark for light mode */
+    text-shadow: none !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #loginForm h2,
+    #resetForm h2,
+    #registerForm h2,
+    #resetForm h3,
+    #registerForm h3 {
+      color: #ffffff !important; /* white for dark mode */
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+  }
+</style>
+
+
+<style id="force-heading-contrast-override-2">
+  /* FINAL OVERRIDE: ensure headings above fields are always visible */
+  .form-side .header h2,
+  .form-side h2,
+  #loginForm h2,
+  #resetForm h2,
+  #registerForm h2,
+  #resetForm h3,
+  #registerForm h3 {
+    color: #0f172a !important; /* strong dark text on light surfaces */
+    text-shadow: none !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    .form-side .header h2,
+    .form-side h2,
+    #loginForm h2,
+    #resetForm h2,
+    #registerForm h2,
+    #resetForm h3,
+    #registerForm h3 {
+      color: #ffffff !important; /* white on dark surfaces */
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
+    }
+  }
+</style>
+
+
+<style id="force-contrast-v3">
+  /* FINAL-FINAL OVERRIDE: make these labels always visible above fields */
+  .form-side .header h2,
+  #loginForm h2,
+  #resetForm h2,
+  #registerForm h2,
+  #resetForm h3,
+  #registerForm h3,
+  /* the line: 'املأ البيانات التالية لإنشاء حساب جديد' */
+  #registerForm .subtitle,
+  .form-side .subtitle {
+    color: #0f172a !important; /* dark text for light mode */
+    text-shadow: none !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    .form-side .header h2,
+    #loginForm h2,
+    #resetForm h2,
+    #registerForm h2,
+    #resetForm h3,
+    #registerForm h3,
+    #registerForm .subtitle,
+    .form-side .subtitle {
+      color: #ffffff !important; /* white for dark mode */
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
+    }
+  }
+</style>
+
+
+<style id="brand-side-sticky-fix">
+  /* Keep the image panel visible while scrolling and prevent disappearing */
+  @media (min-width: 881px){
+    /* Stop vertical centering which shortens the page and makes panels jump */
+    body{ align-items: flex-start !important; }
+    .auth-shell{ align-items: start; }
+
+    .brand-side{
+      position: sticky !important;
+      top: 24px !important;
+      height: calc(100vh - 48px) !important; /* viewport-tall */
+      min-height: 520px !important;
+      background-size: cover !important;
+      background-position: center !important;
+    }
+  }
+</style>
+
+
+<style id="brand-side-mobile-visible">
+  /* Force brand-side to display on mobile */
+  @media (max-width: 880px){
+    .brand-side{
+      display: block !important;
+      order: -1; /* show above form */
+      width: 100% !important;
+      height: auto !important;
+      min-height: 220px !important;
+      margin-bottom: 16px;
+    }
+  }
+</style>
+
+
+<style id="brand-side-mobile-nocrop">
+  /* Make the brand image fully visible on phones (no cropping) */
+  @media (max-width: 880px){
+    .brand-side{
+      /* Two background layers: [0]=gradient, [1]=image */
+      background-size: 100% 100%, contain !important; /* gradient fills, image fits */
+      background-repeat: no-repeat, no-repeat !important;
+      background-position: center, center !important;
+      min-height: 260px !important; /* a bit taller so contain has room */
+    }
+  }
+</style>
+
+
+<style id="brand-side-mobile-strong-v7">
+  /* Ensure brand image is visible and NOT tiny on phones */
+  @media (max-width: 880px){
+    .brand-side{
+      display: block !important;              /* undo any display:none */
+      order: -1;                               /* place above the form */
+      width: 100% !important;
+      height: auto !important;
+      min-height: 420px !important;            /* give the image room */
+      /* Use two-layer sizing: gradient fills, image fits fully */
+      background-size: 100% 100%, contain !important;
+      background-repeat: no-repeat, no-repeat !important;
+      background-position: center, center !important;
+      border-radius: 14px !important;
+    }
+  }
+</style>
+
+
+<style id="mobile-root-cause-fix-v8">
+  /* Root-cause fixes for phones (≤880px) */
+  @media (max-width: 880px){
+    /* 0) Stop vertical centering that can hide top content */
+    body{ align-items: flex-start !important; }
+
+    /* 1) Always show brand-side and place it above the form */
+    .brand-side{
+      display: block !important;
+      order: -1 !important;
+      width: 100% !important;
+      height: auto !important;         /* cancel any fixed heights */
+      min-height: 420px !important;    /* enough room for image + content */
+      /* show the background image fully */
+      background-size: 100% 100%, contain !important; /* gradient fills, image fits */
+      background-position: center, center !important;
+      background-repeat: no-repeat, no-repeat !important;
+      justify-content: center !important; /* cancel space-between that clips top with small heights */
+      padding: 20px 16px !important;
+    }
+
+    /* 2) Remove any later small-height rules */
+    .brand-side{ height: auto !important; }
+
+    /* 3) Ensure grid stacks cleanly */
+    .auth-shell{ grid-template-columns: 1fr !important; }
+  }
+
+  /* Extra small phones: keep at least 360px so image isn't just a strip */
+  @media (max-width: 420px){
+    .brand-side{ min-height: 360px !important; }
+  }
+</style>
+
+
+<style id="brand-side-mobile-benefits-bottom">
+  @media (max-width: 880px){
+    .brand-side{
+      justify-content: flex-end !important; /* Move benefits to bottom */
+      padding-bottom: 20px !important;      /* Add bottom space */
+    }
+  }
+</style>
+
+
+<style id="brand-side-mobile-benefits-absolute-v10">
+  /* Pin the benefits card to the bottom on phones */
+  @media (max-width: 880px){
+    .brand-side{
+      position: relative !important;
+      padding-bottom: 110px !important;  /* reserve space for the card */
+    }
+    .brand-side .brand-cta{
+      position: absolute !important;
+      left: 16px !important;
+      right: 16px !important;
+      bottom: 16px !important;
+      margin-top: 0 !important;          /* override margin-top:auto */
+    }
+    .brand-side .brand-logo{
+      margin-bottom: auto !important;     /* keep logo toward the top */
+    }
+  }
+</style>
+
+
+<style id="brand-side-desktop-fixed">
+  @media (min-width: 881px){
+    .brand-side{
+      position: sticky !important;
+      top: 0 !important;
+      height: 100vh !important; /* full viewport height */
+      overflow: hidden !important;
+    }
+  }
+</style>
+
+</head>
+<body>
+
+<div class="auth-shell">
+  <!-- Brand / left -->
+  <aside class="brand-side" aria-hidden="true">
+    <div class="brand-logo">
+      <div class="mark">∞</div>
+      <div>
+        <h1>لوحة دخول قصي ستور</h1>
+        <div style="opacity:.9">أمان عالي. تجربة متناسقة. تصميم احترافي.</div>
+      </div>
+    </div>
+
+    <div class="brand-cta">
+      <p><i class="fa-solid fa-shield-halved"></i> تمكين المصادقة المؤمّنة وتحقق البريد وإدارة الجلسات.</p>
+      <div class="brand-badges">
+        <span class="badge"><i class="fa-regular fa-circle-check"></i> SSO جاهز</span>
+        <span class="badge"><i class="fa-regular fa-clock"></i> 24/7</span>
+        <span class="badge"><i class="fa-solid fa-lock"></i> تشفير</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Form / right -->
+  <section class="form-side">
+    <header class="header">
+      <div class="avatar"><i class="fa-solid fa-building"></i></div>
+      <div>
+        <h2>تسجيل الدخول</h2>
+        <div class="subtitle">مرحبًا بك مجددًا</div>
+      </div>
+    </header>
+
+    <!-- Keep original structure inside a card to preserve JS -->
+    <div class="card">
+      <div class="login-box" id="loginForm">
+        <button class="btn btn-secondary" id="googleLogin"><i class="fa-brands fa-google"></i> تسجيل دخول بواسطة Google</button>
+        <hr style="margin: 12px 0; border: none; border-top: 1px solid #ffffff; width:100%;">
+        <div class="input-group">
+          <input id="emailInput" placeholder="أدخل بريدك الإلكتروني" type="email"/>
+          <i class="fa-regular fa-envelope"></i>
+        </div>
+        <div class="input-group">
+          <input id="passwordInput" placeholder="أدخل كلمة المرور" type="password"/>
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div class="stack">
+          
+
+          <button class="btn btn-primary" id="submitLogin"><i class="fa-solid fa-arrow-right-to-bracket"></i> دخول</button>
+          
+          <button class="btn btn-info" id="showReset"><i class="fa-solid fa-unlock-keyhole"></i> نسيت كلمة المرور؟</button>
+          
+          <button class="btn btn-primary" id="toggleRegister"><i class="fa-solid fa-user-plus"></i> إنشاء حساب جديد</button>
+        </div>
+        <p class="error-message" id="loginError"></p>
+</div>
+
+      <!-- Reset Form -->
+      <div class="login-box hidden" id="resetForm">
+        <h3 style="margin-top:0">استعادة كلمة المرور</h3>
+        <p class="subtitle">أدخل بريدك الإلكتروني لإرسال رابط الاستعادة</p>
+        <div class="input-group">
+          <input id="resetEmail" placeholder="أدخل بريدك الإلكتروني" type="email"/>
+          <i class="fa-regular fa-envelope"></i>
+        </div>
+        <div class="stack">
+          <button class="btn btn-success" onclick="sendResetLink()"><i class="fa-solid fa-paper-plane"></i> إرسال رابط الاستعادة</button>
+          <button class="btn btn-secondary" onclick="switchForm('login')"><i class="fa-solid fa-arrow-right"></i> العودة إلى تسجيل الدخول</button>
+        </div>
+        <p class="error-message" id="resetMessage"></p>
+      </div>
+
+      <!-- Register Form -->
+      <div class="login-box hidden" id="registerForm">
+        <h3 style="margin-top:0">إنشاء حساب</h3>
+        <p class="subtitle">املأ البيانات التالية لإنشاء حساب جديد</p>
+          <button class="btn btn-secondary" id="googleLoginRegister"><i class="fa-brands fa-google"></i> تسجيل دخول بواسطة Google</button>
+          <hr style="margin: 12px 0; border: none; border-top: 1px solid #ffffff; width:100%;">
+        <div class="input-group">
+          <input id="usernameInput" placeholder="اسم المستخدم" type="text"/>
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="input-group">
+          <input id="registerEmail" placeholder="البريد الإلكتروني" type="email"/>
+          <i class="fa-regular fa-envelope"></i>
+        </div>
+
+        <div class="input-group">
+          <input id="phoneInput" type="tel" placeholder="رقم الهاتف"/>
+          <i class="fa-solid fa-phone"></i>
+        </div>
+
+        <div class="input-group" style="position: relative;">
+          <input id="registerPassword" onkeyup="validatePassword()" placeholder="كلمة المرور" type="text"/>
+          <i class="fa-solid fa-lock"></i>
+        </div>
+
+        <div class="password-strength-bar"><div id="strengthIndicator"></div></div>
+        <div id="strengthText" class="strength-text"></div>
+
+        <div class="password-criteria" id="passwordCriteria" style="direction: rtl; background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-top:10px">
+          <p id="minLength"><i class="fa-solid fa-xmark icon"></i> 6 حروف على الأقل (إجباري)</p>
+          <p id="hasNumber"><i class="fa-solid fa-xmark icon"></i> رقم</p>
+          <p id="hasUpper"><i class="fa-solid fa-xmark icon"></i> حرف كبير</p>
+          <p id="hasLower"><i class="fa-solid fa-xmark icon"></i> حرف صغير</p>
+          <p id="hasSymbol"><i class="fa-solid fa-xmark icon"></i> رمز</p>
+          <p>يجب أن تحتوي على 3 حقول اختيارية من هذه المتطلبات على الأقل.</p>
+        </div>
+
+        <div class="stack">
+          <button class="btn btn-primary" onclick="register()"><i class="fa-solid fa-user-plus"></i> تسجيل</button>
+          <button class="btn btn-secondary" onclick="switchForm('login')"><i class="fa-solid fa-arrow-right"></i> العودة إلى تسجيل الدخول</button>
+        </div>
+        <p class="error-message" id="registerError"></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Modals (kept from original) -->
+<div class="modal hidden" id="emailVerificationModal">
+  <div class="modal-content">
+    <img alt="تأكيد البريد" src="https://i.ibb.co/Fkftn6tJ/2025-07-09-162704-2.png" style="max-width: 100%; margin-bottom: 15px;"/>
+    <p>يرجى تأكيد ملكية البريد الإلكتروني عبر الرسالة الواردة في الإيميل.</p>
+    <button class="btn-login" onclick="closeModal()">تم</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="resetSuccessModal">
+  <div class="modal-content">
+    <img alt="تأكيد البريد" src="https://i.ibb.co/Fkftn6tJ/2025-07-09-162704-2.png" style="max-width: 100%; margin-bottom: 15px;"/>
+    <p>تم إرسال رابط الاستعادة إلى بريدك الإلكتروني.</p>
+    <button class="btn-login" onclick="closeModal()">تم</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="completeProfileModal">
+  <div class="modal-content">
+    <p>يرجى اختيار اسم مستخدم لإكمال التسجيل:</p>
+    <input id="googleUsernameInput" placeholder="اسم المستخدم" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc;" type="text"/>
+    <div id="googleUsernameError" style="color: red; margin-bottom: 10px;"></div>
+    <button class="btn-login" onclick="submitGoogleUsername()">إكمال</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="googlePhoneModal">
+  <div class="modal-content">
+    <p style="margin-bottom: 15px;">يرجى إدخال رقم هاتفك لإكمال التسجيل:</p>
+    <div class="input-group">
+      <input id="googlePhoneInput" type="tel" placeholder="رقم الهاتف" />
+      <i class="fa-solid fa-phone"></i>
+    </div>
+    <div id="phoneSaveError" style="color: red; font-size: 0.9rem; margin-bottom: 10px;"></div>
+    <button class="btn-login" id="savePhoneBtn">
+      <i class="fa-solid fa-check"></i> حفظ رقم الهاتف والمتابعة
+    </button>
+  </div>
+</div>
+
+<div id="pageLoader" class="hidden">
+  <div class="loader-overlay">
+    <div class="half-circle-spinner">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + Scripts: kept as in original file -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    sendEmailVerification,
+    sendPasswordResetEmail,
+    signOut,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    getIdToken
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    serverTimestamp,
+    getDoc            // نحتاجه للتحقق من وجود الحقول
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  /* 🔧 إعداد مشروعك */
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+    authDomain: "qusaystore-ec327.firebaseapp.com",
+    projectId: "qusaystore-ec327",
+    storageBucket: "qusaystore-ec327.firebasestorage.app",
+    messagingSenderId: "701743074708",
+    appId: "1:701743074708:web:defc2de594567b6624d381",
+    measurementId: "G-00R4XQCB1V"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  /***** أدوات توليد المفاتيح *****/
+  const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const SYMBOLS = "!@#$%&";
+
+  const rand = (alphabet, len) => {
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    let out = "";
+    for (let i = 0; i < len; i++) out += alphabet[arr[i] % alphabet.length];
+    return out;
+  };
+
+  const generateAuthKey    = (len = 20) => rand(ALPHA, len);
+  const generateExtraKey   = (len = 40) => rand(ALPHA + SYMBOLS, len);
+  const generateSessionKey = (len = 64) => rand(ALPHA + SYMBOLS, len);
+  const generateWebUID     = () => Math.floor(100000000000000 + Math.random() * 900000000000000).toString();
+
+  /***** تخزين sessionKey محليًا لاستخدامه بالطلبات (localStorage) *****/
+  const saveSessionLocal   = (obj) => localStorage.setItem("sessionKeyInfo", JSON.stringify(obj));
+  const getSessionLocal    = () => JSON.parse(localStorage.getItem("sessionKeyInfo") || "null");
+  const clearSessionLocal  = () => localStorage.removeItem("sessionKeyInfo");
+
+  /***** مراجع عناصر الواجهة *****/
+  const emailInput    = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const submitLogin   = document.getElementById('submitLogin');
+  const loginError    = document.getElementById('loginError');
+
+  const loginForm     = document.getElementById("loginForm");
+  const resetForm     = document.getElementById("resetForm");
+  const registerForm  = document.getElementById("registerForm");
+
+  document.getElementById("showReset").onclick = () => switchForm("reset");
+  document.addEventListener('DOMContentLoaded',()=>switchForm('login'));
+  document.getElementById("toggleRegister").onclick = () => switchForm("register");
+
+  window.switchForm = function (form) {
+    loginForm.classList.add("hidden");
+    resetForm.classList.add("hidden");
+    registerForm.classList.add("hidden");
+    if (form === "login") loginForm.classList.remove("hidden");
+    else if (form === "reset") resetForm.classList.remove("hidden");
+    else if (form === "register") registerForm.classList.remove("hidden");
+  }
+
+  /***** إنشاء مفاتيح المستخدم بدون قراءات *****/
+  // أسرار دائمة: إنشاء فقط
+  async function createSecretsIfNeeded(uid) {
+    try {
+      const extraKey = generateExtraKey();
+      await setDoc(
+        doc(db, "users", uid, "keys", "secrets"),
+        { extraKey, createdAt: serverTimestamp(), version: 1 },
+        { merge: false }
+      );
+    } catch (e) {
+      // تجاهل أخطاء الوجود المسبق/منع التحديث
+    }
+  }
+
+  // جلسة متغيرة لكل دخول: كتابة في Firestore + حفظ في localStorage
+  async function rotateSessionKey(uid, ttlSeconds = 0) {
+    const sessionKey = generateSessionKey();
+    await setDoc(
+      doc(db, "users", uid, "keys", "session"),
+      { sessionKey, createdAt: serverTimestamp(), ttlSeconds },
+      { merge: true }
+    );
+    saveSessionLocal({ uid, sessionKey, ts: Date.now(), ttlSeconds });
+    return sessionKey;
+  }
+
+  /***** الدخول بالبريد/كلمة مرور *****/
+  submitLogin.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    loginError.textContent = "";
+
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
+
+      if (!user.emailVerified) {
+        await signOut(auth);
+        showModal();
+        return;
+      }
+
+      await rotateSessionKey(user.uid);
+      await getIdToken(user);
+      window.location.href = "index.html";
+    } catch (err) {
+      console.log("خطأ Firebase:", err.code, err.message);
+      loginError.textContent = translateFirebaseError(err.code);
+    }
+  });
+
+  /***** إرسال رابط إعادة التعيين *****/
+  window.sendResetLink = function () {
+    const email = document.getElementById("resetEmail").value.trim();
+    const msg = document.getElementById("resetMessage");
+    if (!email) {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = "يرجى إدخال البريد الإلكتروني.";
+      return;
+    }
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        msg.textContent = "";
+        document.getElementById("resetSuccessModal").classList.remove("hidden");
+      })
+      .catch(err => {
+        msg.style.color = 'var(--danger)';
+        msg.textContent = err.code ? translateFirebaseError(err.code) : 'حدث خطأ غير متوقع.';
+      });
+  }
+
+  /***** التسجيل *****/
+  window.register = function () {
+    const username = document.getElementById("usernameInput").value.trim();
+    const email    = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value.trim();
+    const msg      = document.getElementById("registerError");
+
+    if (!username || !email || !password) {
+      msg.textContent = "يرجى إدخال جميع الحقول.";
+      return;
+    }
+
+    const phone   = window.iti?.getNumber?.() || "";
+    const webuid  = generateWebUID();
+    const authkey = generateAuthKey();
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(async userCred => {
+        const uid = userCred.user.uid;
+
+        // إنشاء وثيقة المستخدم لأول مرة (مناسب أن نعيّن webuid هنا)
+        await setDoc(doc(db, "users", uid), {
+          balance: 0,
+          username,
+          phone,
+          useruid: uid,
+          webuid,               // يُعيَّن عند الإنشاء فقط
+          authkey,
+          level: 'زبون'
+        }, { merge: true });
+
+        await createSecretsIfNeeded(uid);
+        await sendEmailVerification(userCred.user);
+        showModal();
+        await signOut(auth);
+      })
+      .catch(err => {
+        msg.textContent = translateFirebaseError(err.code);
+      });
+  }
+
+  /***** دخول Google — لا نصفر الرصيد + لا نغيّر webuid إن كان موجودًا *****/  const googleLogin = document.getElementById("googleLogin");
+  if (googleLogin) {
+    googleLogin.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user   = result.user;
+
+        const userRef  = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          // ── إنشاء أول مرة: مسموح ضبط الحقول المجمّدة
+          await setDoc(userRef, {
+            username: user.displayName || "مستخدم Google",
+            useruid: user.uid,
+            level: "زبون",
+            webuid: generateWebUID(),
+            authkey: generateAuthKey(),
+            balance: 0
+          }, { merge: false });
+        } else {
+          // ── ترقية محدودة: لا نلمس username/useruid/level/balance...
+          const patch = {};
+          const d = userSnap.data() || {};
+          if (!d.webuid)  patch.webuid  = generateWebUID();
+          if (!d.authkey) patch.authkey = generateAuthKey();
+          if (Object.keys(patch).length) {
+            await setDoc(userRef, patch, { merge: true });
+          }
+        }
+
+        // إنشاء أسرار ثابتة عند الحاجة
+        await createSecretsIfNeeded(user.uid);
+
+        // تدوير جلسة session إن كانت القواعد تسمح، وإلا نحفظ محليًا
+        try {
+          await rotateSessionKey(user.uid);
+        } catch (e) {
+          if (e?.code === "permission-denied") {
+            // بديل آمن: نولّد جلسة محلية فقط لتجنّب تعطل التدفّق
+            const localSess = {
+              sessionKey: generateSessionKey(),
+              createdAt: Date.now(),
+              ttlSeconds: 60 * 60 * 24 * 7
+            };
+            localStorage.setItem("session_fallback", JSON.stringify(localSess));
+          } else {
+            throw e;
+          }
+        }
+
+        // التحقق من وجود الهاتف قبل عرض المودال
+        const freshSnap = await getDoc(userRef); // نقرأ أحدث نسخة
+        const hasPhone = freshSnap.exists() && !!freshSnap.data().phone;
+        if (!hasPhone) {
+          const phoneModal = document.getElementById("googlePhoneModal");
+          if (phoneModal) {
+            phoneModal.classList.remove("hidden");
+            const phoneInput = document.getElementById("googlePhoneInput");
+            if (phoneInput) {
+              window.iti = window.intlTelInput(phoneInput, {
+                initialCountry: "jo",
+                separateDialCode: true,
+                preferredCountries: ["jo", "sa", "eg"],
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js",
+              });
+            }
+          } else {
+            window.location.href = "index.html";
+          }
+        } else {
+          window.location.href = "index.html";
+        }
+
+      } catch (error) {
+        const msg = error?.code 
+          ? translateFirebaseError(error.code) 
+          : "حدث خطأ أثناء محاولة الدخول باستخدام Google.";
+        const loginError = document.getElementById('loginError');
+        if (loginError) loginError.textContent = msg;
+      }
+    });
+  }
+
+  
+
+  /***** حفظ هاتف Google (كتابة فقط) *****/
+  const savePhoneBtn = document.getElementById("savePhoneBtn");
+  if (savePhoneBtn) {
+    savePhoneBtn.addEventListener("click", async () => {
+      const phone = window.iti?.getNumber?.() || "";
+      const errBox = document.getElementById("phoneSaveError");
+      if (!phone || phone.length < 6) { errBox.textContent = "يرجى إدخال رقم هاتف صحيح."; return; }
+      try {
+        await setDoc(doc(db, "users", auth.currentUser.uid), { phone }, { merge: true });
+        window.location.href = "index.html";
+      } catch (err) { errBox.textContent = "حدث خطأ أثناء حفظ الرقم."; }
+    });
+  }
+
+  /***** أدوات واجهة إضافية *****/
+  window.translateFirebaseError = function (code) {
+    const errors = {
+      'auth/invalid-login-credentials': 'بيانات تسجيل الدخول غير صحيحة.',
+      'auth/user-not-found': 'المستخدم غير موجود.',
+      'auth/wrong-password': 'كلمة المرور غير صحيحة.',
+      'auth/user-disabled': 'تم تعطيل الحساب.',
+      'auth/too-many-requests': 'عدد كبير من المحاولات. يرجى المحاولة لاحقًا.',
+      'auth/email-already-in-use': 'البريد الإلكتروني مستخدم من قبل.',
+      'auth/weak-password': 'كلمة المرور ضعيفة. يرجى اختيار كلمة أقوى.',
+      'auth/invalid-email': 'البريد الإلكتروني غير صالح.',
+      'auth/operation-not-allowed': 'طريقة التسجيل هذه غير مفعّلة.',
+      'auth/missing-email': 'يرجى إدخال البريد الإلكتروني.',
+      'auth/network-request-failed': 'فشل الاتصال بالخادم. تحقق من اتصال الإنترنت.',
+      'auth/internal-error': 'حدث خطأ داخلي في الخادم. حاول مرة أخرى.',
+      'auth/app-not-authorized': 'هذا التطبيق غير مصرح له باستخدام Firebase.',
+      'auth/invalid-api-key': 'مفتاح API غير صالح.',
+      'auth/timeout': 'انتهت مهلة العملية. يرجى المحاولة لاحقًا.',
+      'auth/email-already-exists': 'البريد الإلكتروني مستخدم من قبل.',
+      'auth/invalid-credential': 'البريد الالكتروني او كلمة السر غير صحيحة.',
+      'auth/invalid-verification-code': 'رمز التحقق غير صالح.',
+      'auth/invalid-verification-id': 'رمز التحقق غير صالح أو منتهي.',
+      'auth/argument-error': 'حدث خطأ في البيانات المُدخلة.',
+      'auth/missing-verification-code': 'رمز التحقق مفقود.',
+      'auth/uid-already-exists': 'المستخدم موجود مسبقًا.',
+    };
+    return errors[code] || `حدث خطأ غير متوقع. رمز الخطأ: [${code}]`;
+  }
+
+  window.validatePassword = function () {
+    const password = document.getElementById('registerPassword').value;
+
+    const minLength = password.length >= 6;
+    const hasNumber = /[0-9]/.test(password);
+    const hasUpper  = /[A-Z]/.test(password);
+    const hasLower  = /[a-z]/.test(password);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const criteria = [minLength, hasNumber, hasUpper, hasLower, hasSymbol];
+    const passed = criteria.filter(Boolean).length;
+
+    const strengthBar   = document.getElementById("strengthIndicator");
+    const strengthText  = document.getElementById("strengthText");
+    const passwordField = document.getElementById('registerPassword');
+
+    let strength="", color="", width="";
+    if (passed <= 2) { strength="كلمة المرور ضعيفة";   color="#ef4444"; width="33%"; }
+    else if (passed === 3 || passed === 4) { strength="كلمة المرور متوسطة"; color="#f59e0b"; width="66%"; }
+    else { strength="كلمة المرور قوية"; color="#10b981"; width="100%"; }
+
+    strengthBar.style.width = width;
+    strengthBar.style.backgroundColor = color;
+    strengthText.textContent = strength;
+    passwordField.style.borderColor = color;
+
+    updateCriteriaUI({ minLength, hasNumber, hasUpper, hasLower, hasSymbol });
+  };
+
+  function updateCriteriaUI({ minLength, hasNumber, hasUpper, hasLower, hasSymbol }) {
+    const rules = [
+      { id: 'minLength', valid: minLength },
+      { id: 'hasNumber', valid: hasNumber },
+      { id: 'hasUpper',  valid: hasUpper },
+      { id: 'hasLower',  valid: hasLower },
+      { id: 'hasSymbol', valid: hasSymbol },
+    ];
+    rules.forEach(rule => {
+      const el = document.getElementById(rule.id);
+      const icon = el.querySelector('i');
+      if (rule.valid) { el.style.color = 'var(--success)'; icon.classList.replace('fa-xmark','fa-check'); }
+      else { el.style.color = 'var(--muted)'; icon.classList.add('fa-xmark'); icon.classList.remove('fa-check'); }
+    });
+  }
+
+  window.togglePasswordVisibility = function () {
+    const passwordField = document.getElementById('registerPassword');
+    const eyeIcon = document.querySelector('.eye-icon i');
+    const isVisible = passwordField.type === 'text';
+    passwordField.type = isVisible ? 'password' : 'text';
+    eyeIcon.classList.toggle('fa-eye-slash');
+    eyeIcon.classList.toggle('fa-eye');
+  }
+
+  window.showModal = function () {
+    document.getElementById('pageLoader').classList.remove('hidden');
+    requestAnimationFrame(() => {
+      document.getElementById('emailVerificationModal').classList.remove('hidden');
+      document.getElementById('pageLoader').classList.add('hidden');
+    });
+  }
+
+  window.closeModal = function () {
+    const modals = ['resetSuccessModal','emailVerificationModal','completeProfileModal'];
+    modals.forEach(id => { const m = document.getElementById(id); if (m) m.classList.add('hidden'); });
+    switchForm('login');
+  }
+
+  /***** متابعة حالة الدخول: إن لم توجد نسخة محلية أنشئ جلسة جديدة (باستخدام localStorage) *****/
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const s = getSessionLocal();
+        if (!s || s.uid !== user.uid) {
+          await rotateSessionKey(user.uid);
+        }
+      } catch {}
+    } else {
+      clearSessionLocal();
+    }
+  });
+</script>
+
+<!-- مكاتب أرقام الهاتف -->
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/intlTelInput.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const phoneInput = document.querySelector("#phoneInput");
+    if (phoneInput) {
+      window.iti = window.intlTelInput(phoneInput, {
+        initialCountry: "jo",
+        separateDialCode: true,
+        preferredCountries: ["jo", "sa", "eg"],
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.1.1/build/js/utils.js",
+      });
+    }
+  });
+</script>
+
+
+</body>
+</html>

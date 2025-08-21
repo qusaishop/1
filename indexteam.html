@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Card Carousel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- ملفات CSS -->
+<script src="header.js" defer></script>
+  <link rel="stylesheet" href="./styleteam.css" />
+  <link rel="stylesheet" href="header.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  <!-- رابط Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha512-dyZbW6+ZBzRtxjGvRjPMuUylU9Cg3mCrGIEeRQ1/lW67JlX/Qip2jMwRf3wlV1W9Wb+TSc5XY5nvylD9N4l5w=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+
+  </style>
+</head>
+<body>
+
+  <div id="headerContainer"></div>
+
+<div id="sidebarContainer"></div>
+
+  <h1 class="about-title">فــــريـــقـــنـــا</h1>
+
+  <div class="carousel-container">
+    <button class="nav-arrow left">‹</button>
+    <div class="carousel-track">
+      <div class="card" data-index="0">
+        <img src="https://i.ibb.co/Txf5Trqp/3.png" alt="Team Member 1" />
+      </div>
+      <div class="card" data-index="1">
+        <img src="https://i.ibb.co/CK1tksb6/2-3.png" alt="Team Member 2" />
+      </div>
+      <div class="card" data-index="2">
+        <img src="https://i.ibb.co/xnz6c4N/2-2.png" alt="Team Member 3" />
+      </div>
+    </div>
+    <button class="nav-arrow right">›</button>
+  </div>
+
+  <div class="member-info">
+    <h2 class="member-name">David Kim</h2>
+    <p class="member-role">Founder</p>
+  </div>
+
+
+
+
+
+  <script src="./scriptteam.js"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+  authDomain: "qusaystore-ec327.firebaseapp.com",
+  projectId: "qusaystore-ec327",
+  storageBucket: "qusaystore-ec327.firebasestorage.app",
+  messagingSenderId: "701743074708",
+  appId: "1:701743074708:web:defc2de594567b6624d381",
+  measurementId: "G-00R4XQCB1V"
+};
+  firebase.initializeApp(firebaseConfig);
+
+
+// إنشاء loader
+const loader = document.createElement("div");
+loader.id = "loader";
+loader.style.cssText = `
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+`;
+
+// صورة التحميل
+const loaderImage = document.createElement("img");
+loaderImage.src = "https://i.ibb.co/5g5rXxwf/freecompress-your-loading.gif";
+loaderImage.alt = "جارٍ التحميل...";
+loaderImage.style.cssText = "width: 100px; height: 100px;";
+
+// نص التحميل
+const loaderText = document.createElement("p");
+loaderText.textContent = "جارٍ التحميل...";
+loaderText.style.cssText = "margin-top: 15px; font-size: 18px; color: black;";
+
+// تركيب العناصر
+loader.appendChild(loaderImage);
+loader.appendChild(loaderText);
+
+// إدراج الـ loader عند تحميل DOM
+window.addEventListener("DOMContentLoaded", () => {
+  document.body.appendChild(loader);
+});
+
+// إزالة الـ loader عند تحميل كامل الصفحة
+window.addEventListener("load", () => {
+  const loaderEl = document.getElementById("loader");
+  if (loaderEl) {
+    loaderEl.remove();
+  }
+});
+
+  </script>
+</body>
+</html>

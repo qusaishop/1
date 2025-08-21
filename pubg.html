@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>متجر قصي - ببجي</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <!-- أكوادك -->
+  <script defer src="script1pubg.js"></script>
+  <script defer src="state.js"></script>
+  <script defer src="header.js"></script>
+  <script defer src="atff.js"></script>
+  <script defer src="scriptpubg.js"></script>
+
+  <!-- خطوط وأيقونات -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- انتبه: كانت هنا محارف مخفية قبل اسم الملف -->
+  <link href="style1.css" rel="stylesheet"/>
+  <link href="header.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="loader.css">
+<script src="loader.js" defer></script>
+
+
+  <audio id="toast-success-sound" preload="auto" src="success.mp3"></audio>
+  <audio id="toast-error-sound" preload="auto" src="error.mp3"></audio>
+
+  <style>
+    /* اتجاه عام مساعد */
+    .rtl { direction: rtl; text-align: right; unicode-bidi: embed; }
+
+
+    /* صندوق الملخص */
+    #selected-amount-container {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      margin:20px auto;max-width:400px;padding:20px;
+      border:2px solid #007bff;border-radius:10px;background:#f9f9f9;font-weight:bold;
+    }
+    #selected-amount-container h2 { margin-bottom: 10px !important; }
+
+    /* ✅ القسيمة RTL مع عزل الإنجليزية */
+    #selected-amount-container .voucher{
+      display:block !important;
+      margin:0 auto !important;
+      direction: rtl;
+      text-align: right;
+      unicode-bidi: isolate;
+      font-weight: 700;
+    }
+    .voucher .line{ direction: rtl; text-align: right; margin: 10px 0; }
+    .voucher .ltr{ direction: ltr; unicode-bidi: isolate; display:inline-block; white-space: nowrap; }
+    .voucher .sep{ unicode-bidi: isolate; display:inline-block; padding: 0 .15rem; }
+    .voucher .price{ white-space: nowrap; }
+
+    /* البطاقات + تغطية "غير متوفر" */
+    .offer-box { position: relative; cursor: pointer; }
+    .offer-box.disabled { opacity: .4; cursor: not-allowed; }
+    .offer-box .unavailable-badge{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35); color:#fff; font-weight:700; border-radius:12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="headerContainer"></div>
+  <div id="sidebarContainer"></div>
+
+  <div id="preloader">
+  <div class="loader"></div>
+</div>
+
+
+  <!-- Toast -->
+  <div id="toast" style="
+    visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #323232;
+    color: #fff; text-align: center; border-radius: 12px; padding: 16px; position: fixed;
+    z-index: 9999; left: 50%; bottom: 30px; font-size: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    transition: visibility 0s, opacity .5s ease-in-out; opacity: 0;">
+    <span id="toast-message"></span>
+  </div>
+
+  <form id="orderForm" novalidate>
+    <div class="container">
+      <div id="top-banner">
+        <div class="banner-layer" id="banner1"></div>
+        <div class="banner-layer" id="banner2"></div>
+      </div>
+
+      <div class="player-id-box" style="max-width:500px;margin:20px auto;padding:20px;border:2px solid #007bff;border-radius:10px;background:#f9f9f9;">
+        <label for="player-id" style="font-size:16px;font-weight:bold;margin-bottom:10px;display:block;">
+          معرف اللاعب 🎮
+          <i onclick="openPopup()" style="color:#007bff;cursor:pointer;" title="معرف اللاعب داخل اللعبة">❓</i>
+        </label>
+        <div class="input-group" style="display:flex;">
+          <input id="player-id" placeholder="أدخل معرف اللاعب هنا"
+                 style="flex:1;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px 0 0 8px;" type="text" />
+        </div>
+      </div>
+
+      <!-- النافذة المنبثقة -->
+      <div id="popup" onclick="closePopupOnOutsideClick(event)"
+           style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9999;justify-content:center;align-items:center;">
+        <div onclick="event.stopPropagation()" style="position:relative;background:white;padding:10px;border-radius:10px;max-width:90%;max-height:90%;">
+          <span onclick="closePopup()" style="position:absolute;top:5px;right:10px;font-size:32px;color:red;cursor:pointer;">×</span>
+          <img alt="معلومات" src="https://i.ibb.co/Xr0rms0C/ff.webp" style="max-width:100%;max-height:80vh;display:block;margin:auto;"/>
+        </div>
+      </div>
+
+      <div class="main-white-box">
+        <div id="myOffersContainer"></div>
+
+        <div id="selected-amount-container">
+          <h2>المبلغ المطلوب :</h2>
+          <div class="voucher"><span id="selected-amount">لم يتم اختيار عرض شحن</span></div>
+        </div>
+
+        <!-- ✅ Turnstile -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAABruWuZyj0lgHNVc" data-theme="light"></div>
+
+        <button class="send-button" style="margin-top:20px;padding:10px 20px;font-size:18px;background:#007bff;color:#fff;border:none;border-radius:5px;cursor:pointer;" type="submit">شراء</button>
+      </div>
+    </div>
+
+    <div style="height:40px;"></div>
+    <div id="footerContainer"></div>
+  </form>
+
+  <script>
+    // ===== Footer =====
+    const footer = document.createElement("footer");
+    footer.className = "footer-icons";
+    const footerTitle = document.createElement("h2");
+    footerTitle.className = "footer-title";
+    footerTitle.textContent = "لماذا تختارنا؟";
+    footer.appendChild(footerTitle);
+    [
+      { iconClass: "fas fa-shipping-fast shipping-icon", title: "شحن سريع", desc: "يتميز متجرنا بسرعته الفائقة بالشحن فبمجرد أن تطلب سيتم الشحن لك مباشرة" },
+      { iconClass: "fas fa-lock", title: "آمن 100%", desc: "حماية كاملة للبيانات والمعاملات" },
+      { iconClass: "fas fa-headset", title: "دعم فني مستمر", desc: "دعم فني مستمر لمساعدة العملاء عند الحاجة" },
+      { iconClass: "fas fa-coins special-icon", title: "اسعار مميزة", desc: "نقدم اسعار اقل من اسعار اللعبة" },
+      { iconClass: "fas fa-credit-card", title: "سهولة الدفع", desc: "طرق دفع عديدة" },
+      { iconClass: "fas fa-shield-alt", title: "ضمان على الشحن", desc: "احصل على كامل المبلغ مع تعويض في حالة عدم وصول الشحنه" },
+      { iconClass: "fas fa-sync-alt", title: "تحديثات مستمرة", desc: "نقوم بحل جميع المشاكل بشكل دوري" },
+      { iconClass: "fas fa-tasks", title: "تعقب الطلبات", desc: "يمكنك رؤية حالة الطلبات الخاص بك من تبويب طلباتي" },
+      { iconClass: "fas fa-undo", title: "الغاء الطلبات", desc: "يمكنك الغاء اي طلب قبل اتمام عملية الدفع عبر التواصل مع الدعم الفني" },
+      { iconClass: "fas fa-server", title: "تخزين للطلبات", desc: "يتم وضع الطلبات في سيرفرات لعدم فقدانها تحت اي ضرف" }
+    ].forEach(({ iconClass, title, desc }) => {
+      const box = document.createElement("div");
+      box.className = "icon-box";
+      const icon = document.createElement("i"); icon.className = iconClass; box.appendChild(icon);
+      const h3 = document.createElement("h3"); h3.textContent = title; box.appendChild(h3);
+      const p = document.createElement("p"); p.textContent = desc; box.appendChild(p);
+      footer.appendChild(box);
+    });
+    document.getElementById("footerContainer").appendChild(footer);
+
+    // ===== بطاقات العروض =====
+    function createOfferBox({ type, uc, offer, imgSrc, imgAlt }) {
+      const div = document.createElement("div");
+      div.className = "offer-box";
+      div.dataset.type = type;
+      if (uc) div.dataset.uc = uc;
+      if (offer) div.dataset.offer = offer;
+      div.onclick = function(){ toggleOffer(this); };
+      const img = document.createElement("img"); img.src = imgSrc; img.alt = imgAlt; div.appendChild(img);
+      const span = document.createElement("span"); span.textContent = uc ? `${uc} uc` : offer; div.appendChild(span);
+      return div;
+    }
+
+    const offersBox = document.createElement("div"); offersBox.className = "offers-box";
+    const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
+
+    const topupOffers = [
+      { uc: 60,   imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "60 uc"   },
+      { uc: 120,  imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "120 uc"  },
+      { uc: 325,  imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "325 uc"  },
+      { uc: 660,  imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "660 uc"  },
+      { uc: 1800, imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "1800 uc" },
+      { uc: 3850, imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "3850 uc" },
+      { uc: 8100, imgSrc: "https://cdn.midasbuy.com/images/apps/pubgm/1599546071746KqkIhrzG.png", imgAlt: "8100 uc" }
+    ];
+    topupOffers.forEach(o => offersBox.appendChild(createOfferBox({ type:"topup", uc:o.uc, imgSrc:o.imgSrc, imgAlt:o.imgAlt })));
+
+    const membershipTitle = document.createElement("div"); membershipTitle.className = "section-title"; membershipTitle.textContent = "الاشتراكات"; offersBox.appendChild(membershipTitle);
+    const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";
+    [
+      { offer: "ELITE PASS 1 - 100", imgSrc: "https://cdn.midasbuy.com/images/elite_1520x770%20.a86bc11a.jpg", imgAlt: "ELITE PASS 1 - 100" },
+      { offer: "ELITE PASS 1 - 50",  imgSrc: "https://cdn.midasbuy.com/images/tiyan_1520x770.f467ea1c.jpg",     imgAlt: "ELITE PASS 1 - 50"  }
+    ].forEach(o => membershipOffersGrid.appendChild(createOfferBox({ type:"membership", offer:o.offer, imgSrc:o.imgSrc, imgAlt:o.imgAlt })));
+    offersBox.appendChild(membershipOffersGrid);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById("myOffersContainer");
+      if (container) container.appendChild(offersBox);
+
+      // اربط الفورم بالشراء (إن وُجدت sendOrder في scriptpubg.js)
+      const form = document.getElementById('orderForm');
+      if (form) {
+        form.addEventListener('submit', function(e){
+          e.preventDefault();
+          if (typeof sendOrder === 'function') sendOrder();
+        });
+      }
+    });
+
+    // ===== أدوات بناء السطور RTL مع عزل الأجزاء الإنجليزية =====
+    function lineHtmlUC(amount, price) {
+      return `
+        <div class="line">
+          <span class="ltr">${amount} UC</span>
+          <span class="sep">:</span>
+          <span class="price">${Number(price).toFixed(2)} د.أ</span>
+        </div>`;
+    }
+    function lineHtmlMembership(name, price) {
+      return `
+        <div class="line">
+          <span class="ltr">${escapeHtml(name)}</span>
+          <span class="sep">:</span>
+          <span class="price">${Number(price).toFixed(2)} د.أ</span>
+        </div>`;
+    }
+    function totalHtml(total){
+      return `
+        <div class="line">
+          <span>المجموع:</span>
+          <span class="price">${Number(total).toFixed(2)} د.أ</span>
+        </div>`;
+    }
+    function escapeHtml(s){
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    // ===== السعر المختار =====
+    function toggleOffer(element){
+      if (element.classList.contains("disabled")) { showToast("غير متوفر", "warning"); return; }
+      document.querySelectorAll('.offer-box.selected').forEach(el => el.classList.remove('selected'));
+      element.classList.add("selected");
+
+  const raw = JSON.parse(localStorage.getItem("offersPrices") || "{}");
+  const offersPrices = raw.prices || raw;
+
+  let total = 0; 
+  const breakdownLines = [];
+  const key = element.dataset.uc ? `${element.dataset.uc}_uc` : element.dataset.offer;
+  const price = offersPrices[key];
+  if (price !== undefined) {
+    total += Number(price);
+const nameText  = element.dataset.uc ? `${element.dataset.uc} uc` : element.dataset.offer;
+const priceText = `${Number(price).toFixed(2)} د.أ`;
+breakdownLines.push(
+  `<span class="item-name">${nameText}</span> : <span class="item-price">${priceText}</span>`
+);
+
+  } else {
+    breakdownLines.push(`• ${element.dataset.uc || element.dataset.offer}: ❓ غير معروف`);
+  }
+
+const el = document.getElementById("selected-amount");
+
+if (breakdownLines.length === 0) {
+  // لا يوجد أي عنصر مختار
+  el.textContent = "لم يتم اختيار عرض شحن";
+  el.classList.add("no-selection");
+} else 
+  // يوجد عناصر مختارة
+  el.innerHTML = `${breakdownLines.join("<br>")}<br><br><strong>المجموع: ${total.toFixed(2)} د.أ</strong>`;
+  el.classList.remove("no-selection");
+}
+
+    // ===== Toast =====
+    function showToast(message, type="info", duration=3000){
+      const toast = document.getElementById("toast");
+      const msg = document.getElementById("toast-message");
+      if (!toast || !msg) return;
+      const icon = type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';
+      msg.innerHTML = `<span style="margin-right:8px;">${icon}</span>${message}`;
+      toast.style.background = type==='success'?'#28a745':type==='error'?'#dc3545':type==='warning'?'#ffc107':'#17a2b8';
+      toast.style.visibility='visible'; toast.style.opacity='1';
+      setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.style.visibility='hidden',500); }, duration);
+    }
+
+    /* ===== util: تحديد “الإغلاق” بعدة قيم نصية ===== */
+const isOffText = (status) => String(status ?? "").trim().toLowerCase() === 'off';
+const normalizeUCKey = (key) => {
+  const m = String(key ?? "").match(/\d+/);
+  return m ? String(Number(m[0])) : "";
+};
+function addUnavailableOverlay(card){
+  let badge = card.querySelector(".unavailable-badge");
+  if (!badge) {
+    badge = document.createElement("div");
+    badge.className = "unavailable-badge";
+    badge.textContent = "غير متوفر";
+    card.appendChild(badge);
+  }
+}
+
+let unsubscribeState = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const db = firebase.firestore();
+  unsubscribeState = db.collection("topup").doc("pubg").onSnapshot((snap) => {
+    if (!snap.exists) return;
+
+    let stateRaw = (snap.data() || {}).state;
+    let parsed = null;
+    if (typeof stateRaw === 'string') {
+      try { parsed = JSON.parse(stateRaw); } catch(e){ return; }
+    } else if (stateRaw && typeof stateRaw === 'object') {
+      parsed = stateRaw;
+    } else { return; }
+
+    const topupMap = parsed.topup || {};
+    const membershipMap = parsed.membership || parsed.memberships || {};
+
+    Object.entries(topupMap).forEach(([ucKeyRaw, status]) => {
+      const ucNormalized = normalizeUCKey(ucKeyRaw);
+      const card = document.querySelector(`.offer-box[data-type="topup"][data-uc="${ucNormalized}"]`);
+      if (card) {
+        const off = isOffText(status);
+        card.classList.toggle('disabled', off);
+        card.style.opacity = off ? '0.4' : '1';
+        if (off) addUnavailableOverlay(card); else { const b = card.querySelector(".unavailable-badge"); if (b) b.remove(); }
+      }
+    });
+
+    Object.entries(membershipMap).forEach(([offerName, status]) => {
+      const card = document.querySelector(`.offer-box[data-type="membership"][data-offer="${offerName}"]`);
+      if (card) {
+        const off = isOffText(status);
+        card.classList.toggle('disabled', off);
+        card.style.opacity = off ? '0.4' : '1';
+        if (off) addUnavailableOverlay(card); else { const b = card.querySelector(".unavailable-badge"); if (b) b.remove(); }
+      }
+    });
+  });
+});
+
+window.addEventListener('beforeunload', () => {
+  if (typeof unsubscribeState === 'function') unsubscribeState();
+});
+  </script>
+</body>
+</html>
