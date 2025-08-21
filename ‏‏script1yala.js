@@ -122,7 +122,7 @@ async function rotateSessionKeyAfterOrder(uid, ttlSeconds = 0) {
 /* ================== الأسعار كما هي ================== */
 async function loadPrices(useruid = null) {
   try {
-    const url = new URL("https://qusaystorefreefire.qusaistore22.workers.dev/");
+    const url = new URL("https://yala.qusaistore33.workers.dev/");
     url.searchParams.set("mode", "all");
     if (useruid) url.searchParams.set("useruid", useruid);
 
@@ -213,7 +213,7 @@ async function sendOrder() {
   // Quote
   let total, breakdown;
   try {
-    const priceRes = await fetch("https://qusaystorefreefire.qusaistore22.workers.dev", {
+    const priceRes = await fetch("https://yala.qusaistore33.workers.dev/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ offers: selectedOffers, useruid: user.uid })
@@ -243,7 +243,7 @@ async function sendOrder() {
       submitBtn.style.pointerEvents = 'none';
     }
 
-    const response = await fetch("https://qusaystorefreefire.qusaistore22.workers.dev", {
+    const response = await fetch("https://yala.qusaistore33.workers.dev/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
