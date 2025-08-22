@@ -15,7 +15,7 @@ header.appendChild(hamburger);
 
 // الشعار
 const logo = document.createElement("img");
-logo.src = "https://i.ibb.co/Rk37yDgP/2.png";
+logo.src = "https://i.ibb.co/Jw8XwRLg/Picsart-25-08-21-23-54-55-228.png";
 logo.alt = "Store Logo";
 logo.className = "header-logo";
 
