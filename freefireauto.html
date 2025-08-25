@@ -8,7 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <script defer src="script1N.js"></script>
+  <script defer src="script1auto.js"></script>
   <script defer src="state.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
@@ -17,7 +17,7 @@
   <link href="header.css" rel="stylesheet"/>
   <script defer src="header.js"></script>
   <script defer src="atff.js"></script>
-  <script defer src="scriptN.js"></script>
+  <script defer src="scriptauto.js"></script>
   <link rel="stylesheet" href="loader.css">
 <script src="loader.js" defer></script>
   <audio id="toast-success-sound" preload="auto" src="success.mp3"></audio>
@@ -213,7 +213,6 @@ body.dark-mode .footer-title{
 
   <!-- الملاحظة أسفل حقل الإدخال -->
   <p style="margin-top:8px; font-size:14px; color:#d9534f; font-weight:bold;">
-    ⚠️ لكل معرف شحنة واحدة فقط
   </p>
 </div>
 
@@ -238,7 +237,7 @@ body.dark-mode .footer-title{
         </div>
 
         <!-- ✅ Turnstile -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAABtxBKuTG9MYPZkz" data-theme="light"></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAABuMTLzhZ91H8VE1" data-theme="light"></div>
 
         <button class="send-button" style="margin-top:20px; padding:10px 20px; font-size:18px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer;" type="submit">شراء</button>
       </div>
@@ -305,11 +304,11 @@ body.dark-mode .footer-title{
   const offersBox = document.createElement("div"); offersBox.className = "offers-box";
   const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
   const topupOffers = [
-    { jewels: 620, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "620" },
-    { jewels: 1040, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "340 توكنز" },
-    { jewels: 2120, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "570 توكنز" },
-    { jewels: 4360, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "1024 توكنز" },
-    { jewels: 11200, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "20000 توكنز" }
+    { jewels: 110, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "620" },
+    { jewels: 210, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "340 توكنز" },
+    { jewels: 583, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "570 توكنز" },
+    { jewels: 1188, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "1024 توكنز" },
+    { jewels: 2420, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "20000 توكنز" }
   ];
   topupOffers.forEach(offer => { offersBox.appendChild(createOfferBox({ type: "topup", jewels: offer.jewels, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
   const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";
@@ -428,7 +427,7 @@ if (breakdownLines.length === 0) {
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const stateDoc = await firebase.firestore().collection("freefireN").doc("state").get();
+      const stateDoc = await firebase.firestore().collection("freefireauto").doc("state").get();
       if (stateDoc.exists) {
         const stateData = stateDoc.data();
         Object.entries(stateData.topup || {}).forEach(([jewels, status]) => {
