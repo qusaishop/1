@@ -22,154 +22,402 @@
   <script src="header.js" defer></script>
 
   <style>
-    :root{
-      --brand:#0077cc;
-      --brand-dark:#005fa3;
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --muted:#667085;
-      --ring: rgba(0,119,204,.25);
-      --success:#12b76a;
-      --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{font-family:'Cairo',sans-serif;margin:0;background:var(--bg);color:#111}
-    main{max-width:1200px;margin:20px auto;padding:0 16px}
-    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1000px;margin:0 auto 12px}
-    .back-btn{display:none;background:#e9eef5;border:none;padding:10px 16px;border-radius:12px;cursor:pointer;font-weight:700;color:#1f2937}
-    .back-btn:hover{filter:brightness(.98)}
-    .where{font-weight:800;color:var(--brand)}
-    .search-container{max-width:1000px;margin:0 auto 16px;display:flex;gap:10px}
-    .search-container input{flex:1;padding:12px 14px;border:2px solid var(--brand);border-radius:9999px;font-size:1rem;outline:none;transition:.2s;background:#fff}
-    .search-container input:focus{box-shadow:0 0 0 6px var(--ring);border-color:var(--brand-dark)}
-    .search-container button{background:var(--brand);border:none;padding:12px 18px;border-radius:9999px;color:#fff;font-size:1rem;cursor:pointer;transition:.2s}
-    .search-container button:hover{background:var(--brand-dark)}
-    .categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;justify-content:center;max-width:1000px;margin:auto}
-    .card{background:var(--card);border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 4px 16px rgba(16,24,40,.06);text-align:center;padding:18px;text-decoration:none;color:#111;transition:transform .25s ease,box-shadow .25s ease}
-    .card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(16,24,40,.12)}
-    .card img{width:180px;height:180px;object-fit:cover;object-position:center;margin-bottom:14px;border-radius:10px;user-select:none;background:#f3f4f6}
-    .card h2{font-weight:800;font-size:1.05rem;margin:0}
-    .no-results{text-align:center;font-size:1.05rem;color:#9aa4b2;margin-top:26px}
-    @media (max-width:768px){.categories{grid-template-columns:repeat(2,1fr)}}
-
-    .card.loading{position:relative;background:#f3f4f6;overflow:hidden;pointer-events:none}
-    .card.loading img,.card.loading h2{visibility:hidden}
-    .card.loading::after{content:'';position:absolute;top:0;right:-150px;width:100px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 1.2s infinite}
-    @keyframes shimmer{0%{right:-150px}100%{right:100%}}
-
-    /* مودال */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px} /* رفع الطبقة */ /* :contentReference[oaicite:3]{index=3} */
-    .modal.open{display:flex}
-    .modal-content{background:#fff;padding:18px;border-radius:16px;max-width:620px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.22)}
-    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-    .modal-title{font-size:1.15rem;font-weight:800}
-    .close{background:transparent;border:none;font-size:1.4rem;cursor:pointer}
-    .badge{display:inline-flex;align-items:center;gap:6px;background:#eef6ff;color:#1e40af;border:1px solid #c7ddff;padding:6px 10px;border-radius:9999px;font-size:.85rem;margin-top:6px}
-    .info-list{display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}
-    .info-item{background:#f8fafc;border:1px solid #e6eef7;border-radius:12px;padding:10px}
-    .hint{color:#667085;font-size:.92rem;margin-top:8px}
-
-    /* شريط الحاسبة داخل المودال */
-    .calc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 6px}
-    .calc .field{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:8px 10px}
-    .calc label{display:block;font-size:.85rem;color:#475467;margin-bottom:4px;font-weight:700}
-    .calc input{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:1rem;outline:none;background:#fff}
-    .calc input:focus{box-shadow:0 0 0 6px var(--ring);border-color:var(--brand)}
-    .rate-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 10px}
-    .rate-line .mini{font-size:.9rem;color:#475467}
-    .rate-line .chip{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9999px;padding:6px 10px}
-
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-    .btn{border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
-    .btn-primary{background:var(--brand);color:#fff}
-    .btn-outline{background:#fff;border:1px solid #cbd5e1}
-    .btn[disabled]{opacity:.5;cursor:not-allowed}
-
-    .preview{margin-top:10px;font-size:.92rem;color:#1d4ed8;word-break:break-all}
-    .turnstile-wrap{margin-top:8px}
-    .hidden{display:none!important}
-
-    /* ==== Dark Mode for edaa page ==== */
-body.dark-mode {
-  background:#0b1220;
-  color:#e6edf3;
+/* ========== Modal ========== */
+.modal {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;               /* ← مخفية افتراضيًا */
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+.modal.open {                  /* ← أضِف/احذف .open من JS */
+  display: flex;
 }
 
-body.dark-mode main {
-  background:#0f172a;
-  color:#e6edf3;
-  border-radius:16px;
-  padding:16px;
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  text-align: center;
 }
 
-body.dark-mode .where { color:#7dd3fc; }
-
-body.dark-mode .search-container input {
-  background:#0b1220;
-  color:#e6edf3;
-  border-color:#334155;
+/* ========== Base ========== */
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Cairo', sans-serif;
+  margin: 0;
+  background: #f9f9f9;
+  color: #333;
+  direction: rtl;
 }
-body.dark-mode .search-container input:focus {
-  border-color:#38bdf8;
-  box-shadow:0 0 5px rgba(56,189,248,0.4);
-}
-body.dark-mode .search-container button {
-  background:#0369a1;
-}
-body.dark-mode .search-container button:hover {
-  background:#0ea5e9;
+main {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 15px;
 }
 
-body.dark-mode .card {
-  background:#1a2234;
-  color:#f1f5f9;
-  border-color:#334155;
-}
-body.dark-mode .card:hover {
-  box-shadow:0 10px 24px rgba(0,0,0,.5);
-}
-body.dark-mode .card h2 { color:#e6edf3; }
+/* شريط الأدوات أعلى القائمة (اختياري) */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1000px;margin:0 auto 12px}
+.back-btn{display:none;background:#e9eef5;border:none;padding:10px 16px;border-radius:12px;cursor:pointer;font-weight:700;color:#1f2937}
+.back-btn:hover{filter:brightness(.98)}
+.where{font-weight:800;color:#0077cc}
 
-body.dark-mode .no-results { color:#94a3b8; }
-
-/* المودال */
-body.dark-mode .modal-content {
-  background:#111827;
-  color:#e6edf3;
+/* ========== Search ========== */
+.search-container {
+  margin: 20px auto;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 15px;
 }
+.search-container input[type="text"] {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #0077cc;
+  border-radius: 25px;
+  font-size: 1rem;
+  outline: none;
+  transition: 0.3s;
+  background:#fff;
+}
+.search-container input[type="text"]:focus {
+  box-shadow: 0 0 5px rgba(0, 119, 204, 0.5);
+  border-color: #005fa3;
+}
+.search-container button {
+  background-color: #0077cc;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.search-container button:hover { background-color: #005fa3; }
+
+/* ========== Grid (Responsive Cards) ========== */
+.categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, max-content));
+  gap: 20px;
+  justify-content: start;
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* ========== Card ========== */
+.card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 16px;
+  text-decoration: none;
+  color: #333;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+
+/* صورة مربعة دائمًا */
+.card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: cover; object-position: center;
+  border-radius: 8px;
+  user-select: none;
+  background-color: #f0f0f0;
+  display: block;
+  margin: 0 auto;
+}
+.card h2 {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.no-results {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #888;
+  margin-top: 30px;
+}
+
+/* ========== Maintenance / Loading ========== */
+.card.maintenance { background-color: #e0e0e0 !important; pointer-events: none; opacity: 0.7; }
+.card.maintenance h2 { color: #a00; }
+.card.maintenance img { filter: grayscale(100%); }
+
+.card.loading { position: relative; background: #f0f0f0; overflow: hidden; pointer-events: none; }
+.card.loading img,.card.loading h2 { visibility: hidden; }
+.card.loading::after {
+  content: '';
+  position: absolute; top: 0; right: -150px; width: 100px; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer { 0%{ right:-150px } 100%{ right:100% } }
+
+/* ========== Grid overrides (ثابتة) ========== */
+.categories { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 20px; justify-content: center; }
+@media (max-width: 992px) {
+  .categories { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 768px) {
+  .categories { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 12px; }
+  .card { padding: 12px !important; }
+  .card h2 { font-size: .9rem !important; }
+}
+@media (max-width: 480px) {
+  .categories { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px; }
+  .card { padding: 10px !important; }
+  .card h2 { font-size: .9rem !important; }
+  .search-container { flex-direction: column; }
+  .search-container input, .search-container button { width: 100%; }
+  .modal-content { padding: 20px; max-width: 340px; }
+}
+
+/* ===== Dark Mode ===== */
+body.dark-mode { background:#0b1220; color:#e6edf3; }
+body.dark-mode .search-container input[type="text"]{ background:#0b1220; color:#e6edf3; border-color:#334155; }
+body.dark-mode .search-container input[type="text"]:focus{ border-color:#38bdf8; box-shadow:0 0 6px rgba(56,189,248,.35); }
+body.dark-mode .search-container button{ background:#0369a1; }
+body.dark-mode .search-container button:hover{ background:#0ea5e9; }
+body.dark-mode .card{ background:#1a2234; color:#e6edf3; border:1px solid #334155; box-shadow:0 2px 10px rgba(0,0,0,.35); }
+body.dark-mode .card h2{ color:#e6edf3; }
+body.dark-mode .card.loading{ background:#162032; }
+body.dark-mode .card.loading::after{ background: linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent); }
+body.dark-mode .no-results{ color:#94a3b8; }
+body.dark-mode .modal-content{ background:#111827; color:#e6edf3; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+
+/* ==== Modal (نافذة التقديم) محسّن ==== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+.modal.open { display: flex; }
+
+.modal-content {
+  background: #fff;
+  padding: 24px;
+  border-radius: 14px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+/* الهيدر */
+.modal-header { display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:1.2rem; font-weight:800; color:#0077cc; }
+.modal .close { background:transparent; border:none; font-size:1.5rem; cursor:pointer; color:#444; }
+.modal .close:hover { color:#cc0000; }
+
+/* البادجات */
+.badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#eef6ff; color:#1e40af; border:1px solid #c7ddff;
+  padding:6px 10px; border-radius:9999px; font-size:.85rem;
+}
+
+/* الحقول والمعلومات */
+.info-list { display:grid; gap:10px; }
+.info-item { background:#f8fafc; border:1px solid #e6eef7; border-radius:10px; padding:10px; font-size:.95rem; }
+.hint { color:#667085; font-size:.9rem; }
+
+/* الحاسبة */
+.calc { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.calc .field { background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:10px; }
+.calc label { display:block; font-size:.85rem; font-weight:600; color:#475467; margin-bottom:4px; }
+.calc input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:1rem; outline:none; }
+.calc input:focus { border-color:#0077cc; box-shadow:0 0 0 4px rgba(0,119,204,.25); }
+
+/* سعر الصرف */
+.rate-line { display:flex; flex-wrap:wrap; align-items:center; gap:10px; font-size:.95rem; }
+.rate-line .chip { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:9999px; padding:6px 10px; }
+
+/* أزرار الإجراء */
+.actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+.btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; font-size:.95rem; }
+.btn-primary { background:#0077cc; color:#fff; }
+.btn-primary:hover { background:#005fa3; }
+.btn-outline { background:#fff; border:1px solid #cbd5e1; }
+.btn-outline:hover { background:#f9fafb; }
+.btn[disabled] { opacity:.6; cursor:not-allowed; }
+
+/* المعاينة */
+.preview { font-size:.9rem; color:#1d4ed8; word-break:break-all; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-content { padding:18px; max-width:340px; }
+  .calc { grid-template-columns:1fr; }
+  .actions { flex-direction:column; }
+  .btn, .btn-primary, .btn-outline { width:100%; }
+}
+
+/* Dark Mode */
+body.dark-mode .modal-content { background:#111827; color:#e6edf3; }
 body.dark-mode .modal-title { color:#7dd3fc; }
-body.dark-mode .info-item {
-  background:#0f172a;
-  border-color:#334155;
-  color:#e6edf3;
-}
-body.dark-mode .calc .field {
-  background:#0f172a;
-  border-color:#334155;
-}
+body.dark-mode .info-item { background:#0f172a; border-color:#334155; }
+body.dark-mode .calc .field { background:#0f172a; border-color:#334155; }
 body.dark-mode .calc label { color:#cbd5e1; }
-body.dark-mode .calc input {
-  background:#0b1220;
-  color:#e6edf3;
-  border-color:#334155;
+body.dark-mode .calc input { background:#0b1220; color:#e6edf3; border-color:#334155; }
+body.dark-mode .calc input:focus { border-color:#38bdf8; box-shadow:0 0 0 4px rgba(56,189,248,.35); }
+body.dark-mode .rate-line .chip { background:#0f172a; border-color:#334155; color:#e6edf3; }
+body.dark-mode .btn-outline { background:#0b1220; color:#e6edf3; border-color:#334155; }
+body.dark-mode .btn-primary { background:linear-gradient(135deg,#0ea5e9,#0369a1); }
+
+
+/* ===== تصغير نافذة التقديم على الهواتف ===== */
+@media (max-width: 480px) {
+  .modal { 
+    padding: 8px;
+    /* دعم نوتش iOS */
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 92vw;           /* أصغر من عرض الشاشة قليلاً */
+    padding: 12px 14px;        /* تقليل الحشو */
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25);
+
+    max-height: calc(100vh - 24px); /* لا تتجاوز ارتفاع الشاشة */
+    overflow-y: auto;               /* تمرير داخلي عند الطول الكبير */
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;                      /* فجوات أصغر بين العناصر */
+  }
+
+  /* هيدر المودال أكثر إحكامًا */
+  .modal-header {
+    position: sticky; top: 0; z-index: 1;
+    background: inherit;            /* يطابق خلفية المودال */
+    margin: -12px -14px 8px;        /* تمديد الخلفية للحواف */
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  .modal-title { font-size: 1rem; }
+  .badge { padding: 4px 8px; font-size: .8rem; }
+
+  /* الحاسبة عمود واحد وأحجام أصغر */
+  .calc { grid-template-columns: 1fr; gap: 8px; }
+  .calc .field { padding: 8px; border-radius: 10px; }
+  .calc label { font-size: .8rem; margin-bottom: 3px; }
+  .calc input {
+    padding: 8px 10px;
+    font-size: 16px;   /* يمنع تكبير iOS التلقائي */
+  }
+
+  /* سطر السعر */
+  .rate-line { gap: 6px; font-size: .85rem; }
+  .rate-line .chip { padding: 4px 8px; }
+
+  /* صناديق المعلومات */
+  .info-item { padding: 8px; font-size: .9rem; }
+
+  /* الأزرار بعرض كامل */
+  .actions { flex-direction: column; gap: 8px; margin-top: 6px; }
+  .btn, .btn-primary, .btn-outline { width: 100%; padding: 10px 12px; font-size: .95rem; }
+
+  /* عرض اسم الملف الطويل بدون كسر التصميم */
+  .preview { font-size: .85rem; overflow-wrap: anywhere; }
 }
-body.dark-mode .calc input:focus {
-  border-color:#38bdf8;
-  box-shadow:0 0 5px rgba(56,189,248,0.4);
+
+/* تباين مناسب للوضع الداكن عند التثبيت */
+@media (max-width: 480px) {
+  body.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
 }
-body.dark-mode .rate-line .mini { color:#cbd5e1; }
-body.dark-mode .rate-line .chip {
-  background:#0b172a;
-  border-color:#334155;
-  color:#e6edf3;
+/* ===== تحسينات نافذة التقديم على الكمبيوتر ===== */
+@media (min-width: 1024px) {
+  .modal { 
+    padding: 24px; 
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 620px;            /* عرض مريح على الديسكتوب */
+    padding: 20px 22px;
+    border-radius: 12px;
+    box-shadow: 0 10px 36px rgba(0,0,0,.25);
+
+    /* لا تتجاوز 88% من ارتفاع الشاشة مع تمرير داخلي */
+    max-height: min(88vh, 860px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+  }
+
+  /* هيدر مثبت داخل المودال */
+  .modal-header {
+    position: sticky; top: 0; z-index: 1;
+    background: inherit;
+    margin: -20px -22px 12px;   /* تمديد الهيدر للحواف */
+    padding: 14px 22px 12px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+
+  .modal-title { font-size: 1.25rem; }
+  .badge { padding: 6px 10px; font-size: .85rem; }
+
+  /* الحاسبة صفّان على الديسكتوب */
+  .calc { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .calc .field { padding: 10px; }
+  .calc label { font-size: .9rem; }
+  .calc input { font-size: 1rem; padding: 10px 12px; }
+
+  /* معلومات أوضح قليلاً */
+  .info-item { padding: 12px; font-size: 1rem; }
+  .rate-line { font-size: .95rem; gap: 10px; }
+  .rate-line .chip { padding: 6px 10px; }
+
+  /* أزرار أفقية */
+  .actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .btn { min-width: 180px; }
+  .preview { font-size: .9rem; }
 }
-body.dark-mode .btn-outline {
-  background:#0b1220;
-  color:#e6edf3;
-  border-color:#334155;
+
+/* شاشات كبيرة جداً */
+@media (min-width: 1440px) {
+  .modal-content { max-width: 700px; }
 }
-body.dark-mode .btn-primary {
-  background:linear-gradient(135deg,#0ea5e9,#0369a1);
+
+/* تباين مناسب للوضع الداكن على الديسكتوب */
+@media (min-width: 1024px) {
+  body.dark-mode .modal-header {
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
 }
 
   </style>
@@ -226,7 +474,7 @@ body.dark-mode .btn-primary {
 
       <div class="actions">
         <input type="file" id="proofFile" accept="image/*" class="btn btn-outline" />
-        <button id="uploadProofBtn" class="btn btn-primary hidden">رفع إثبات التحويل</button>
+        <!-- تم حذف زر الرفع -->
         <button id="submitDepositBtn" class="btn btn-outline" disabled>تقديم طلب الإيداع</button>
       </div>
 
@@ -239,17 +487,17 @@ body.dark-mode .btn-primary {
         </div>
       </div>
 
-      <div class="hint">※ يلزم تسجيل الدخول. يتم رفع إثبات التحويل تلقائيًا بعد اختيار الصورة.</div>
+      <div class="hint">يتم رفع إثبات التحويل تلقائيًا بعد اختيار الصورة.</div>
       <div id="proofPreview" class="preview"></div>
     </div>
   </div>
 
   <script>
     /* ========================= إعداد عام ========================= */
-const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
+    const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
     const IMGBB_API_KEY = "491f01510f766147819e077c95c497a5";
 
-    // Firebase (كما هو) :contentReference[oaicite:4]{index=4}
+    // Firebase (كما هو)
     const firebaseConfig = {
       apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
       authDomain: "qusaystore-ec327.firebaseapp.com",
@@ -296,8 +544,8 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
     const fxBadge = document.getElementById('fxBadge');
     const fxText  = document.getElementById('fxText');
     const rateLine = document.getElementById('rateLine');
-    const sendJOD = document.getElementById('sendJOD'); // الآن يمثل مبلغ الدفع بعملة الطريقة
-    const recvCUR = document.getElementById('recvCUR'); // الآن يمثل ما سيُضاف بالدينار
+    const sendJOD = document.getElementById('sendJOD'); // مبلغ الدفع بعملة الطريقة
+    const recvCUR = document.getElementById('recvCUR'); // ما سيُضاف بالدينار
 
     /* ========================= حالة وتنقّل ========================= */
     let currentCountry = null; // { id, data }
@@ -448,7 +696,7 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
       rateLine.textContent= priceText;
       fxBadge.classList.remove('hidden');
 
-      // تفاصيل إضافية (كما هي) :contentReference[oaicite:5]{index=5}
+      // التفاصيل
       const info=m.data.info||{};
       const fields=[
         ['البنك', info.bank],
@@ -462,7 +710,7 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
         ? fields.map(([k,v])=>`<div class="info-item"><strong>${k}:</strong> <div>${v}</div></div>`).join('')
         : '<div class="info-item">لا توجد تفاصيل متاحة.</div>';
 
-      // الحاسبة: نحسب محليًا للعرض فقط، الإرسال يعتمد على السيرفر
+      // الحاسبة (عرض فقط)
       sendJOD.oninput = ()=>{
         const v = Number(sendJOD.value);
         recvCUR.value = (!fxRatePerJOD || !isFinite(v) || v<=0) ? '' : (v / fxRatePerJOD).toFixed(2);
@@ -479,19 +727,17 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
     }
 
     function amountsValid(){
-      // الشرط الجديد: يكفي payAmount > 0 (sendJOD)
       const pay = Number(sendJOD.value);
       return isFinite(pay) && pay > 0 && !!fxRatePerJOD && !!fxCurrency;
     }
 
-    /* ========================= اختيار ملف + رفع تلقائي ========================= */
-    const uploadProofBtn = document.getElementById('uploadProofBtn'); // غير مستخدم الآن
+    /* ========================= اختيار ملف + رفع تلقائي (بدون تسجيل) ========================= */
     const proofFileEl = document.getElementById('proofFile');
 
     proofFileEl.addEventListener('change', async ()=>{
       currentProofFile = proofFileEl.files && proofFileEl.files[0] ? proofFileEl.files[0] : null;
       uploadedProofUrl = null;
-      proofPreview.textContent = currentProofFile ? `سيتم رفع: ${currentProofFile.name}` : '';
+      proofPreview.textContent = currentProofFile ? `جاري رفع: ${currentProofFile.name}` : '';
       if (currentProofFile) {
         if (window.turnstileToken) {
           try { await autoUploadProof(); } catch(e){ console.error(e); }
@@ -500,16 +746,9 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
       updateSubmitState();
     });
 
-    async function getIdTokenOrThrow(){
-      const user = auth.currentUser;
-      if(!user) throw new Error('يجب تسجيل الدخول أولاً.');
-      return await user.getIdToken(true);
-    }
-
     async function autoUploadProof(){
       if(!currentProofFile) throw new Error('اختر صورة أولاً.');
       if(!window.turnstileToken) throw new Error('تحقق الأمان مطلوب — أكمل Turnstile.');
-      await getIdTokenOrThrow();
 
       const fd = new FormData();
       fd.append('image', currentProofFile);
@@ -535,14 +774,20 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
       submitDepositBtn.disabled = !(okPay && okProof && okToken && okMeta);
     }
 
-    /* ========================= تقديم طلب الإيداع — يعتمد على السيرفر ========================= */
+    /* ========================= تقديم طلب الإيداع — يتطلب تسجيل دخول ========================= */
+    async function getIdTokenOrThrow(){
+      const user = auth.currentUser;
+      if(!user) throw new Error('يجب تسجيل الدخول أولاً.');
+      return await user.getIdToken(true);
+    }
+
     async function handleSubmitDeposit(country, method){
       if(!amountsValid()) return alert('أدخل المبلغ أولاً.');
       if(!uploadedProofUrl) return alert('من فضلك ارفع الإثبات أولاً.');
       if(!window.turnstileToken) return alert('تحقق الأمان مطلوب — أكمل Turnstile.');
 
       try{
-        const idToken = await getIdTokenOrThrow();
+        const idToken = await getIdTokenOrThrow(); // الإرسال ما زال يتطلب تسجيل الدخول
 
         const payAmount = Number(sendJOD.value); // ما سيدفعه العميل بعملة الطريقة
         const body = {
@@ -550,7 +795,7 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
           countryName: country?.data?.name || country?.name || "",
           methodId: method?.id || "",
           methodName: method?.data?.name || method?.name || "",
-          payAmount,                       // نرسل فقط payAmount — السيرفر يحسب الباقي
+          payAmount,                       // السيرفر يحسب الباقي
           proofUrl: uploadedProofUrl,
           turnstileToken: window.turnstileToken
         };
@@ -601,14 +846,13 @@ const WORKER_BASE = "https://edaaandsahb.qusaistore3.workers.dev";
 
     watchCountries();
 
-
     (function(){
-  try {
-    if(localStorage.getItem('theme') === 'dark'){
-      document.body.classList.add('dark-mode');
-    }
-  }catch(e){}
-})();
+      try {
+        if(localStorage.getItem('theme') === 'dark'){
+          document.body.classList.add('dark-mode');
+        }
+      }catch(e){}
+    })();
   </script>
 </body>
 </html>

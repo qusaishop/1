@@ -23,8 +23,21 @@ logo.className = "header-logo";
 const balanceSpan = document.createElement("span");
 balanceSpan.id = "balanceHeader";
 balanceSpan.className = "header-balance";
-balanceSpan.style.marginRight = "10px"; // ✅ إزاحة الرصيد لليمين بدلاً من marginLeft
-balanceSpan.innerHTML = `<i class="fas fa-coins"></i> <span id="headerBalanceText">تحميل...</span>`;
+balanceSpan.style.marginRight = "0px";
+
+// أضف أيقونة الرصيد + أيقونة (+) للنقل إلى الإيداع
+balanceSpan.innerHTML = `
+  <i class="fas fa-coins"></i> 
+  <span id="headerBalanceText">0.00 د.أ</span>
+  <i id="depositShortcut" class="fas fa-plus" style="color: white; cursor: pointer; margin-left:0px;"></i>
+`;
+
+
+// مستمع لتحويل المستخدم إلى صفحة الإيداع عند الضغط على +
+balanceSpan.querySelector("#depositShortcut").onclick = () => {
+  window.location.href = "edaa.html";
+};
+
 
 const leftContainer = document.createElement("div");
 leftContainer.style.display = "flex";
@@ -55,7 +68,7 @@ firebase.auth().onAuthStateChanged(user => {
   }
 
   if (user && user.emailVerified) {
-    setHeaderBalance("تحميل...");
+    setHeaderBalance("0.00 د.أ");
 
     const docRef = firebase.firestore().collection("users").doc(user.uid);
 
