@@ -500,10 +500,10 @@ a.card[href="freefireauto.html"].featured:hover{
 
 /* شريط Turbo مائل (يوحي بالسرعة) */
 a.card[href="freefireauto.html"].featured::before{
-  content: "تلقائي 24/7";
+  content: "تلقائي";
   position: absolute;
-  top: 0px; right: -35px;           /* أبعد قليلاً ليظهر الشريط أوسع */
-  padding: 8px 35px;                 /* عرض أكبر للشريط */
+  top: 15px; right: -50px;           /* أبعد قليلاً ليظهر الشريط أوسع */
+  padding: 0px 00px;                 /* عرض أكبر للشريط */
   font-weight: 800;
   font-size: .85rem;
   color: #fff;
@@ -675,11 +675,12 @@ a.card[href="freefireauto.html"].featured{
 
 /* الشريط المائل: استخدم المتغيرات */
 a.card[href="freefireauto.html"].featured::before{
-  content: "تلقائي 24/7";
-  position: absolute;
-  top: var(--ff-ribbon-top);
-  right: var(--ff-ribbon-right);
-  padding: var(--ff-ribbon-pad-y) var(--ff-ribbon-pad-x);
+  display: inline-flex;
+  align-items: center;          /* توسيط عمودي */
+  justify-content: center;      /* توسيط أفقي */
+  line-height: 1;               /* يمنع انزياح لأعلى */
+  height: calc(2 * var(--ff-ribbon-pad-y) + 1em); /* نفس سماكة الشريط الحالية */
+  padding: 0 var(--ff-ribbon-pad-x);              /* نحافظ على عرضه كما هو */
   font-weight: 800;
   font-size: var(--ff-ribbon-fs);
   color: #fff;
@@ -820,6 +821,69 @@ body, .card h2{
     opacity: .65;
   }
 }
+
+/* تحسين شريط تلقائي 24/7 على الهواتف */
+@media (max-width: 480px) {
+  a.card[href="freefireauto.html"].featured::before {
+    content: "تلقائي";       /* النص */
+    font-size: 1rem;            /* أصغر شوي عشان يناسب */
+    top: 8px;                     /* أقرب للهيدر */
+    right: -40px;                 /* ما ينقصّش من العرض */
+    transform: rotate(45deg);     /* نفس الميل */
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* اجعل الخلفية الافتراضية للبطاقات بيضاء في الوضع الفاتح */
+:root {
+  --card-bg: #ffffff;
+}
+
+/* في الوضع الداكن تبقى داكنة */
+body.dark-mode {
+  --card-bg: #1a2234;
+}
+
+/* تأكيد لون بطاقة "فري فاير تلقائي" في الوضع الفاتح (سطح مكتب وموبايل) */
+body:not(.dark-mode) a.card[href="freefireauto.html"].featured {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(120deg, #10b981, #06b6d4, #22c55e, #10b981) border-box;
+}
+
+/* على الهواتف: إصلاح طبقة background-image التي تعتمد على --card-bg */
+@media (max-width: 480px) {
+  body:not(.dark-mode) a.card[href="freefireauto.html"].featured {
+    background-image:
+      linear-gradient(var(--card-bg, #ffffff), var(--card-bg, #ffffff)),
+      linear-gradient(120deg, #22c55e, #06b6d4, #16a34a, #22c55e);
+    background-size: auto, 300% 300%;
+    background-position: 0 0, 50% 50%;
+  }
+}
+
+/* توحيد ارتفاع الصور في جميع البطاقات */
+.card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;     /* يضمن أن الصورة مربعة */
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 8px;
+  display: block;
+}
+
+/* إزالة تأثير الـ padding الإضافي في البطاقة المميزة على مساحة الصورة */
+a.card[href="freefireauto.html"].featured {
+  padding-top: 14px !important;  /* نفس padding البطاقات العادية */
+}
+
+/* لو الشريط المائل يتعارض مع الصورة، نزله فوق المحتوى فقط */
+a.card[href="freefireauto.html"].featured::before {
+  top: 6px !important;   /* أقرب لحافة البطاقة */
+}
+
 
   </style>
 </head>
