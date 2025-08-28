@@ -13,32 +13,53 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// فعّل الثيم المحفوظ مبكرًا (اختياري)
+// ===== مفاتيح الكاش في LocalStorage =====
+const LS_INDEX_KEY = 'talabat_orders_index_v1';       // { byId: {docId: {...}}, order: [docId...], cachedAt }
+const LS_DETAIL_PREFIX = 'talabat_order_detail_v1_';   // لكل طلب: detail json
+
+// ===== متغيّرات تشغيل =====
+let unsubscribeStatusSync = null;      // إلغاء مزامنة الحالة من الجذر
+let publicStatusRefreshTimer = null;   // مؤقّت تحديث حالة الطلبات التي تفتقد status بالجذر
+
+// ===== أدوات LocalStorage =====
+function lsGet(key, fallback = null) {
+  try {
+    const s = localStorage.getItem(key);
+    return s ? JSON.parse(s) : fallback;
+  } catch { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+function lsRemove(key) {
+  try { localStorage.removeItem(key); } catch {}
+}
+
+// ثيم داكن (اختياري)
 document.addEventListener('DOMContentLoaded', () => {
   try {
     if (localStorage.getItem('theme') === 'dark') {
       document.body.classList.add('dark-mode');
     }
-  } catch (e) {}
+  } catch {}
 });
 
-firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(async (user) => {
   if (!user) {
     alert("يجب تسجيل الدخول أولاً");
     window.location.href = "index.html";
-  } else {
-    // ✅ تحميل الطلبات بعد تأكد تسجيل الدخول
-    loadOrdersFromFirebaseLive(user);
+    return;
   }
+  await loadOrdersFromCacheFirst(user);       // عرض فوري من الكاش إن وجد
+  startOrdersLiveStatusSync(user);            // مزامنة حيّة للحالة من الجذر
+  startPublicStatusRefresh(user, 60_000);     // تحديث دوري لحالة الطلبات التي تفتقد status بالجذر
 });
 
-let unsubscribeOrderList = [];
-
-// ===== Skeleton shimmer while loading =====
+// ===== Skeleton while loading =====
 function showOrdersSkeleton(count = 3) {
   const list = document.getElementById("ordersList");
   if (!list) return;
-  list.querySelectorAll(".order-card.loading").forEach(n => n.remove());
+  list.innerHTML = "";
   for (let i = 0; i < count; i++) {
     const sk = document.createElement("div");
     sk.className = "order-card loading";
@@ -46,185 +67,394 @@ function showOrdersSkeleton(count = 3) {
   }
 }
 
-function loadOrdersFromFirebaseLive(user) {
-  const ordersList = document.getElementById("ordersList");
-  if (!ordersList) return;
+// ===== 1) اعرض من الكاش أولًا، وإن كان الكاش فاضي اجلب مرّة من فايربيس وخزّن =====
+async function loadOrdersFromCacheFirst(user) {
+  const list = document.getElementById("ordersList");
+  if (!list) return;
 
-  ordersList.innerHTML = "";
-  showOrdersSkeleton(1);
-
-  unsubscribeOrderList.forEach(unsub => unsub && unsub());
-  unsubscribeOrderList = [];
-
-  const ordersRef = db.collection("orders").where("userId", "==", user.uid);
-
-  const unsub = ordersRef.onSnapshot(async (snapshot) => {
-    // إزالة اللمعات قبل البناء
-    ordersList.querySelectorAll(".order-card.loading").forEach(n => n.remove());
-
-    const promises = snapshot.docs.map(async (doc) => {
-      const orderData = doc.data();
-      const pubSnap = await doc.ref.collection("public").doc("main").get();
-      const pubData = pubSnap.exists ? pubSnap.data() : {};
-
-      return {
-        code: orderData.code,
-        ...pubData,
-        proof: orderData.proof || ""
-      };
-    });
-
-    const ordersArray = (await Promise.all(promises)).sort((a, b) => {
-      const tA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return tB - tA;
-    });
-
-    renderOrders(ordersArray);
-  }, (err) => {
-    console.error(err);
-    ordersList.querySelectorAll(".order-card.loading").forEach(n => n.remove());
-  });
-
-  unsubscribeOrderList.push(unsub);
-}
-
-function renderOrders(orders) {
-  const ordersList = document.getElementById("ordersList");
-  if (!ordersList) return;
-
-  ordersList.innerHTML = "";
-
-  orders.forEach(order => {
-    const { code, playerId, total, country, payment, العروض: offers, timestamp, status, proof } = order;
-    const existing = document.getElementById(`order-${code}`);
-    if (existing) existing.remove();
-
-    let formattedDate = "";
-    try {
-      formattedDate = new Date(timestamp).toLocaleString("ar-EG", {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    } catch {
-      formattedDate = timestamp || "غير معروف";
-    }
-
-    let offersFormatted = "";
-    if (offers) {
-      offersFormatted = offers
-        .split("•")
-        .filter(item => item.trim())
-        .map(item => `<li>${item.trim()}</li>`)
-        .join("");
-      offersFormatted = `<ul style="padding-right:20px;">${offersFormatted}</ul>`;
-    }
-
-    let statusClass = "";
-    if (status === "مرفوض") statusClass = "مرفوض";
-    else if (status === "تم_الشحن") statusClass = "تم_الشحن";
-
-    const card = document.createElement("div");
-    card.className = "order-card";
-    card.id = `order-${code}`;
-
-    card.innerHTML = `
-      <div class="order-header" onclick="toggleDetails('${code}')">
-        <div>
-          <strong>كود الطلب:</strong> ${code}<br>
-          🎮 <strong>${playerId || "-"}</strong> | 💵 <strong>${total || "-"}</strong>
-        </div>
-        <div class="order-status ${statusClass}">
-          ${status === "تم_الشحن" ? "تم الشحن" : (status || "قيد المعالجة")}
-        </div>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-      <div class="order-details" id="details-${code}" style="display:none;">
-        <p><strong>🆔 معرف اللاعب:</strong> ${playerId || "غير متوفر"}</p>
-        <p><strong>🎁 العروض:</strong> ${offersFormatted || "-"}</p>
-        <p><strong>💵 المجموع:</strong> ${total || "-"}</p>
-        <p><strong>📅 تاريخ الإرسال:</strong> ${formattedDate}</p>
-        ${
-          proof
-            ? `<p>
-                 <strong>📸 إثبات التحويل:</strong>
-                 <button class="btn-show-proof" data-code="${code}">عرض الصورة</button><br>
-                 <img id="proof-img-${code}" src="${proof}" alt="إثبات التحويل" style="display:none; max-width:100%; margin-top:10px;">
-               </p>`
-            : ``
-        }
-      </div>
-    `;
-
-    ordersList.appendChild(card);
-  });
-
-  attachProofButtons();
-}
-
-function attachProofButtons() {
-  document.querySelectorAll('.btn-show-proof').forEach(btn => {
-    btn.onclick = () => {
-      const code = btn.dataset.code;
-      const img = document.getElementById(`proof-img-${code}`);
-      if (img.style.display === 'none' || !img.style.display) {
-        img.style.display = 'block';
-        btn.textContent = 'إخفاء الصورة';
-      } else {
-        img.style.display = 'none';
-        btn.textContent = 'عرض الصورة';
-      }
-    };
-  });
-}
-
-let unsubscribeOrderListener = null;
-async function showOrderDetails(code) {
-  const detailsBox = document.getElementById("orderDetails");
-  if (!detailsBox) return;
-
-  if (unsubscribeOrderListener) unsubscribeOrderListener();
-
-  if (!code) {
-    detailsBox.style.display = "none";
+  const cachedIndex = lsGet(LS_INDEX_KEY, null);
+  if (cachedIndex && Array.isArray(cachedIndex.order) && cachedIndex.order.length) {
+    renderOrdersFromIndex(cachedIndex);
+    // سدّ النقص للحالات المفقودة من public/main مرة واحدة
+    const missing = cachedIndex.order
+      .map(id => cachedIndex.byId[id])
+      .filter(o => !o || !o.status || !o.status.trim());
+    if (missing.length) prefetchStatusesFromPublic(missing);
     return;
   }
 
-  const orderRef = db.collection("orders").doc(code);
-  unsubscribeOrderListener = orderRef.onSnapshot(async docSnap => {
-    if (!docSnap.exists) {
-      detailsBox.style.display = "none";
-      return;
-    }
-    const pubSnap = await orderRef.collection("public").doc("main").get();
-    const privSnap = await orderRef.collection("private").doc("main").get();
+  // لا يوجد كاش: جلب واحد فقط
+  showOrdersSkeleton(2);
+  try {
+    const freshIndex = await fetchOrdersFromFirebaseOnce(user);
+    lsSet(LS_INDEX_KEY, freshIndex);
+    renderOrdersFromIndex(freshIndex);
+  } catch (e) {
+    console.error(e);
+    list.innerHTML = `<p style="color:#e11;">تعذّر تحميل الطلبات</p>`;
+  }
+}
 
-    const pub = pubSnap.exists ? pubSnap.data() : {};
-    const priv = privSnap.exists ? privSnap.data() : {};
-
-    let rows = '';
-    const appendRow = (label, value) => {
-      rows += `<tr>
-                 <td style="padding:10px;font-weight:bold;border:1px solid #ccc;">${label}</td>
-                 <td style="padding:10px;border:1px solid #ccc;">${value}</td>
-               </tr>`;
+// جلب مرّة واحدة لقائمة الطلبات من الجذر (بدون subcollections)
+async function fetchOrdersFromFirebaseOnce(user) {
+  const snap = await db.collection("orders").where("userId", "==", user.uid).get();
+  const byId = {};
+  const order = [];
+  snap.forEach(doc => {
+    const d = doc.data() || {};
+    byId[doc.id] = {
+      id: doc.id,
+      code: d.code || doc.id,
+      status: (d.status || "").trim(),
+      timestamp: d.timestamp || null,
+      proof: d.proof || ""
     };
+    order.push(doc.id);
+  });
+  order.sort((a, b) => {
+    const ta = byId[a].timestamp ? new Date(byId[a].timestamp).getTime() : 0;
+    const tb = byId[b].timestamp ? new Date(byId[b].timestamp).getTime() : 0;
+    return tb - ta;
+  });
+  return { byId, order, cachedAt: Date.now() };
+}
 
-    rows += `<tr><td colspan="2" style="background:#eee;padding:10px;font-weight:bold;">📂 Public</td></tr>`;
-    Object.entries(pub).forEach(([k, v]) => appendRow(k, v));
+// ===== 2) رندر القائمة من الفهرس =====
+function renderOrdersFromIndex(index) {
+  const ordersList = document.getElementById("ordersList");
+  if (!ordersList) return;
 
-    rows += `<tr><td colspan="2" style="background:#eee;padding:10px;font-weight:bold;">🔒 Private</td></tr>`;
-    Object.entries(priv).forEach(([k, v]) => appendRow(k, v));
+  ordersList.innerHTML = "";
 
-    detailsBox.innerHTML = `<table style="width:100%;direction:rtl;border-collapse:collapse;">${rows}</table>`;
-    detailsBox.style.display = "block";
-  }, err => {
-    console.error(err);
-    detailsBox.style.display = "none";
+  index.order.forEach(id => ensureCardExistsAndUpdate(index.byId[id]));
+}
+
+function ensureCardExistsAndUpdate(o) {
+  if (!o) return;
+  const ordersList = document.getElementById("ordersList");
+  if (!ordersList) return;
+
+  let card = document.getElementById(`order-${o.id}`);
+  const st = (o.status || "").trim();
+  const statusText = st || "قيد المعالجة";
+  const normalized = statusText.replace(/\s+/g, "_");
+  let statusClass = "";
+  if (normalized === "مرفوض") statusClass = "مرفوض";
+  else if (normalized === "تم_الشحن" || normalized === "تم_التسليم") statusClass = "تم_الشحن";
+
+  if (!card) {
+    card = document.createElement("div");
+    card.className = "order-card";
+    card.id = `order-${o.id}`;
+    card.innerHTML = `
+      <div class="order-header" onclick="toggleDetails('${o.id}')">
+        <div>
+          <strong>كود الطلب:</strong> ${o.code}<br>
+          <small>انقر لعرض التفاصيل</small>
+        </div>
+        <div class="order-status ${statusClass}" data-order-id="${o.id}">${statusText}</div>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="order-details" id="details-${o.id}" data-loaded="false" style="display:none;"></div>
+    `;
+    ordersList.appendChild(card);
+  } else {
+    // تحديث الحالة فقط
+    const el = card.querySelector(".order-status");
+    if (el) {
+      el.textContent = statusText;
+      el.classList.remove("مرفوض", "تم_الشحن");
+      if (statusClass) el.classList.add(statusClass);
+    }
+    // تحدّث كود العرض إن تغيّر
+    const headerInfo = card.querySelector(".order-header > div:first-child");
+    if (headerInfo) {
+      headerInfo.innerHTML = `<strong>كود الطلب:</strong> ${o.code}<br><small>انقر لعرض التفاصيل</small>`;
+    }
+  }
+}
+
+// ===== 3) مزامنة حيّة للحالة من جذر orders (بدون فتح الكرت) =====
+function startOrdersLiveStatusSync(user) {
+  if (unsubscribeStatusSync) unsubscribeStatusSync();
+
+  const q = db.collection("orders").where("userId", "==", user.uid);
+  unsubscribeStatusSync = q.onSnapshot((snapshot) => {
+    const idx = lsGet(LS_INDEX_KEY, { byId: {}, order: [] });
+    let dirty = false;
+
+    snapshot.docChanges().forEach((chg) => {
+      const doc = chg.doc;
+      const d = doc.data() || {};
+
+      if (chg.type === "removed") {
+        // احذف من DOM ومن الكاش
+        const card = document.getElementById(`order-${doc.id}`);
+        if (card && card.parentNode) card.parentNode.removeChild(card);
+        if (idx.byId[doc.id]) {
+          delete idx.byId[doc.id];
+          idx.order = idx.order.filter(x => x !== doc.id);
+          dirty = true;
+        }
+        return;
+      }
+
+      // added / modified
+      const prev = idx.byId[doc.id] || {};
+      const merged = {
+        id: doc.id,
+        code: d.code || prev.code || doc.id,
+        status: (d.status || prev.status || "").trim(),
+        timestamp: d.timestamp || prev.timestamp || null,
+        proof: d.proof || prev.proof || ""
+      };
+
+      idx.byId[doc.id] = merged;
+      if (!idx.order.includes(doc.id)) {
+        idx.order.unshift(doc.id); // الأحدث إلى الأعلى
+      }
+      dirty = true;
+
+      // حدّث العرض فورًا
+      ensureCardExistsAndUpdate(merged);
+    });
+
+    if (dirty) {
+      // أعد فرز الترتيب إن لزم
+      idx.order.sort((a, b) => {
+        const ta = idx.byId[a] && idx.byId[a].timestamp ? new Date(idx.byId[a].timestamp).getTime() : 0;
+        const tb = idx.byId[b] && idx.byId[b].timestamp ? new Date(idx.byId[b].timestamp).getTime() : 0;
+        return tb - ta;
+      });
+      lsSet(LS_INDEX_KEY, idx);
+    }
+  }, (err) => {
+    console.error("status sync error:", err);
   });
 }
 
-// ✅ أبقِ هذا الحدث للاتفاقية فقط — بدون استدعاء loadOrdersFromFirebaseLive هنا
+// ===== 4) تحديث دوري لحالات الطلبات التي تفتقد status بالجذر عبر public/main =====
+function startPublicStatusRefresh(user, intervalMs = 60000) {
+  if (publicStatusRefreshTimer) clearInterval(publicStatusRefreshTimer);
+  publicStatusRefreshTimer = setInterval(async () => {
+    const idx = lsGet(LS_INDEX_KEY, null);
+    if (!idx || !idx.order || !idx.order.length) return;
+
+    // التحديث فقط للطلبات التي لا تحمل status في الجذر
+    const missing = idx.order.map(id => idx.byId[id]).filter(o => !o || !o.status || !o.status.trim());
+    if (!missing.length) return;
+
+    await prefetchStatusesFromPublic(missing, (docId, st, proof) => {
+      // حدّث DOM
+      updateCardStatus(docId, st || "قيد المعالجة");
+      // حدّث الكاش
+      const cur = lsGet(LS_INDEX_KEY, null);
+      if (cur && cur.byId && cur.byId[docId]) {
+        cur.byId[docId].status = (st || "").trim();
+        if (proof && !cur.byId[docId].proof) cur.byId[docId].proof = proof;
+        lsSet(LS_INDEX_KEY, cur);
+      }
+    });
+  }, intervalMs);
+}
+
+// قراءة محدودة من public/main لعدة طلبات (لتعبئة أو تحديث الحالة فقط)
+async function prefetchStatusesFromPublic(pending, onUpdate = null, concurrency = 3) {
+  const queue = pending.slice();
+  let active = 0;
+  return new Promise((resolve) => {
+    const next = () => {
+      if (queue.length === 0 && active === 0) return resolve();
+      while (active < concurrency && queue.length) {
+        const o = queue.shift();
+        if (!o || !o.id) continue;
+        active++;
+
+        db.collection("orders").doc(o.id)
+          .collection("public").doc("main").get()
+          .then(snap => {
+            const data = snap.exists ? snap.data() : {};
+            const st = data.status || "";
+            const proof = data.proof || "";
+            if (onUpdate) onUpdate(o.id, st, proof);
+            else updateCardStatus(o.id, st || "قيد المعالجة");
+          })
+          .catch(() => updateCardStatus(o.id, "تعذّر التحميل"))
+          .finally(() => { active--; next(); });
+      }
+    };
+    next();
+  });
+}
+
+// ===== تحديث نص/ستايل الحالة (ويحدّث الكاش أيضًا) =====
+function updateCardStatus(docId, status) {
+  const el = document.querySelector(`#order-${docId} .order-status`);
+  if (el) {
+    const st = (status || "").trim();
+    el.textContent = st || "غير متوفرة";
+    el.classList.remove("مرفوض", "تم_الشحن");
+    const normalized = st.replace(/\s+/g, "_");
+    if (normalized === "مرفوض") el.classList.add("مرفوض");
+    else if (normalized === "تم_الشحن" || normalized === "تم_التسليم") el.classList.add("تم_الشحن");
+  }
+
+  // حدّث الكاش (index)
+  const idx = lsGet(LS_INDEX_KEY, null);
+  if (idx && idx.byId && idx.byId[docId]) {
+    idx.byId[docId].status = (status || "").trim();
+    lsSet(LS_INDEX_KEY, idx);
+  }
+
+  // حدّث التفاصيل (لو مخزّنة) أيضًا
+  const det = lsGet(LS_DETAIL_PREFIX + docId, null);
+  if (det && det.public) {
+    det.public.status = (status || "").trim();
+    lsSet(LS_DETAIL_PREFIX + docId, det);
+  }
+}
+
+// ===== التفاصيل Lazy + كاش =====
+async function fetchAndFillDetails(docId) {
+  const box = document.getElementById(`details-${docId}`);
+  if (!box) return;
+
+  // إن وُجدت تفاصيل بالكاش، اعرضها مباشرة
+  const cachedDetail = lsGet(LS_DETAIL_PREFIX + docId, null);
+  if (cachedDetail) {
+    fillDetailsBox(docId, cachedDetail);
+    if (cachedDetail.public && typeof cachedDetail.public.status === "string") {
+      updateCardStatus(docId, cachedDetail.public.status);
+    }
+    return;
+  }
+
+  // لا يوجد تفاصيل: اجلبها مرّة واحدة وخزّن
+  box.innerHTML = `<p>جارٍ تحميل التفاصيل…</p>`;
+  try {
+    const orderRef = db.collection("orders").doc(docId);
+    const pubSnap = await orderRef.collection("public").doc("main").get();
+    const pub = pubSnap.exists ? pubSnap.data() : {};
+
+
+
+    const data = { public: pub, updatedAt: Date.now() };
+    lsSet(LS_DETAIL_PREFIX + docId, data);
+
+    fillDetailsBox(docId, data);
+
+    // لو الحالة وصلت ضمن التفاصيل، حدّث الهيدر والكاش
+    if (typeof pub.status === "string") {
+      updateCardStatus(docId, pub.status);
+    }
+    // proof إن ظهر لأول مرة، خزّنه بالفهرس
+    if (pub.proof) {
+      const idx = lsGet(LS_INDEX_KEY, null);
+      if (idx && idx.byId && idx.byId[docId]) {
+        if (!idx.byId[docId].proof) {
+          idx.byId[docId].proof = pub.proof;
+          lsSet(LS_INDEX_KEY, idx);
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    box.innerHTML = `<p style="color:#e11;">تعذّر تحميل التفاصيل</p>`;
+  }
+}
+
+function fillDetailsBox(docId, detailData) {
+  const box = document.getElementById(`details-${docId}`);
+  if (!box) return;
+
+  const pub = detailData.public || {};
+  const playerId = pub.playerId || "غير متوفر";
+  const offers = pub["العروض"];
+  const total = pub.total || "-";
+  const timestamp = pub.timestamp;
+  const proof = pub.proof;
+
+  const formattedDate = timestamp
+    ? new Date(timestamp).toLocaleString("ar-EG", {
+        weekday:'long', year:'numeric', month:'long', day:'numeric',
+        hour:'2-digit', minute:'2-digit'
+      })
+    : "غير معروف";
+
+  let offersHtml = "-";
+  if (offers) {
+    offersHtml = offers
+      .split("•")
+      .filter(x => x.trim())
+      .map(x => `<li>${x.trim()}</li>`)
+      .join("");
+    offersHtml = `<ul style="padding-right:20px;">${offersHtml}</ul>`;
+  }
+
+  const proofBtn = proof ? `
+    <p>
+      <strong>📸 إثبات التحويل:</strong>
+      <button class="btn-show-proof" data-id="${docId}" data-src="${proof}">عرض الصورة</button><br>
+      <img id="proof-img-${docId}" alt="إثبات التحويل" style="display:none; max-width:100%; margin-top:10px;">
+    </p>` : ``;
+
+  box.innerHTML = `
+    <p><strong>🆔 معرف اللاعب:</strong> ${playerId}</p>
+    <p><strong>🎁 العروض:</strong> ${offersHtml}</p>
+    <p><strong>💵 المجموع:</strong> ${total}</p>
+    <p><strong>📅 تاريخ الإرسال:</strong> ${formattedDate}</p>
+    ${proofBtn}
+  `;
+
+  box.dataset.loaded = "true";
+  attachProofButtons();
+}
+
+// ===== أزرار الصورة (Lazy) =====
+function attachProofButtons() {
+  document.querySelectorAll('.btn-show-proof').forEach(btn => {
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.onclick = () => {
+      const docId = btn.dataset.id;
+      const img = document.getElementById(`proof-img-${docId}`);
+      if (!img) return;
+      if (!img.src && btn.dataset.src) img.src = btn.dataset.src; // تحميل عند أول ضغطة
+      const hidden = img.style.display === 'none' || !img.style.display;
+      img.style.display = hidden ? 'block' : 'none';
+      btn.textContent = hidden ? 'إخفاء الصورة' : 'عرض الصورة';
+    };
+  });
+}
+
+// ===== فتح/إغلاق التفاصيل =====
+function toggleDetails(docId) {
+  const d = document.getElementById(`details-${docId}`);
+  const card = document.getElementById(`order-${docId}`);
+  if (!d || !card) return;
+
+  const willOpen = d.style.display !== 'block';
+  d.style.display = willOpen ? 'block' : 'none';
+  card.classList.toggle('open', willOpen);
+  if (willOpen) fetchAndFillDetails(docId);
+}
+
+// ===== زر تحديث يدوي اختياري =====
+async function refreshOrdersFromFirebase(user) {
+  const list = document.getElementById("ordersList");
+  if (!list) return;
+  showOrdersSkeleton(2);
+  try {
+    const freshIndex = await fetchOrdersFromFirebaseOnce(user);
+    lsSet(LS_INDEX_KEY, freshIndex);
+    renderOrdersFromIndex(freshIndex);
+  } catch (e) {
+    console.error(e);
+    list.innerHTML = `<p style="color:#e11;">تعذّر تحديث الطلبات</p>`;
+  }
+}
+
+// ===== (اختياري) عرض اتفاقية المستخدم إن وُجدت =====
 window.addEventListener("DOMContentLoaded", () => {
   const agreed = localStorage.getItem('userAgreementAccepted');
   if (agreed !== 'true') {
@@ -236,9 +466,3 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
-
-function toggleDetails(code) {
-  const d = document.getElementById(`details-${code}`);
-  if (!d) return;
-  d.style.display = (d.style.display === 'block') ? 'none' : 'block';
-}
