@@ -3,23 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>متجر الخدمات الإلكترونية</title>
+  <title>قصي ستور</title>
 
   <!-- خطوط وأيقونات -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js">
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js">
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js">
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
 <link rel="stylesheet" href="loader.css">
-<script src="loader.js" defer></script>
+<script src="loader.js" defer>
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
   <!-- ملفات الهيدر القديمة -->
   <link rel="stylesheet" href="header.css" />
 
-  <script src="header.js" defer></script>
+  <script src="header.js" defer>
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
     <link rel="stylesheet" href="header.css">
 
 
@@ -399,8 +495,6 @@ main {
   .card h2 { font-size: 0.85rem !important; }
 }
 /* === END FIXED GRID OVERRIDES === */
-
-
 /* ===== Dark Mode (index) ===== */
 body.dark-mode {
   background:#0b1220;
@@ -466,6 +560,424 @@ body.dark-mode .login-modal .modal-content button:hover{
 body.dark-mode .card.maintenance{
   background:#0f172a !important; color:#eab308;
 }
+
+
+
+/* =========================
+   بطاقة "فري فاير تلقائي" — نسخة Turbo
+   - تعبّر عن السرعة (حركة اندفاع + آثار موشورية)
+   - لمعة Shimmer مستمرة لا تزول
+   - متوافقة مع الداكن + تقلل الحركة لمَن يفضّل ذلك
+   ========================= */
+
+/* القاعدة الأساسية عند تفعيل .featured */
+a.card.featured{
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;                 /* سنصنع إطارًا متحركًا لاحقًا */
+  border-radius: 14px;
+  transform: translateZ(0);                      /* تحسين الأداء */
+  transition: transform .25s ease, box-shadow .25s ease;
+  box-shadow: 0 10px 28px rgba(16,185,129,.18);
+  background:
+    linear-gradient(#fff, #fff) padding-box,      /* خلفية البطاقة نفسها */
+    linear-gradient(120deg,                      /* إطار متدرّج متحرك */
+      #10b981, #06b6d4, #22c55e, #10b981) border-box;
+  animation: turboGlow 2.4s ease-in-out infinite;
+}
+
+/* تأثير اندفاع طفيف عند التحويم */
+a.card.featured:hover{
+  transform: translateY(-6px) scale(1.015) skewX(-1deg);
+  box-shadow: 0 16px 40px rgba(16,185,129,.28);
+}
+
+/* شريط Turbo مائل (يوحي بالسرعة) */
+a.card.featured::before{
+  content: "تلقائي";
+  position: absolute;
+  top: 15px; right: -50px;           /* أبعد قليلاً ليظهر الشريط أوسع */
+  padding: 0px 00px;                 /* عرض أكبر للشريط */
+  font-weight: 800;
+  font-size: .85rem;
+  color: #fff;
+  background: linear-gradient(135deg, #06b6d4, #10b981);
+  transform: rotate(45deg);
+  border-radius: 10px;
+  letter-spacing: .3px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  z-index: 3;
+  pointer-events: none;
+}
+
+
+
+
+
+/* لمعة Shimmer مستمرة — شريحة مائلة تمر عبر البطاقة بلا توقف */
+a.card.featured .turbo-shimmer,
+a.card.featured .turbo-lines{ display:none; } /* سلامة لو كرّرت */
+a.card.featured{
+  /* عنصر اللمعة: نضيفه عبر pseudo-element إضافي بمساعدة: */
+}
+a.card.featured > * { position: relative; z-index: 2; }
+
+/* طبقة اللمعة (تمر قطريًا باستمرار) */
+a.card.featured::marker{ content: ""; } /* منع تأثر القوائم */
+a.card.featured .shimmer,
+a.card.featured .speed{
+  display:none; /* احتياطي */
+}
+
+/* اللمعة: باستخدام pseudo-element مستقل */
+a.card.featured::selection { background: transparent; } /* تجميلي */
+
+a.card.featured::shimmer { content:""; } /* placeholder غير مدعوم — نتجاوزها أدناه */
+
+/* نستخدم ::before و::after بالفعل؛ لذا ننشئ طبقتين إضافيتين عبر ::-webkit-… غير موحدة؟ بدلًا من ذلك:
+   سنستعمل عنصرين داخليين وهميين عبر gradient masks: */
+a.card.featured{
+  /* شريحة لمعة متحركة فوق المحتوى */
+}
+a.card.featured::part(shimmer){ content:""; } /* تجاهل: توضيحي */
+
+/* الحل العملي: نضيف طبقتين باستخدام background المتعدد + mask عبر ::after ثاني؟ لا يتاح.
+   سنستعمل طبقة :before موجودة للشريط، لذا سنضيف طبقة ثالثة عبر shadow-like: */
+
+a.card.featured{
+  /* خلفية خطوط سرعة رفيعة متحركة (تعطي “موشن” دائم) */
+  background-image:
+    linear-gradient(#fff, #fff),
+    linear-gradient(120deg, #10b981, #06b6d4, #22c55e, #10b981),
+    repeating-linear-gradient(
+      -75deg,
+      rgba(34,197,94,.10) 0px,
+      rgba(34,197,94,.10) 6px,
+      rgba(6,182,212,.10) 6px,
+      rgba(6,182,212,.10) 12px
+    );
+  background-origin: padding-box, border-box, padding-box;
+  background-clip: padding-box, border-box, padding-box;
+  background-size:
+    auto,                 /* الطبقة الأولى (لون البطاقة) */
+    300% 300%,            /* الإطار المتدرّج */
+    200% 200%;            /* خطوط السرعة */
+  background-position:
+    0 0,
+    0% 50%,
+    100% 0%;
+  animation:
+    turboGlow 2.4s ease-in-out infinite,
+    speedLines 3.2s linear infinite;
+}
+
+/* طبقة لمعة مقطعية فوق الصورة/العنوان كستارة شفافة تمر */
+a.card.featured .card-shimmer{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,.38) 12%,
+    rgba(255,255,255,.6) 16%,
+    rgba(255,255,255,.38) 20%,
+    transparent 32%
+  );
+  transform: translateX(120%) translateY(-10%) skewX(-10deg);
+  animation: sweep 2.8s linear infinite;
+  pointer-events:none;
+  z-index:2;
+}
+
+/* نقل اللمعة للأمام عند التحويم لزيادة الإحساس */
+a.card.featured:hover .card-shimmer{
+  animation-duration: 2.2s;
+}
+
+/* حركات */
+@keyframes turboGlow{
+  0%,100% { box-shadow: 0 10px 28px rgba(16,185,129,.18); }
+  50%     { box-shadow: 0 14px 42px rgba(16,185,129,.32); }
+}
+@keyframes boltPulse{
+  0%,100% { transform: translateZ(0) scale(1); opacity: .95; }
+  50%     { transform: translateZ(0) scale(1.12); opacity: 1; }
+}
+@keyframes speedLines{
+  0%   { background-position: 0 0, 0% 50%, 100% 0%; }
+  100% { background-position: 0 0, 100% 50%, 0% 0%; }
+}
+@keyframes sweep{
+  0%   { transform: translateX(120%) translateY(-10%) skewX(-10deg); }
+  100% { transform: translateX(-140%) translateY(10%)  skewX(-10deg); }
+}
+
+/* وضع داكن */
+body.dark-mode a.card.featured{
+  background:
+    linear-gradient(#1a2234, #1a2234) padding-box,
+    linear-gradient(120deg, #22c55e, #06b6d4, #16a34a, #22c55e) border-box,
+    repeating-linear-gradient(
+      -75deg,
+      rgba(125,211,252,.10) 0px,
+      rgba(125,211,252,.10) 6px,
+      rgba(34,197,94,.10) 6px,
+      rgba(34,197,94,.10) 12px
+    );
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+body.dark-mode a.card.featured .card-shimmer{
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,.20) 12%,
+    rgba(255,255,255,.28) 16%,
+    rgba(255,255,255,.20) 20%,
+    transparent 32%
+  );
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce){
+  a.card.featured,
+  a.card.featured::after,
+  a.card.featured .card-shimmer{
+    animation: none !important;
+  }
+}
+
+/* ===== متغيرات افتراضية للشريط (سطح مكتب) ===== */
+:root{
+  --ff-ribbon-top: 15px;
+  --ff-ribbon-right: -50px;
+  --ff-ribbon-pad-x: 50px; /* عرض الشريط أفقياً */
+  --ff-ribbon-pad-y: 8px;
+  --ff-ribbon-fs: .85rem;
+  --ff-ribbon-rotate: 45deg;
+
+  /* أيقونة البرق (صورة) */
+  --ff-bolt-size: 40px;
+  --ff-bolt-top: 10px;
+  --ff-bolt-left: 10px;
+}
+
+/* ضبط padding علوي بسيط لتفادي تداخل الشريط مع العنوان في كل المقاسات */
+a.card.featured{
+  padding-top: clamp(12px, 3.8vw, 24px);
+}
+
+/* الشريط المائل: استخدم المتغيرات */
+a.card.featured::before{
+  display: inline-flex;
+  align-items: center;          /* توسيط عمودي */
+  justify-content: center;      /* توسيط أفقي */
+  line-height: 1;               /* يمنع انزياح لأعلى */
+  height: calc(2 * var(--ff-ribbon-pad-y) + 1em); /* نفس سماكة الشريط الحالية */
+  padding: 0 var(--ff-ribbon-pad-x);              /* نحافظ على عرضه كما هو */
+  font-weight: 800;
+  font-size: var(--ff-ribbon-fs);
+  color: #fff;
+  background: linear-gradient(135deg, #06b6d4, #10b981);
+  transform: rotate(var(--ff-ribbon-rotate));
+  border-radius: 10px;
+  letter-spacing: .3px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  z-index: 3;
+  pointer-events: none;
+}
+
+
+/* ===== تناسق على الأجهزة اللوحية (<= 768px) ===== */
+@media (max-width: 768px){
+  :root{
+    --ff-ribbon-top: 12px;
+    --ff-ribbon-right: -42px;
+    --ff-ribbon-pad-x: 38px;
+    --ff-ribbon-pad-y: 7px;
+    --ff-ribbon-fs: .8rem;
+
+    --ff-bolt-size: 32px;
+    --ff-bolt-top: 10px;
+    --ff-bolt-left: 10px;
+  }
+}
+
+/* ===== تناسق على الهواتف الصغيرة (<= 480px) ===== */
+@media (max-width: 480px){
+  :root{
+    --ff-ribbon-top: 10px;
+    --ff-ribbon-right: -46px;   /* نبعد قليلًا حتى يظهر عرض الشريط دون قص */
+    --ff-ribbon-pad-x: 42px;    /* نحافظ على العرض لكن مع خط أصغر */
+    --ff-ribbon-pad-y: 6px;
+    --ff-ribbon-fs: .75rem;
+
+    --ff-bolt-size: 28px;
+    --ff-bolt-top: 8px;
+    --ff-bolt-left: 8px;
+  }
+}
+
+/* وضع داكن — تدرج أكثر سطوعًا على الشريط */
+body.dark-mode a.card.featured::before{
+  background: linear-gradient(135deg, #22c55e, #06b6d4);
+}
+
+/* ===== 1) صندوق صورة موحّد ودقيق ===== */
+.card{
+  /* يجعل كل البطاقات بنفس الارتفاع عند اختلاف طول العناوين */
+  display: flex;
+  flex-direction: column;
+}
+.card img{
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;        /* مربع دايمًا */
+  height: auto;                /* يحافظ على الدقة */
+  object-fit: cover;           /* يملأ الصندوق بلا تمدد غريب */
+  object-position: center;
+  border-radius: 10px;
+  box-sizing: border-box;
+  /* إطار خفيف موحد يعطي نفس الإحساس لكل الصور */
+  border: 2px solid rgba(255,255,255,.06);
+}
+body.dark-mode .card img{
+  border-color: rgba(255,255,255,.09);
+}
+
+/* لإلغاء أي فرق بصري في المحاذاة العمودية بين الصور */
+.card img { vertical-align: middle; }
+
+/* ===== 2) توحيد العنوان ومحاذاة ارتفاعه ===== */
+.card h2{
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: clamp(.95rem, 1.9vw, 1rem);
+  line-height: 1.25;
+  letter-spacing: .2px;
+  margin: 0;
+  /* نحجز سطرين كحد أقصى لضمان نفس الارتفاع بين البطاقات */
+  min-height: calc(1.25em * 2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;       /* قصّ إلى سطرين لو طال العنوان */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* تحسين تنعيم الخطوط */
+body, .card h2{
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ===== 3) ضبط تباعد داخلي موحّد للبطاقة ===== */
+.card{
+  padding: 14px;               /* خفيف وثابت */
+  gap: 12px;                   /* نفس الفاصل بين الصورة والعنوان */
+}
+
+/* ===== 4) تفاصيل صغيرة للجوال ===== */
+@media (max-width: 480px){
+  .card h2{
+    font-size: .95rem;         /* نفس المقياس لكن أنعم على الشاشات الصغيرة */
+    min-height: calc(1.3em * 2);
+  }
+}
+
+/* لا تطبق تأثير التحويم على الأجهزة اللمسية */
+@media (hover: none){
+  a.card.featured:hover{
+    transform: none !important;
+    box-shadow: 0 10px 28px rgba(16,185,129,.18) !important;
+  }
+}
+
+/* تهدئة الأنيميشن على الشاشات الصغيرة */
+@media (max-width: 480px){
+  /* أوقف تغيّر الظل + خطوط السرعة (أكثر شيء يسبب الاهتزاز) */
+  a.card.featured{
+    animation: none !important;                         /* يوقف turboGlow */
+    background-image:
+      linear-gradient(var(--card-bg, #1a2234), var(--card-bg, #1a2234)),
+      linear-gradient(120deg, #22c55e, #06b6d4, #16a34a, #22c55e); /* بدون طبقة speedLines */
+    background-size: auto, 300% 300%;
+    background-position: 0 0, 50% 50%;
+    will-change: transform;                              /* تحسين أداء */
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* نُبقي اللمعة لكن أبطأ وأكثر سلاسة */
+  a.card.featured .card-shimmer{
+    animation: sweep 4s linear infinite;
+    opacity: .65;
+  }
+}
+
+/* تحسين شريط تلقائي 24/7 على الهواتف */
+@media (max-width: 480px) {
+  a.card.featured::before {
+    content: "تلقائي";       /* النص */
+    font-size: 1rem;            /* أصغر شوي عشان يناسب */
+    top: 8px;                     /* أقرب للهيدر */
+    right: -40px;                 /* ما ينقصّش من العرض */
+    transform: rotate(45deg);     /* نفس الميل */
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* اجعل الخلفية الافتراضية للبطاقات بيضاء في الوضع الفاتح */
+:root {
+  --card-bg: #ffffff;
+}
+
+/* في الوضع الداكن تبقى داكنة */
+body.dark-mode {
+  --card-bg: #1a2234;
+}
+
+/* تأكيد لون بطاقة "فري فاير تلقائي" في الوضع الفاتح (سطح مكتب وموبايل) */
+body:not(.dark-mode) a.card.featured {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(120deg, #10b981, #06b6d4, #22c55e, #10b981) border-box;
+}
+
+/* على الهواتف: إصلاح طبقة background-image التي تعتمد على --card-bg */
+@media (max-width: 480px) {
+  body:not(.dark-mode) a.card.featured {
+    background-image:
+      linear-gradient(var(--card-bg, #ffffff), var(--card-bg, #ffffff)),
+      linear-gradient(120deg, #22c55e, #06b6d4, #16a34a, #22c55e);
+    background-size: auto, 300% 300%;
+    background-position: 0 0, 50% 50%;
+  }
+}
+
+/* توحيد ارتفاع الصور في جميع البطاقات */
+.card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;     /* يضمن أن الصورة مربعة */
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 8px;
+  display: block;
+}
+
+/* إزالة تأثير الـ padding الإضافي في البطاقة المميزة على مساحة الصورة */
+a.card.featured {
+  padding-top: 14px !important;  /* نفس padding البطاقات العادية */
+}
+
+/* لو الشريط المائل يتعارض مع الصورة، نزله فوق المحتوى فقط */
+a.card.featured::before {
+  top: 6px !important;   /* أقرب لحافة البطاقة */
+}
+
 
   </style>
 </head>
@@ -644,6 +1156,7 @@ applyCardsVisibility();
 
 
 
+
 function checkAndRequestPhoneNumber(user) {
   const userRef = db.collection('users').doc(user.uid);
 
@@ -733,6 +1246,7 @@ function applyCardsVisibility() {
 document.querySelectorAll('.card').forEach(card => {
   card.classList.add('loading');
 });
+
   (function(){
     try{
       if(localStorage.getItem('theme') === 'dark'){
@@ -742,7 +1256,7 @@ document.querySelectorAll('.card').forEach(card => {
   })();
 
 
-  (function(){
+(function(){
   const input = document.getElementById('searchInput');
   const btn = document.getElementById('searchButton');
   const grid = document.getElementById('categoriesContainer');
@@ -802,6 +1316,22 @@ document.querySelectorAll('.card').forEach(card => {
   });
 })();
 
-  </script>
+
+document.addEventListener('DOMContentLoaded', function () {
+  const featuredHrefs = ['freefireinbut.html', 'pubg.html', 'jawaker.html'];
+  featuredHrefs.forEach(href => {
+    const card = document.querySelector(`a.card[href="${href}"]`);
+    if (!card) return;
+    card.classList.add('featured');
+    // add shimmer layer if not already present
+    if (!card.querySelector('.card-shimmer')) {
+      const shimmer = document.createElement('span');
+      shimmer.className = 'card-shimmer';
+      card.appendChild(shimmer);
+    }
+  });
+});
+
+</script>
 </body>
 </html>

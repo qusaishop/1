@@ -301,13 +301,7 @@ body.dark-mode .footer-title{
     ];
     topupOffers.forEach(o => offersBox.appendChild(createOfferBox({ type:"topup", uc:o.uc, imgSrc:o.imgSrc, imgAlt:o.imgAlt })));
 
-    const membershipTitle = document.createElement("div"); membershipTitle.className = "section-title"; membershipTitle.textContent = "الاشتراكات"; offersBox.appendChild(membershipTitle);
-    const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";
-    [
-      { offer: "ELITE PASS 1 - 100", imgSrc: "https://cdn.midasbuy.com/images/elite_1520x770%20.a86bc11a.jpg", imgAlt: "ELITE PASS 1 - 100" },
-      { offer: "ELITE PASS 1 - 50",  imgSrc: "https://cdn.midasbuy.com/images/tiyan_1520x770.f467ea1c.jpg",     imgAlt: "ELITE PASS 1 - 50"  }
-    ].forEach(o => membershipOffersGrid.appendChild(createOfferBox({ type:"membership", offer:o.offer, imgSrc:o.imgSrc, imgAlt:o.imgAlt })));
-    offersBox.appendChild(membershipOffersGrid);
+
 
     window.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById("myOffersContainer");

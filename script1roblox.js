@@ -275,58 +275,168 @@ async function sendOrder() {
 }
 
 /* ================== نافذة التأكيد كما هي ================== */
-function showConfirmation(code) {
-  const audio = new Audio('success.mp3');
-  audio.play();
+function showConfirmation(orderCode, {
+  orderUrl = "talabat.html",
+  homeUrl  = "index.html",
+  theme    = "auto"
+} = {}) {
 
-  if (!document.querySelector('script[src*="dotlottie-player-component"]')) {
-    const lottieScript = document.createElement('script');
-    lottieScript.type = 'module';
-    lottieScript.src = 'https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs';
-    document.head.appendChild(lottieScript);
+
+  // احذف أي نسخة سابقة
+  const old = document.getElementById("success-like-image");
+  if (old) old.remove();
+
+  // اكتشاف الثيم
+// داخل showConfirmation(...) استبدل الدالة التالية:
+const detectTheme = () => {
+  // 0) تفضيل الباراميتر إن وُجد
+  if (theme === "light" || theme === "dark") return theme;
+
+  // 1) أولوية للتخزين المحلي (القيمة "theme")
+  let stored = "";
+  try { stored = (localStorage.getItem("theme") || "").toLowerCase().trim(); } catch {}
+  if (stored === "dark")  return "dark";
+  // إذا كانت "light" أو غير موجودة/فارغة -> نهاري افتراضيًا
+  if (stored === "light" || stored === "") return "light";
+
+  // 2) احتياطيات أخرى (لو عندك سمات/كلاسات في الصفحة)
+  if (document.body.classList.contains("dark-mode")) return "dark";
+  if ((document.documentElement.dataset.theme || "").toLowerCase() === "dark") return "dark";
+
+  // 3) تفضيل النظام (في حال احتجته)
+  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+
+  // 4) الافتراضي النهائي: نهاري
+  return "light";
+};
+
+
+  const palette = (mode) => {
+    const dark = mode === "dark";
+    return {
+      pageBg:        dark ? "#0a0a0f" : "#f7f7fb",
+      cardBg:        dark ? "#0e0d13" : "#ffffff",
+      cardText:      dark ? "#e8e7f3" : "#111111",
+      subtleTx:      dark ? "#bdbdd0" : "#6b7280",
+      codeTx:        dark ? "#e6edf3" : "#111111",
+      bannerBg:      "#21c065",
+      bannerText:    "#ffffff",
+      iconBg:        "#ffe34f",
+      iconText:      "#151515",
+      btnPriBg:      "#ffc21a",
+      btnPriTx:      "#1a1a1a",
+      btnSecBg:      dark ? "#c7c7d8" : "#d7d7e4",
+      btnSecTx:      "#1a1a1a",
+      closeBg:       dark ? "rgba(255,255,255,.10)" : "rgba(0,0,0,.08)",
+      cardShadow:    dark ? "0 20px 60px rgba(0,0,0,.45)" : "0 20px 60px rgba(0,0,0,.20)",
+    };
+  };
+
+  // الغلاف
+  const root = document.createElement("div");
+  root.id = "success-like-image";
+  root.dir = "rtl";
+  root.style.cssText = `
+    position:fixed; inset:0; z-index:99999;
+    display:flex; flex-direction:column; align-items:center;
+    font-family: system-ui, -apple-system, Segoe UI, Tahoma, Arial;
+  `;
+
+  // شريط علوي
+  const banner = document.createElement("div");
+  banner.textContent = "تمت العملية بنجاح";
+  banner.style.cssText = `
+    width:100%; text-align:center; font-weight:800; font-size:20px;
+    padding:14px 16px;
+  `;
+
+  // زر إغلاق
+  const close = document.createElement("button");
+  close.textContent = "×";
+  close.setAttribute("aria-label","إغلاق");
+  close.style.cssText = `
+    position:absolute; top:12px; inset-inline-start:12px;
+    width:36px; height:36px; border-radius:8px; border:0; font-size:22px; cursor:pointer;
+  `;
+  close.onclick = () => { cleanup(); root.remove(); };
+
+  // المحتوى
+  const wrap = document.createElement("div");
+  wrap.style.cssText = `max-width:720px; width:min(92vw,720px); margin:72px auto 0; text-align:center; padding:0 16px;`;
+
+  const card = document.createElement("div");
+  card.style.cssText = `margin:0 auto; border-radius:18px; overflow:hidden; padding:0 0 22px;`;
+
+  const icon = document.createElement("div");
+  icon.textContent = "🕒";
+  icon.style.cssText = `width:100px; height:100px; border-radius:50%; display:grid; place-items:center; font-size:44px; margin:22px auto 12px;`;
+
+  const h2 = document.createElement("h2");
+  h2.textContent = "طلبك قيد المعالجة";
+  h2.style.cssText = "font-size:28px; font-weight:800; margin:6px 0 10px;";
+
+  const p1 = document.createElement("p");
+  p1.textContent = "يمكنك مراجعة طلباتك في أي وقت من خلال سجل الطلبات";
+  p1.style.cssText = "margin:0 0 8px; line-height:1.8;";
+
+  const p2 = document.createElement("p");
+  p2.textContent = "شكرًا لاستخدامك خدماتنا";
+
+  const code = document.createElement("p");
+  code.innerHTML = `🆔 كود الطلب: <strong>${orderCode || "-"}</strong>`;
+  code.style.cssText = "margin:6px 0 18px; font-size:16px;";
+
+  const actions = document.createElement("div");
+  actions.style.cssText = "display:flex; gap:16px; justify-content:center; flex-wrap:wrap;";
+
+  const orderBtn = document.createElement("a");
+  orderBtn.href = orderUrl;
+  orderBtn.textContent = "طلباتي";
+  orderBtn.style.cssText = `text-decoration:none; padding:14px 24px; border-radius:16px; font-weight:800;`;
+
+  const homeBtn = document.createElement("a");
+  homeBtn.href = homeUrl;
+  homeBtn.textContent = "الرئيسية";
+  homeBtn.style.cssText = `text-decoration:none; padding:14px 24px; border-radius:16px; font-weight:800;`;
+
+  actions.append(orderBtn, homeBtn);
+  card.append(icon, h2, p1, p2, code, actions);
+  wrap.append(card);
+  root.append(banner, close, wrap);
+  document.body.appendChild(root);
+
+  // تطبيق الثيم الحالي
+  const applyTheme = () => {
+    const mode = detectTheme();
+    const pal  = palette(mode);
+    root.style.background   = pal.pageBg;
+    banner.style.background = pal.bannerBg;
+    banner.style.color      = pal.bannerText;
+    close.style.background  = pal.closeBg; close.style.color = "#fff";
+    card.style.background   = pal.cardBg;  card.style.boxShadow = pal.cardShadow; card.style.color = pal.cardText;
+    icon.style.background   = pal.iconBg;  icon.style.color = pal.iconText;
+    p1.style.color = pal.subtleTx; p2.style.color = pal.subtleTx; code.style.color = pal.codeTx;
+    orderBtn.style.background = pal.btnPriBg; orderBtn.style.color = pal.btnPriTx;
+    homeBtn.style.background  = pal.btnSecBg; homeBtn.style.color  = pal.btnSecTx;
+  };
+  applyTheme();
+
+  // مراقبة تغيّر النظام أو تغيير كلاس/أتريبيوت الثيم في الصفحة (للوضع auto فقط)
+  const mm = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  const mmHandler = () => { if (theme === "auto") applyTheme(); };
+  mm && mm.addEventListener && mm.addEventListener("change", mmHandler);
+
+  const obs = new MutationObserver(() => { if (theme === "auto") applyTheme(); });
+  obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  function cleanup() {
+    try { mm && mm.removeEventListener && mm.removeEventListener("change", mmHandler); } catch {}
+    try { obs.disconnect(); } catch {}
   }
 
-  const overlay = document.createElement("div");
-  overlay.style = `
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.8); z-index: 9999; display: flex;
-    justify-content: center; align-items: center;`;
-
-  const container = document.createElement("div");
-  container.style = `
-    background: white; padding: 25px 35px; border-radius: 12px;
-    text-align: center; max-width: 90vw;`;
-
-  const lottie = document.createElement("dotlottie-player");
-  lottie.setAttribute("src", "https://lottie.host/e254b369-8819-4942-b33f-b3b699f9bc28/32zzWRxzaZ.lottie");
-  lottie.setAttribute("background", "transparent");
-  lottie.setAttribute("speed", "1");
-  lottie.setAttribute("autoplay", "");
-  lottie.setAttribute("style", "width: 300px; height: 300px; margin: 0 auto;");
-
-  lottie.addEventListener("complete", () => { lottie.pause(); });
-
-  const message = document.createElement("p");
-  message.style = "font-size: 20px;";
-  message.innerText = "✅ تم استلام طلبك بنجاح";
-
-  const codeParagraph = document.createElement("p");
-  codeParagraph.innerHTML = `🆔 كود الطلب: <strong>${code}</strong>`;
-
-  const reloadButton = document.createElement("button");
-  reloadButton.innerHTML = "🔄 إعادة تحميل الصفحة";
-  reloadButton.style = `
-    margin-top: 15px; padding: 10px 25px;
-    background: #28a745; color: white; border: none;
-    border-radius: 8px; cursor: pointer;`;
-  reloadButton.onclick = () => location.reload();
-
-  container.appendChild(lottie);
-  container.appendChild(message);
-  container.appendChild(codeParagraph);
-  container.appendChild(reloadButton);
-  overlay.appendChild(container);
-  document.body.appendChild(overlay);
+  // صوت نجاح (اختياري)
+  try { new Audio("success.mp3").play(); } catch {}
 }
 
 // ✅ عند تحميل الصفحة سننتظر onAuthStateChanged لتحديد useruid ثم ننادي loadPrices()
