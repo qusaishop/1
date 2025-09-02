@@ -304,11 +304,11 @@ body.dark-mode .footer-title{
   const offersBox = document.createElement("div"); offersBox.className = "offers-box";
   const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
   const topupOffers = [
-    { jewels: 620, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "620" },
-    { jewels: 1040, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "340 توكنز" },
-    { jewels: 2120, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "570 توكنز" },
-    { jewels: 4360, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "1024 توكنز" },
-    { jewels: 11200, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "20000 توكنز" }
+    { jewels: 620, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "620" },
+    { jewels: 1040, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "340 توكنز" },
+    { jewels: 2120, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "570 توكنز" },
+    { jewels: 4360, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "1024 توكنز" },
+    { jewels: 11200, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "20000 توكنز" }
   ];
   topupOffers.forEach(offer => { offersBox.appendChild(createOfferBox({ type: "topup", jewels: offer.jewels, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
   const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";

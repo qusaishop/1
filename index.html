@@ -3,473 +3,183 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>متجر الخدمات الإلكترونية</title>
+  <title>قصي ستور</title>
 
-  <!-- خطوط وأيقونات -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+  <!-- سكربت تثبيت الثيم مبكرًا جدًا لمنع اللمعة -->
+  <script>
+  (function () {
+    var theme = 'dark';
+    try {
+      var t = localStorage.getItem('theme');
+      if (!t) {
+        t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      theme = (t === 'light') ? 'light' : 'dark';
+    } catch (e) { theme = 'dark'; }
+
+    var root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+
+    var metaCS = document.querySelector('meta[name="color-scheme"]');
+    if (!metaCS) { metaCS = document.createElement('meta'); metaCS.name = 'color-scheme'; document.head.appendChild(metaCS); }
+    metaCS.setAttribute('content', theme === 'dark' ? 'dark light' : 'light dark');
+
+    var metaTC = document.querySelector('meta[name="theme-color"]');
+    if (!metaTC) { metaTC = document.createElement('meta'); metaTC.name = 'theme-color'; document.head.appendChild(metaTC); }
+    metaTC.setAttribute('content', theme === 'dark' ? '#0b1220' : '#f9f9f9');
+
+    var cs = document.getElementById('critical-theme');
+    if (cs) {
+      cs.textContent = cs.textContent.replace(
+        /color-scheme:\s*(dark|light)\s*;/,
+        'color-scheme:' + (theme === 'dark' ? 'dark' : 'light') + ';'
+      );
+    }
+  })();
+  </script>
+
+  <!-- تحميل الصور أولاً -->
+  <link rel="preload" as="image" href="https://i.ibb.co/1GYPyKMj/1447-02-27-23-46-21-df66c84f.jpg">
+  <link rel="preload" as="image" href="https://i.ibb.co/Vcq1dr69/1756157590278.jpg">
+  <link rel="preload" as="image" href="https://i.ibb.co/XZHyMGSG/1756247096045.jpg">
+  <link rel="preload" as="image" href="https://i.ibb.co/cXQ1mG6y/prod-68632f4bac1c0-1.jpg">
+
+  <!-- تحسين الاتصال بالمصادر -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://i.ibb.co" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+
+  <!-- الخطوط -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- الأيقونات -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- CSS -->
+  <link rel="preload" href="header.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 
-  <!-- ملفات الهيدر القديمة -->
-  <link rel="stylesheet" href="header.css" />
-
+  <!-- Scripts -->
   <script src="header.js" defer></script>
-    <link rel="stylesheet" href="header.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" async></script>
 
-<link rel="stylesheet" href="loader.css">
-<script src="loader.js" defer></script>
+  <meta name="color-scheme" content="dark light">
 
+  <style id="critical-theme">
+    :root { color-scheme: light; }
+    html[data-theme="dark"]  { background:#0b1220; color:#e6edf3; }
+    html[data-theme="light"] { background:#f9f9f9; color:#333; }
+    html, body { margin:0; padding:0; }
+    body { background: inherit; color: inherit; }
+  </style>
+
+  <!-- Theme tokens -->
+  <style>
+  :root {
+    --bg:#f9f9f9; --text:#333; --muted:#888;
+    --card-bg:#fff; --card-text:var(--text); --card-border:#e5e7eb; --elev-shadow:0 2px 8px rgba(0,0,0,.1);
+    --input-bg:#fff; --input-text:var(--text); --input-border:#0077cc; --input-border-focus:#005fa3; --input-focus-glow:rgba(0,119,204,.5);
+    --btn-bg:#0077cc; --btn-bg-hover:#005fa3; --btn-text:#fff;
+    --balance-bg:#fff; --balance-text:#0077cc; --balance-shadow:0 5px 15px rgba(0,0,0,.1);
+    --modal-bg:#fff; --modal-text:var(--text); --modal-shadow:0 5px 15px rgba(0,0,0,.3);
+    --warn-bg:#fff3cd; --warn-text:#7a5d00; --warn-border:#ffe69c;
+    --skeleton:#f0f0f0; --shimmer-stripe:rgba(255,255,255,.4); --border-strong:#e5e7eb;
+  }
+  html[data-theme="dark"] {
+    --bg:#0b1220; --text:#e6edf3; --muted:#94a3b8;
+    --card-bg:#1a2234; --card-text:#e6edf3; --card-border:#334155; --elev-shadow:0 2px 10px rgba(0,0,0,.35);
+    --input-bg:#0b1220; --input-text:#e6edf3; --input-border:#334155; --input-border-focus:#38bdf8; --input-focus-glow:rgba(56,189,248,.35);
+    --btn-bg:#0369a1; --btn-bg-hover:#0ea5e9; --btn-text:#fff;
+    --balance-bg:#0f172a; --balance-text:#7dd3fc; --balance-shadow:0 6px 18px rgba(0,0,0,.35);
+    --modal-bg:#111827; --modal-text:#e6edf3; --modal-shadow:0 10px 30px rgba(0,0,0,.5);
+    --warn-bg:#2b2f3a; --warn-text:#facc15; --warn-border:#334155;
+    --skeleton:#162032; --shimmer-stripe:rgba(255,255,255,.15); --border-strong:#334155;
+  }
+  </style>
 
   <style>
-/* ========== Modal ========== */
-.modal {
-  position: fixed;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* خلفية شفافة */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
+/* Modal */
+.modal{position:fixed;inset:0;background-color:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999}
+.modal-content{background:var(--modal-bg);color:var(--modal-text);padding:30px;border-radius:10px;max-width:400px;width:100%;box-shadow:var(--modal-shadow);text-align:center}
 
-.modal-content {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  text-align: center;
-}
+/* Base */
+body{font-family:'Cairo',sans-serif;margin:0;direction:rtl}
+html[data-theme="dark"]  body,
+html[data-theme="light"] body{background:var(--bg);color:var(--text)}
 
-/* ========== Base ========== */
-body {
-  font-family: 'Cairo', sans-serif;
-  margin: 0;
-  background: #f9f9f9;
-  color: #333;
-  direction: rtl;
-}
+/* Search */
+.search-container{margin:80px auto 20px;max-width:600px;display:flex;justify-content:center;gap:10px;padding:0 15px}
+.search-container input[type="text"]{flex:1;padding:12px 15px;background:var(--input-bg);color:var(--input-text);border:2px solid var(--input-border);border-radius:25px;font-size:1rem;outline:none;transition:.3s}
+.search-container input[type="text"]:focus{box-shadow:0 0 6px var(--input-focus-glow);border-color:var(--input-border-focus)}
+.search-container button{background:var(--btn-bg);border:none;padding:12px 20px;border-radius:25px;color:var(--btn-text);font-size:1rem;cursor:pointer;transition:.3s}
+.search-container button:hover{background:var(--btn-bg-hover)}
 
-.search-container {
-  margin: 20px auto;
-  max-width: 600px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 15px;
-}
+main{max-width:1200px;margin:20px auto;padding:0 15px}
 
-.search-container input[type="text"] {
-  flex: 1;
-  padding: 12px 15px;
-  border: 2px solid #0077cc;
-  border-radius: 25px;
-  font-size: 1rem;
-  outline: none;
-  transition: 0.3s;
-}
+/* Grid */
+.categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,max-content));gap:20px;justify-content:start;max-width:1000px;margin:auto}
 
-.search-container input[type="text"]:focus {
-  box-shadow: 0 0 5px rgba(0, 119, 204, 0.5);
-  border-color: #005fa3;
-}
+/* Card */
+.card{background:var(--card-bg);color:var(--card-text);border:1px solid var(--card-border);border-radius:12px;box-shadow:var(--elev-shadow);text-align:center;padding:16px;text-decoration:none;transition:transform .3s ease,box-shadow .3s ease;display:flex;flex-direction:column;gap:12px}
+.card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,0,0,.15)}
+.card h2{font-weight:700;font-size:1rem;margin:0;line-height:1.4;word-break:break-word}
 
-.search-container button {
-  background-color: #0077cc;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 25px;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: 0.3s;
-}
+/* Image */
+.card img{width:100%;aspect-ratio:1/1;height:auto;object-fit:cover;object-position:center;border-radius:8px;user-select:none;background-color:var(--skeleton);display:block;margin:0 auto}
 
-.search-container button:hover {
-  background-color: #005fa3;
-}
+/* Show image even while pending (لو حصل تضارب مع .loading) */
+.card.pending-state img{visibility:visible}
 
-main {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 15px;
-}
+/* No results */
+.no-results{text-align:center;font-size:1.2rem;color:var(--muted);margin-top:30px}
 
-/* ========== Grid (Responsive Cards) ========== */
-.categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, max-content));
-  gap: 20px;
-  justify-content: start; /* أو center حسب رغبتك */
-  max-width: 1000px;
-  margin: auto;
-}
+/* Balance */
+#userBalance{margin:20px auto;max-width:600px;text-align:center;font-weight:700;font-size:1.3rem;color:var(--text);background:var(--balance-bg);border-radius:20px;padding:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--balance-shadow);position:relative;border:1px solid var(--card-border)}
+.balance-content{display:flex;align-items:center;justify-content:center}
+#balanceText{margin-right:10px;color:var(--balance-text)}
+.loading-spinner{border:4px solid #f3f3f3;border-top:4px solid var(--btn-bg);border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;display:none}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+#userBalance img{width:30px;height:30px;margin-left:10px}
 
-/* ========== Card ========== */
-.card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  padding: 16px;
-  text-decoration: none;
-  color: #333;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* Auth buttons */
+#loginBtn,#logoutBtn{position:fixed;top:5px;border:none;padding:10px 18px;border-radius:25px;font-size:1rem;cursor:pointer;z-index:9999;transition:.3s}
+#loginBtn{left:20px;background:var(--btn-bg);color:var(--btn-text);visibility:visible}
+#loginBtn:hover{background:var(--btn-bg-hover)}
+#logoutBtn{left:160px;background:#cc0000;color:#fff;visibility:hidden}
+#logoutBtn:hover{background:#990000}
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
+/* Login modal fields */
+.login-modal .modal-content input{padding:10px;background:var(--input-bg);color:var(--input-text);border:1px solid var(--card-border);border-radius:6px;font-size:1rem}
+.login-modal .modal-content button{padding:10px;background:var(--btn-bg);color:var(--btn-text);border:none;border-radius:6px;cursor:pointer}
+.login-modal .modal-content button:hover{background:var(--btn-bg-hover)}
+.modal-content .close{position:absolute;top:10px;left:20px;cursor:pointer;font-size:1.2rem}
 
-/* صورة مربعة دائمًا بدون تعديل الـ HTML */
-.card img {
-  width: 100%;
-  /* تجعل الارتفاع = العرض بشكل تلقائي */
-  aspect-ratio: 1 / 1;
-  height: auto;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 8px;
-  user-select: none;
-  background-color: #f0f0f0;
-  display: block;
-  margin: 0 auto;
-}
+/* Maintenance / Loading / Pending */
+.card.maintenance{background:var(--bg)!important;pointer-events:none;opacity:.7}
+.card.maintenance h2{color:#a00}
+.card.maintenance img{filter:grayscale(100%)}
 
-.card h2 {
-  font-weight: 700;
-  font-size: 1rem; /* تصغير خفيف ليتلاءم عند الشاشات الصغيرة */
-  margin: 0;
-  line-height: 1.4;
-  word-break: break-word;
-}
+.card.pending-state{pointer-events:none;opacity:.7;position:relative}
+.card.pending-state::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--shimmer-stripe),transparent);animation:shimmer 1.2s infinite;border-radius:12px}
+@keyframes shimmer{0%{right:-150px}100%{right:100%}}
 
-.no-results {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #888;
-  margin-top: 30px;
-}
+.card.loading{position:relative;background:var(--skeleton);overflow:hidden;pointer-events:none}
+.card.loading img,.card.loading h2{visibility:hidden}
+.card.loading::after{content:'';position:absolute;top:0;right:-150px;width:100px;height:100%;background:linear-gradient(90deg,transparent,var(--shimmer-stripe),transparent);animation:shimmer 1.2s infinite}
 
-/* ========== Balance ========== */
-#userBalance {
-  margin: 20px auto;
-  max-width: 600px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.3rem;
-  color: #0077cc;
-  background-color: #fff;
-  border-radius: 20px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  position: relative;
-}
+/* Responsive */
+@media (max-width:480px){.categories{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px}.card{padding:12px;gap:10px}.card h2{font-size:.95rem}}
+@media (max-width:768px){.categories{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
+@media (max-width:992px){.categories{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}}
 
-.balance-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.card.loading{pointer-events:none;opacity:.7}
 
-#balanceText {
-  margin-right: 10px;
-}
-
-.loading-spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #0077cc;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  display: none; /* إخفاء حتى يبدأ التحميل */
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-#userBalance img {
-  width: 30px;
-  height: 30px;
-  margin-left: 10px;
-}
-
-/* ========== Auth Buttons ========== */
-#loginBtn {
-  position: fixed;
-  top: 5px;
-  left: 20px;
-  background-color: #0077cc;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  z-index: 9999;
-  transition: 0.3s;
-  visibility: visible; /* يظهر أو يختفي بدون تغيير موقعه */
-}
-
-#logoutBtn {
-  position: fixed;
-  top: 5px;
-  left: 160px;
-  background-color: #cc0000;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  z-index: 9999;
-  transition: 0.3s;
-  visibility: hidden; /* يبدأ مخفي لكن يحتفظ بمكانه */
-}
-
-#loginBtn:hover {
-  background-color: #005fa3;
-}
-
-#logoutBtn:hover {
-  background-color: #990000;
-}
-
-/* ========== Login Modal ========== */
-.login-modal {
-  position: fixed;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 400px;
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.modal-content input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.modal-content button {
-  padding: 10px;
-  background: #0077cc;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.modal-content button:hover {
-  background: #005fa3;
-}
-
-.modal-content .close {
-  position: absolute;
-  top: 10px;
-  left: 20px;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-/* ========== Maintenance / Loading States ========== */
-.card.maintenance {
-  background-color: #e0e0e0 !important;
-  pointer-events: none;
-  opacity: 0.7;
-}
-.card.maintenance h2 {
-  color: #a00;
-}
-.card.maintenance img {
-  filter: grayscale(100%);
-}
-
-/* تأثير اللمعة للبطاقات أثناء التحميل */
-.card.loading {
-  position: relative;
-  background: #f0f0f0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* إخفاء المحتوى مؤقتًا */
-.card.loading img,
-.card.loading h2 {
-  visibility: hidden;
-}
-
-/* اللمعة المتحركة */
-.card.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: -150px;
-  width: 100px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: shimmer 1.2s infinite;
-}
-
-@keyframes shimmer {
-  0% { right: -150px; }
-  100% { right: 100%; }
-}
-
-/* ========== Responsive Tweaks ========== */
-/* الشاشات الصغيرة جدًا: نجعل الحد الأدنى للبطاقة أصغر لتزيد الأعمدة */
-@media (max-width: 480px) {
-  .categories {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 14px;
-  }
-  .card {
-    padding: 12px;
-    gap: 10px;
-  }
-  .card h2 {
-    font-size: 0.95rem;
-  }
-}
-
-/* الأجهزة اللوحية: توازن بين الحجم وعدد الأعمدة */
-@media (max-width: 768px) {
-  .categories {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-}
-
-/* الشاشات المتوسطة: أعمدة أكثر مع حد أدنى مريح */
-@media (max-width: 992px) {
-  .categories {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-}
-
-
-
-
-  /* === FIXED GRID OVERRIDES (force 5 cols desktop, 3 cols phones) === */
-.categories { 
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 20px;
-  justify-content: center;
-}
-@media (max-width: 768px) {
-  .categories { 
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important; 
-    gap: 12px;
-  }
-  .card { padding: 12px !important; }
-  .card h2 { font-size: 0.9rem !important; }
-}
-@media (max-width: 480px) {
-  .categories { 
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important; 
-    gap: 10px;
-  }
-  .card { padding: 10px !important; }
-  .card h2 { font-size: 0.85rem !important; }
-}
-/* === END FIXED GRID OVERRIDES === */
-
-/* ===== Dark Mode (index) ===== */
-body.dark-mode {
-  background:#0b1220;
-  color:#e6edf3;
-}
-
-/* شريط البحث */
-body.dark-mode .search-container input[type="text"]{
-  background:#0b1220; color:#e6edf3; border-color:#334155;
-}
-body.dark-mode .search-container input[type="text"]:focus{
-  border-color:#38bdf8; box-shadow:0 0 6px rgba(56,189,248,.35);
-}
-body.dark-mode .search-container button{
-  background:#0369a1;
-}
-body.dark-mode .search-container button:hover{
-  background:#0ea5e9;
-}
-
-/* البطاقات */
-body.dark-mode .card{
-  background:#1a2234; color:#e6edf3; border:1px solid #334155;
-  box-shadow:0 2px 10px rgba(0,0,0,.35);
-}
-body.dark-mode .card h2{ color:#e6edf3; }
-body.dark-mode .card.loading{ background:#162032; }
-body.dark-mode .card.loading::after{
-  background: linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
-}
-
-/* نص “لا توجد نتائج” */
-body.dark-mode .no-results{ color:#94a3b8; }
-
-/* صندوق الرصيد */
-body.dark-mode #userBalance{
-  background:#0f172a; color:#e6edf3; border:1px solid #334155;
-  box-shadow:0 6px 18px rgba(0,0,0,.35);
-}
-body.dark-mode #balanceText{ color:#7dd3fc; }
-
-/* أزرار الدخول/الخروج */
-body.dark-mode #loginBtn{ background:#0ea5e9; }
-body.dark-mode #loginBtn:hover{ background:#3fb7ff; }
-body.dark-mode #logoutBtn{ background:#ef4444; }
-body.dark-mode #logoutBtn:hover{ background:#dc2626; }
-
-/* المودال العام + مودال تسجيل الدخول */
-body.dark-mode .modal-content{
-  background:#111827; color:#e6edf3; box-shadow:0 10px 30px rgba(0,0,0,.5);
-}
-body.dark-mode .login-modal .modal-content input{
-  background:#0b1220; color:#e6edf3; border-color:#334155;
-}
-body.dark-mode .login-modal .modal-content button{
-  background:#0369a1;
-}
-body.dark-mode .login-modal .modal-content button:hover{
-  background:#0ea5e9;
-}
-
-/* بطاقات “مغلق للصيانة” */
-body.dark-mode .card.maintenance{
-  background:#0f172a !important; color:#eab308;
-}
-
-
-
+/* Fixed grid overrides */
+.categories{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:20px;justify-content:center}
+@media (max-width:768px){.categories{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px}.card{padding:12px!important}.card h2{font-size:.9rem!important}}
+@media (max-width:480px){.categories{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px}.card{padding:10px!important}.card h2{font-size:.85rem!important}}
+hr{border-color:var(--border-strong)}
   </style>
 </head>
 <body>
@@ -477,304 +187,321 @@ body.dark-mode .card.maintenance{
 <div id="headerContainer"></div>
 <div id="sidebarContainer"></div>
 
-
-<div id="preloader">
-  <div class="loader"></div>
-</div>
-
-
-
-
-
   <!-- البحث -->
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="ابحث عن الخدمات أو التصنيفات..." aria-label="بحث" />
     <button id="searchButton" aria-label="زر البحث"><i class="fas fa-search"></i></button>
   </div>
 
+<main>
+  <section class="categories" id="categoriesContainer">
+    <a href="games.html" class="card loading" data-title="الألعاب">
+      <img src="https://i.ibb.co/1GYPyKMj/1447-02-27-23-46-21-df66c84f.jpg" alt="ألعاب" loading="lazy" decoding="async" fetchpriority="high" />
+      <h2>الألعاب</h2>
+    </a>
+    <a href="social.html" class="card loading" data-title="مواقع التواصل الاجتماعي">
+      <img src="https://i.ibb.co/Vcq1dr69/1756157590278.jpg" alt="التواصل الاجتماعي" loading="lazy" decoding="async" fetchpriority="high" />
+      <h2>مواقع التواصل</h2>
+    </a>
+    <a href="software.html" class="card loading" data-title="اشتراكات البرامج">
+      <img src="https://i.ibb.co/XZHyMGSG/1756247096045.jpg" alt="البرامج" loading="lazy" decoding="async" fetchpriority="high" />
+      <h2>اشتراكات البرامج</h2>
+    </a>
+    <a href="map.html" class="card loading" data-title="خرائط Google">
+      <img src="https://i.ibb.co/cXQ1mG6y/prod-68632f4bac1c0-1.jpg" alt="خرائط Google" loading="lazy" decoding="async" fetchpriority="high" />
+      <h2>خدمات خرائط</h2>
+    </a>
+  </section>
+  <p class="no-results" id="noResults" style="display:none;">عذراً، لم يتم العثور على نتائج.</p>
+</main>
 
-  <main>
-    <section class="categories" id="categoriesContainer">
-      <a href="games.html" class="card" data-title="الألعاب">
-        <img src="https://i.ibb.co/DPH8mfJP/1447-02-27-23-46-21-df66c84f.jpg" alt="ألعاب" />
-        <h2>الألعاب</h2>
-      </a>
-      <a href="social.html" class="card" data-title="مواقع التواصل الاجتماعي">
-        <img src="https://i.ibb.co/Jw6J6Q5s/1756157590278.jpg" alt="التواصل الاجتماعي" />
-        <h2>مواقع التواصل</h2>
-      </a>
-      <a href="software.html" class="card" data-title="اشتراكات البرامج">
-        <img src="https://i.ibb.co/603jC6tB/1756247096045.jpg" alt="البرامج" />
-        <h2>اشتراكات البرامج</h2>
-      </a>
-        <a href="map.html" class="card" data-title="خرائط Google">
-        <img src="https://i.ibb.co/cXQ1mG6y/prod-68632f4bac1c0-1.jpg" alt="خرائط Google" />
-        <h2>خدمات خرائط</h2>
-      </a>
-    </section>
-    <p class="no-results" id="noResults" style="display:none;">عذراً، لم يتم العثور على نتائج.</p>
-  </main>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-
-    function generateAuthKey() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let key = '';
-  for (let i = 0; i < 36; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return key;
-}
-
-    // إعداد Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
-  authDomain: "qusaystore-ec327.firebaseapp.com",
-  projectId: "qusaystore-ec327",
-  storageBucket: "qusaystore-ec327.firebasestorage.app",
-  messagingSenderId: "701743074708",
-  appId: "1:701743074708:web:defc2de594567b6624d381",
-  measurementId: "G-00R4XQCB1V"
-};
-  firebase.initializeApp(firebaseConfig);
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-// دالة تحميل الرصيد
-
-
-function closeResetModal() {
-  resetModal.style.display = 'none';
-}
-auth.onAuthStateChanged(user => {
-  if (user && user.emailVerified) {
-    loadUserBalance(user.uid);
-  } else {
-    document.getElementById('balanceAmount').textContent = 'يجب تسجيل الدخول اولا';
-  }
-});
-auth.onAuthStateChanged(async (user) => {
-  if (user && user.emailVerified) {
-    const userRef = db.collection('users').doc(user.uid);
-    const docSnap = await userRef.get();
-
-    if (docSnap.exists) {
-      const data = docSnap.data();
-
-      // ✅ التحقق من الحظر
-      if (data.isBanned === true) {
-        document.body.innerHTML = `
-          <div class="modal">
-            <div class="modal-content">
-              <h2>🚫 تم تعليق الحساب</h2>
-              <p>تم تعليق حسابك بسبب أنشطة مشبوهة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل معنا.</p>
-              <button id="logoutBtnFromBan" style="
-                margin-top: 20px;
-                background-color: #cc0000;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                font-size: 1rem;
-                cursor: pointer;
-              ">
-                تسجيل الخروج
-              </button>
-            </div>
-          </div>
-        `;
-
-        // زر تسجيل الخروج
-        document.getElementById('logoutBtnFromBan').addEventListener('click', () => {
-          firebase.auth().signOut().then(() => {
-            window.location.href = "login.html";
-          });
-        });
-
-        return; // إيقاف أي تنفيذ لاحق
-      }
-
-      // ✅ إنشاء authkey إذا لم يكن موجودًا
-      if (!data.authkey) {
-        const authkey = generateAuthKey();
-        await userRef.set({ authkey }, { merge: true });
-      }
-
-      // ✅ تحميل الرصيد والتحقق من رقم الهاتف
-      loadUserBalance(user.uid);
-      checkAndRequestPhoneNumber(user);
-
-      // ✅ تطبيق حالة البطاقات (الإغلاق حسب Firestore)
+    /* ===== كاش/أدوات الحالات ===== */
+    function getStatesCache() {
+      try { const raw = localStorage.getItem('statesCache'); return raw ? JSON.parse(raw) : null; }
+      catch { return null; }
     }
-  } else {
-    document.getElementById('balanceAmount').textContent = 'يجب تسجيل الدخول اولا';
-  }
-});
-
-
-applyCardsVisibility();
-
-
-
-function checkAndRequestPhoneNumber(user) {
-  const userRef = db.collection('users').doc(user.uid);
-
-  userRef.get().then(doc => {
-    const data = doc.data();
-    if (!data || !data.phone) {
-      showPhoneModal(user.uid);
+    function setStatesCache(map) {
+      try { localStorage.setItem('statesCache', JSON.stringify({ ts: Date.now(), map })); }
+      catch {}
     }
-  });
-}
+    function lockAllCards() {
+      document.querySelectorAll('.card').forEach(card => {
+        // خزّن href والعنوان الأصليين
+        if (!card.dataset.originalHref) {
+          const href = card.getAttribute('href');
+          if (href) card.dataset.originalHref = href;
+        }
+        const titleEl = card.querySelector('h2');
+        if (!card.dataset.originalTitle && titleEl) card.dataset.originalTitle = titleEl.textContent;
 
-function showPhoneModal(uid) {
-  // إنشاء نافذة لإدخال رقم الهاتف بنفس شكل التسجيل
-  const modal = document.createElement('div');
-  modal.className = 'modal';
+        // ✅ أزل أي إخفاء بصري للصور مبكرًا
+        card.classList.remove('loading');
 
-  modal.innerHTML = `
-    <div class="modal-content" style="position: relative;">
-      <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
-      <h3>يرجى إدخال رقم هاتفك</h3>
-      <input type="tel" id="phoneInput" placeholder="أدخل رقم الهاتف" />
-      <button onclick="savePhoneNumber('${uid}')">حفظ</button>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-}
-
-function savePhoneNumber(uid) {
-  const phone = document.getElementById('phoneInput').value.trim();
-
-  if (!phone || phone.length < 6) {
-    alert('يرجى إدخال رقم هاتف صحيح.');
-    return;
-  }
-
-  db.collection('users').doc(uid).update({ phone }).then(() => {
-    alert('تم حفظ رقم الهاتف بنجاح.');
-    document.querySelector('.modal').remove();
-  }).catch(() => {
-    alert('حدث خطأ أثناء حفظ الرقم.');
-  });
-}
-
-function applyCardsVisibility() {
-  const cards = document.querySelectorAll('.card');
-  const statesRef = db.collection('states');
-
-  statesRef.onSnapshot(snapshot => {
-    const statesMap = {};
-
-    snapshot.forEach(doc => {
-      statesMap[doc.id] = doc.data().state;
-    });
-
-    cards.forEach(card => {
-      const originalHref = card.dataset.originalHref || card.getAttribute('href');
-      const pageName = originalHref.replace('.html', '');
-      const state = statesMap[pageName];
-
-      // حفظ الرابط الأصلي في data-* لتتم استعادته لاحقًا
-      card.dataset.originalHref = originalHref;
-
+        // قفل فوري
+        card.removeAttribute('href');
+        card.classList.add('pending-state');
+      });
+    }
+    function applyCardState(card, state) {
+      const finalState = (state === undefined || state === null) ? 'on' : state;
       const titleEl = card.querySelector('h2');
-      const originalTitle = card.dataset.originalTitle || titleEl.textContent;
-      card.dataset.originalTitle = originalTitle;
+      const img = card.querySelector('img');
 
+      // أزل أي إخفاء بصري
       card.classList.remove('loading');
 
-      if (state === 'off') {
-        card.removeAttribute('href');
+      if (finalState === 'off') {
+        // ✅ اجعل صورة العناصر المغلقة تظهر فورًا
+        if (img) {
+          img.setAttribute('loading', 'eager');
+          img.setAttribute('decoding', 'sync');
+          img.setAttribute('fetchpriority', 'high');
+        }
         card.classList.add('maintenance');
+        card.classList.remove('pending-state');
+        card.removeAttribute('href');
         if (titleEl) titleEl.textContent = '🚧 مغلق للصيانة';
       } else {
-        // إعادة الحالة الطبيعية
-        card.setAttribute('href', card.dataset.originalHref);
-        card.classList.remove('maintenance');
-        if (titleEl) titleEl.textContent = card.dataset.originalTitle;
+        if (card.dataset.originalHref) card.setAttribute('href', card.dataset.originalHref);
+        card.classList.remove('maintenance','pending-state');
+        if (titleEl && card.dataset.originalTitle) titleEl.textContent = card.dataset.originalTitle;
       }
-    });
-  }, error => {
-    console.error("فشل مراقبة تغييرات البطاقات:", error);
-  });
-}
-
-
-document.querySelectorAll('.card').forEach(card => {
-  card.classList.add('loading');
-});
-
-  (function(){
-    try{
-      if(localStorage.getItem('theme') === 'dark'){
-        document.body.classList.add('dark-mode');
-      }
-    }catch(e){}
-  })();
-
-
-  (function(){
-  const input = document.getElementById('searchInput');
-  const btn = document.getElementById('searchButton');
-  const grid = document.getElementById('categoriesContainer');
-  const noResults = document.getElementById('noResults');
-
-  if(!input || !btn || !grid) return;
-
-  // توحيد نص عربي: إزالة التشكيل، توحيد الألف/الياء/التاء المربوطة، حذف علامات الترقيم
-  const norm = s => (s||'').toString().toLowerCase()
-    .replace(/[ًٌٍَُِّْـ]/g,'')      // الحركات + التطويل
-    .replace(/[إأآا]/g,'ا')          // أشكال الألف -> ا
-    .replace(/ى/g,'ي')               // ى -> ي
-    .replace(/ة/g,'ه')               // ة -> ه (لتوسيع التطابق)
-    .replace(/[^\p{L}\p{N}\s]/gu,'') // إزالة الرموز
-    .trim();
-
-  const cards = Array.from(grid.querySelectorAll('.card'));
-
-  function apply(query){
-    const q = norm(query);
-    let shown = 0;
-    cards.forEach(card => {
-      const title = card.dataset.title || card.querySelector('h2')?.textContent || '';
-      const ok = q === '' || norm(title).includes(q);
-      card.style.display = ok ? '' : 'none';
-      if (ok) shown++;
-    });
-    if (noResults) noResults.style.display = shown ? 'none' : 'block';
-  }
-
-  // استعادة آخر كلمة بحث وحفظ الجديد
-  const KEY = 'home:q';
-  const saved = localStorage.getItem(KEY) || '';
-  if (saved) input.value = saved;
-  apply(saved);
-
-  // زر البحث
-  btn.addEventListener('click', () => {
-    localStorage.setItem(KEY, input.value);
-    apply(input.value);
-  });
-
-  // Enter من الحقل
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      localStorage.setItem(KEY, input.value);
-      apply(input.value);
     }
-  });
 
-  // تحديث حيّ مع إبطاء خفيف
-  let t;
-  input.addEventListener('input', () => {
-    clearTimeout(t);
-    t = setTimeout(() => apply(input.value), 150);
-  });
-})();
+    function generateAuthKey() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let key = '';
+      for (let i = 0; i < 36; i++) key += chars.charAt(Math.floor(Math.random() * chars.length));
+      return key;
+    }
+
+    // Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+      authDomain: "qusaystore-ec327.firebaseapp.com",
+      projectId: "qusaystore-ec327",
+      storageBucket: "qusaystore-ec327.firebasestorage.app",
+      messagingSenderId: "701743074708",
+      appId: "1:701743074708:web:defc2de594567b6624d381",
+      measurementId: "G-00R4XQCB1V"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function closeResetModal() { resetModal.style.display = 'none'; }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        //loadUserBalance(user.uid);
+      } else {
+        const el = document.getElementById('balanceAmount');
+        if (el) el.textContent = 'يجب تسجيل الدخول اولا';
+      }
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userRef = db.collection('users').doc(user.uid);
+        const docSnap = await userRef.get();
+
+        if (docSnap.exists) {
+          const data = docSnap.data();
+
+          if (data.isBanned === true) {
+            document.body.innerHTML = `
+              <div class="modal">
+                <div class="modal-content">
+                  <h2>🚫 تم تعليق الحساب</h2>
+                  <p>تم تعليق حسابك بسبب أنشطة مشبوهة. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل معنا.</p>
+                  <button id="logoutBtnFromBan" style="margin-top:20px;background:#cc0000;color:#fff;padding:10px 20px;border:none;border-radius:8px;font-size:1rem;cursor:pointer">تسجيل الخروج</button>
+                </div>
+              </div>`;
+            document.getElementById('logoutBtnFromBan').addEventListener('click', () => {
+              firebase.auth().signOut().then(() => { window.location.href = "login.html"; });
+            });
+            return;
+          }
+
+          if (!data.authkey) {
+            const authkey = generateAuthKey();
+            await userRef.set({ authkey }, { merge: true });
+          }
+
+          checkAndRequestPhoneNumber(user);
+        }
+      } else {
+        const el = document.getElementById('balanceAmount');
+        if (el) el.textContent = 'يجب تسجيل الدخول اولا';
+      }
+    });
+
+    /* ===== تسريع ومنع النافذة الزمنية للدخول ===== */
+    function applyCardsVisibility() {
+      const cards = document.querySelectorAll('.card');
+      const statesRef = db.collection('states');
+
+      // 1) اقفل كل البطاقات فورًا وأظهر الصور
+      lockAllCards();
+
+      // 2) طبّق كاش محلي فورًا
+      const cached = getStatesCache();
+      if (cached && cached.map) {
+        cards.forEach(card => {
+          const pageName = (card.dataset.originalHref || card.getAttribute('href') || '').replace('.html','');
+          const state = cached.map.hasOwnProperty(pageName) ? cached.map[pageName] : 'on';
+          applyCardState(card, state);
+        });
+      }
+
+      // 3) اشتراك Firestore
+      statesRef.onSnapshot({ includeMetadataChanges: true }, snapshot => {
+        const statesMap = {};
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          statesMap[doc.id] = (data && data.state) ? data.state : 'on';
+        });
+
+        const fromCache = snapshot.metadata.fromCache === true;
+
+        cards.forEach(card => {
+          const pageName = (card.dataset.originalHref || card.getAttribute('href') || '').replace('.html','');
+          const state = statesMap.hasOwnProperty(pageName) ? statesMap[pageName] : 'on';
+          applyCardState(card, state);
+        });
+
+        if (!fromCache) setStatesCache(statesMap);
+      }, error => {
+        console.error("فشل مراقبة تغييرات البطاقات:", error);
+        // افتح البطاقات بدل تركها مقفلة إذا حدث خطأ
+        document.querySelectorAll('.card').forEach(card => applyCardState(card, 'on'));
+      });
+    }
+
+    applyCardsVisibility();
+
+    function checkAndRequestPhoneNumber(user) {
+      const userRef = db.collection('users').doc(user.uid);
+      userRef.get().then(doc => {
+        const data = doc.data();
+        if (!data || !data.phone) {
+          const isHome = location.pathname.endsWith('index.html') || location.pathname === '/' || location.pathname === '';
+          if (!isHome) {
+            showPhoneModal(user.uid);
+          } else {
+            showPhoneBanner(user.uid);
+          }
+        }
+      });
+    }
+
+    function showPhoneBanner(uid) {
+      if (document.getElementById('phoneBanner')) return;
+
+      const banner = document.createElement('div');
+      banner.id = 'phoneBanner';
+      banner.style.cssText = `
+        max-width: 1200px; margin: 0 auto 10px; padding: 12px 16px;
+        background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-border); border-radius: 10px;
+        display: flex; align-items: center; gap: 10px; justify-content: space-between;
+      `;
+
+      banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fas fa-info-circle" aria-hidden="true"></i>
+          <span>يرجى إضافة رقم هاتفك لإكمال بيانات الحساب.</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button id="addPhoneBtn" style="padding:8px 14px; border:0; border-radius:8px; background: var(--btn-bg); color: var(--btn-text); cursor:pointer;">إضافة الآن</button>
+          <button id="dismissPhoneBanner" style="padding:8px 12px; border:0; border-radius:8px; background:#e5e7eb; color:#111; cursor:pointer;">لاحقًا</button>
+        </div>
+      `;
+
+      const searchWrapper = document.querySelector('.search-container')?.parentElement || document.body;
+      searchWrapper.insertBefore(banner, document.querySelector('.search-container'));
+
+      banner.querySelector('#addPhoneBtn').addEventListener('click', () => {
+        banner.remove();
+        showPhoneModal(uid);
+      });
+      banner.querySelector('#dismissPhoneBanner').addEventListener('click', () => banner.remove());
+    }
+
+    function showPhoneModal(uid) {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <div class="modal-content" style="position: relative;">
+          <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+          <h3>يرجى إدخال رقم هاتفك</h3>
+          <input type="tel" id="phoneInput" placeholder="أدخل رقم الهاتف" />
+          <button onclick="savePhoneNumber('${uid}')">حفظ</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function savePhoneNumber(uid) {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!phone || phone.length < 6) { alert('يرجى إدخال رقم هاتف صحيح.'); return; }
+      db.collection('users').doc(uid).update({ phone }).then(() => {
+        alert('تم حفظ رقم الهاتف بنجاح.');
+        document.querySelector('.modal').remove();
+      }).catch(() => { alert('حدث خطأ أثناء حفظ الرقم.'); });
+    }
+
+    // توافق قديم للثيم
+    document.addEventListener('DOMContentLoaded', function () {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.body.classList.toggle('dark-mode', isDark);
+
+      // البحث + الفلترة
+      const input = document.getElementById('searchInput');
+      const btn = document.getElementById('searchButton');
+      const grid = document.getElementById('categoriesContainer');
+      const noResults = document.getElementById('noResults');
+      if(!input || !btn || !grid) return;
+
+      const norm = s => (s||'').toString().toLowerCase()
+        .replace(/[ًٌٍَُِّْـ]/g,'')
+        .replace(/[إأآا]/g,'ا')
+        .replace(/ى/g,'ي')
+        .replace(/ة/g,'ه')
+        .replace(/[^\p{L}\p{N}\s]/gu,'')
+        .trim();
+
+      const cards = Array.from(grid.querySelectorAll('.card'));
+      function apply(query){
+        const q = norm(query);
+        let shown = 0;
+        cards.forEach(card => {
+          const title = card.dataset.title || card.querySelector('h2')?.textContent || '';
+          const ok = q === '' || norm(title).includes(q);
+          card.style.display = ok ? '' : 'none';
+          if (ok) shown++;
+        });
+        if (noResults) noResults.style.display = shown ? 'none' : 'block';
+      }
+
+      const KEY = 'home:q';
+      const saved = localStorage.getItem(KEY) || '';
+      if (saved) input.value = saved;
+      apply(saved);
+
+      btn.addEventListener('click', () => { localStorage.setItem(KEY, input.value); apply(input.value); });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); localStorage.setItem(KEY, input.value); apply(input.value); }
+      });
+      let t;
+      input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => apply(input.value), 150); });
+    });
   </script>
 </body>
 </html>

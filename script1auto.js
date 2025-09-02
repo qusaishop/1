@@ -480,3 +480,4 @@ const detectTheme = () => {
 document.addEventListener('DOMContentLoaded', () => {
   // onAuthStateChanged أعلاه سيتكفّل بتحميل الأسعار
 });
+

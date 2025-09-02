@@ -4,24 +4,78 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>شحن فري فاير</title>
+
+  <!-- تهيئة الثيم مبكرًا لتجنب وميض اللون -->
+  <script>
+    (function () {
+      var theme = 'dark';
+      try {
+        var t = localStorage.getItem('theme');
+        if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        theme = (t === 'light') ? 'light' : 'dark';
+      } catch (e) { theme = 'dark'; }
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        var metaCS = document.querySelector('meta[name="color-scheme"]');
+        if (!metaCS) { metaCS = document.createElement('meta'); metaCS.name = 'color-scheme'; document.head.appendChild(metaCS); }
+        metaCS.setAttribute('content', theme === 'dark' ? 'dark light' : 'light dark');
+        var metaTC = document.querySelector('meta[name="theme-color"]');
+        if (!metaTC) { metaTC = document.createElement('meta'); metaTC.name = 'theme-color'; document.head.appendChild(metaTC); }
+        metaTC.setAttribute('content', theme === 'dark' ? '#0b1220' : '#f9f9f9');
+      } catch(e){}
+      var s = document.createElement('style');
+      s.id = 'critical-theme';
+      s.textContent = 'html{background:'+(theme==='dark'?'#0b1220':'#f9f9f9')+';color:'+(theme==='dark'?'#e6edf3':'#333')+'} body{background:inherit;color:inherit;margin:0}';
+      document.head.appendChild(s);
+    })();
+  </script>
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+
+  <!-- تحسين الاتصال المسبق -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://i.ibb.co" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+
+  <!-- تحميل مسبق لصورة العروض المتكررة -->
+  <link rel="preload" as="image" href="https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg">
+
+  <!-- Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <!-- الخطوط والأيقونات -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- لوتي (غير حاجز) -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" async></script>
+
+  <!-- CSS -->
+  <link href="style1.css" rel="stylesheet"/>
+  <link href="header.css" rel="stylesheet"/>
+
+  <!-- Firebase SDKs (كما كان في الأعلى قبل الهيدر) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <script defer src="script1auto.js"></script>
-  <script defer src="state.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-  <link href="style1.css" rel="stylesheet"/>
-  <link href="header.css" rel="stylesheet"/>
+
+  <!-- Scripts: ابدأ بتهيئة Firebase ثم بقية السكربتات -->
+  <script src="script1auto.js"></script>
   <script defer src="header.js"></script>
-  <script defer src="atff.js"></script>
   <script defer src="scriptauto.js"></script>
+  <script defer src="atff.js"></script>
+
+  <!-- لودر الصفحة -->
   <link rel="stylesheet" href="loader.css">
-<script src="loader.js" defer></script>
-  <audio id="toast-success-sound" preload="auto" src="success.mp3"></audio>
-  <audio id="toast-error-sound" preload="auto" src="error.mp3"></audio>
+  <script src="loader.js" defer></script>
+
+  <!-- أصوات (بدون تحميل مسبق ثقيل) -->
+  <audio id="toast-success-sound" preload="none" src="success.mp3"></audio>
+  <audio id="toast-error-sound" preload="none" src="error.mp3"></audio>
+
   <style>
     /* اتجاه عام مساعد */
     .rtl { direction: rtl; text-align: right; unicode-bidi: embed; }
@@ -165,10 +219,9 @@ body.dark-mode .footer-title{
   <div class="loader"></div>
 </div>
 
-<link rel="stylesheet" href="loader.css">
-<script src="loader.js" defer></script>
 
-  <!-- Toast (مرتين في ملفك الأصلي؛ نُبقي واحدًا فقط لتجنب التعارض) -->
+
+  <!-- Toast -->
   <div id="toast" style="
     visibility: hidden;
     min-width: 250px;
@@ -296,7 +349,10 @@ body.dark-mode .footer-title{
     if (jewels) div.dataset.jewels = jewels;
     if (offer) div.dataset.offer = offer;
     div.onclick = function () { toggleOffer(this); };
-    const img = document.createElement("img"); img.src = imgSrc; img.alt = imgAlt; div.appendChild(img);
+    const img = document.createElement("img");
+    img.src = imgSrc; img.alt = imgAlt;
+    img.loading = 'lazy'; img.decoding = 'async'; img.setAttribute('fetchpriority','low');
+    div.appendChild(img);
     const span = document.createElement("span"); span.textContent = jewels ? `${jewels} جوهرة` : offer; div.appendChild(span);
     return div;
   }
@@ -304,11 +360,11 @@ body.dark-mode .footer-title{
   const offersBox = document.createElement("div"); offersBox.className = "offers-box";
   const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
   const topupOffers = [
-    { jewels: 110, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "620" },
-    { jewels: 210, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "340 توكنز" },
-    { jewels: 583, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "570 توكنز" },
-    { jewels: 1188, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "1024 توكنز" },
-    { jewels: 2420, imgSrc: "https://media.almashhad-alyemeni.com/img/25/08/04/331871.webp", imgAlt: "20000 توكنز" }
+    { jewels: 110, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "620" },
+    { jewels: 210, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "340 توكنز" },
+    { jewels: 583, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "570 توكنز" },
+    { jewels: 1188, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "1024 توكنز" },
+    { jewels: 2420, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "20000 توكنز" }
   ];
   topupOffers.forEach(offer => { offersBox.appendChild(createOfferBox({ type: "topup", jewels: offer.jewels, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
   const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";

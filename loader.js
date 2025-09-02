@@ -1,14 +1,17 @@
 // loader.js
 document.addEventListener("DOMContentLoaded", function () {
   const preloader = document.getElementById("preloader");
+  if (!preloader) return;
 
-  window.addEventListener("load", function () {
-    setTimeout(() => {
-      preloader.style.opacity = "0";
-      preloader.style.transition = "opacity 0.5s ease";
-      setTimeout(() => {
-        preloader.style.display = "none";
-      }, 500);
-    }, 1000); // يظل ظاهر نصف ثانية إضافية
-  });
+  const hide = () => {
+    preloader.style.transition = "opacity 0.4s ease";
+    preloader.style.opacity = "0";
+    setTimeout(() => { preloader.style.display = "none"; }, 400);
+  };
+
+  // أخفِه مبكرًا قدر الإمكان لنُشبه index.html (بدون انتظار تحميل الصور)
+  hide();
+
+  // وفي حال بقي ظاهرًا لسبب ما، نضمن إخفاءه بعد اكتمال التحميل
+  window.addEventListener("load", hide);
 });
