@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>متجر الخدمات الإلكترونية</title>
+  <title>قصي ستور - التواصل الاجتماعي</title>
+  <link rel="icon" href="emp.png" type="image/png">
+
+  <!-- منع الدخول المباشر: لا تفتح إلا عبر البطاقات/التنقل الداخلي (يسمح بإعادة التحميل) -->
+  <script>
+    (function(){
+      try{
+        var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')) || [];
+        var type = nav[0] ? nav[0].type : (performance.navigation ? (performance.navigation.type === 1 ? 'reload' : (performance.navigation.type === 2 ? 'back_forward' : '')) : '');
+        var isReload = type === 'reload';
+        var isBF = type === 'back_forward';
+        var ok = sessionStorage.getItem('nav:fromHome') === '1';
+        if (!ok && !isReload && !isBF) {
+          sessionStorage.setItem('nav:redirectedFrom', location.pathname.split('/').pop());
+          window.location.replace('index.html');
+        } else if (ok) {
+          sessionStorage.removeItem('nav:fromHome');
+        }
+      }catch(e){ window.location.replace('index.html'); }
+    })();
+  </script>
 
   <!-- سكربت تثبيت الثيم مبكرًا جدًا لمنع اللمعة -->
   <script>

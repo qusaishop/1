@@ -107,6 +107,11 @@ window.addEventListener("DOMContentLoaded", () => {
   if (container) {
     container.appendChild(header);
   }
+  // علّم جلسة الملاحة لأي رابط يؤدي إلى صفحة HTML داخل الموقع
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href$=".html"]');
+    if (a) { try { sessionStorage.setItem('nav:fromHome','1'); } catch (e) {} }
+  });
 });
 
 // التحكم في ظهور زر "تسجيل الدخول" و"الإعدادات" و"الإيداع" بناء على حالة المصادقة
@@ -302,6 +307,7 @@ document.addEventListener('click', function(event) {
 });
 
 function navigateTo(url) {
+  try { sessionStorage.setItem('nav:fromHome', '1'); } catch (e) {}
   toggleSidebar();
   setTimeout(() => {
     window.location.href = url;

@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>قصي ستور</title>
+  <link rel="icon" href="emp.png" type="image/png">
 
   <!-- سكربت تثبيت الثيم مبكرًا جدًا لمنع اللمعة -->
   <script>
@@ -501,6 +502,12 @@ hr{border-color:var(--border-strong)}
       });
       let t;
       input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => apply(input.value), 150); });
+
+      // علّم الملاحة أنها تمت من الرئيسية قبل الانتقال
+      document.addEventListener('click', function(e){
+        const a = e.target.closest('a[href$=".html"]');
+        if (a) { try { sessionStorage.setItem('nav:fromHome','1'); } catch(e){} }
+      });
     });
   </script>
 </body>

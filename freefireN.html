@@ -3,16 +3,63 @@
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>شحن فري فاير</title>
+  <title>قصي ستور - فري فاير (N)</title>
+  <link rel="icon" href="emp.png" type="image/png">
+
+  <!-- منع الدخول المباشر: يعيد إلى الرئيسية إن لم تكن الملاحة من الداخل -->
+  <script>
+    (function(){
+      try{
+        var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')) || [];
+        var type = nav[0] ? nav[0].type : (performance.navigation ? (performance.navigation.type === 1 ? 'reload' : (performance.navigation.type === 2 ? 'back_forward' : '')) : '');
+        var isReload = type === 'reload';
+        var isBF = type === 'back_forward';
+        var ok = sessionStorage.getItem('nav:fromHome') === '1';
+        if (!ok && !isReload && !isBF) {
+          sessionStorage.setItem('nav:redirectedFrom', location.pathname.split('/').pop());
+          window.location.replace('index.html');
+        } else if (ok) {
+          sessionStorage.removeItem('nav:fromHome');
+        }
+      }catch(e){ window.location.replace('index.html'); }
+    })();
+  </script>
+
+  <!-- تهيئة الثيم مبكرًا وتعيين color-scheme -->
+  <script>
+    (function(){
+      var theme='dark';
+      try{var t=localStorage.getItem('theme'); if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';} theme=(t==='light')?'light':'dark';}catch(e){theme='dark';}
+      document.documentElement.setAttribute('data-theme', theme);
+      try{
+        var cs=document.querySelector('meta[name="color-scheme"]'); if(!cs){cs=document.createElement('meta'); cs.name='color-scheme'; document.head.appendChild(cs);} cs.setAttribute('content', theme==='dark'?'dark light':'light dark');
+        var tc=document.querySelector('meta[name="theme-color"]'); if(!tc){tc=document.createElement('meta'); tc.name='theme-color'; document.head.appendChild(tc);} tc.setAttribute('content', theme==='dark'?'#0b1220':'#f9f9f9');
+      }catch(e){}
+      var s=document.createElement('style'); s.id='critical-theme'; s.textContent='html{background:'+(theme==='dark'?'#0b1220':'#f9f9f9')+';color:'+(theme==='dark'?'#e6edf3':'#333')+'} body{background:inherit;color:inherit;margin:0}'; document.head.appendChild(s);
+    })();
+  </script>
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1220">
+
+  <!-- تحسين الاتصال المسبق -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://i.ibb.co" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+
+  <!-- تحميل مسبق لصورة العروض المتكررة -->
+  <link rel="preload" as="image" href="https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg">
+
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  <script defer src="script1N.js"></script>
-  <script defer src="state.js"></script>
+  <script src="script1N.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" async></script>
   <link href="style1.css" rel="stylesheet"/>
   <link href="header.css" rel="stylesheet"/>
   <script defer src="header.js"></script>
@@ -20,8 +67,8 @@
   <script defer src="scriptN.js"></script>
   <link rel="stylesheet" href="loader.css">
 <script src="loader.js" defer></script>
-  <audio id="toast-success-sound" preload="auto" src="success.mp3"></audio>
-  <audio id="toast-error-sound" preload="auto" src="error.mp3"></audio>
+  <audio id="toast-success-sound" preload="none" src="success.mp3"></audio>
+  <audio id="toast-error-sound" preload="none" src="error.mp3"></audio>
   <style>
     /* اتجاه عام مساعد */
     .rtl { direction: rtl; text-align: right; unicode-bidi: embed; }
@@ -296,7 +343,10 @@ body.dark-mode .footer-title{
     if (jewels) div.dataset.jewels = jewels;
     if (offer) div.dataset.offer = offer;
     div.onclick = function () { toggleOffer(this); };
-    const img = document.createElement("img"); img.src = imgSrc; img.alt = imgAlt; div.appendChild(img);
+    const img = document.createElement("img");
+    img.src = imgSrc; img.alt = imgAlt;
+    img.loading = 'lazy'; img.decoding = 'async'; img.setAttribute('fetchpriority','low');
+    div.appendChild(img);
     const span = document.createElement("span"); span.textContent = jewels ? `${jewels} جوهرة` : offer; div.appendChild(span);
     return div;
   }

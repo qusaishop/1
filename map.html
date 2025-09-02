@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>متجر الخدمات الإلكترونية</title>
+  <title>قصي ستور - خرائط</title>
+  <link rel="icon" href="emp.png" type="image/png">
+
+  <!-- منع الدخول المباشر: لا تفتح إلا عبر البطاقات/التنقل الداخلي (يسمح بإعادة التحميل) -->
+  <script>
+    (function(){
+      try{
+        var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')) || [];
+        var type = nav[0] ? nav[0].type : (performance.navigation && performance.navigation.type === 1 ? 'reload' : '');
+        var isReload = type === 'reload';
+        var ok = sessionStorage.getItem('nav:fromHome') === '1';
+        if (!ok && !isReload) {
+          sessionStorage.setItem('nav:redirectedFrom', location.pathname.split('/').pop());
+          window.location.replace('index.html');
+        } else if (ok) {
+          sessionStorage.removeItem('nav:fromHome');
+        }
+      }catch(e){ window.location.replace('index.html'); }
+    })();
+  </script>
 
   <!-- خطوط وأيقونات -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />

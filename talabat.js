@@ -15,6 +15,7 @@ const auth = firebase.auth();
 
 // ========= إعدادات عامة =========
 const STATUS_REFRESH_WINDOW_DAYS = 7; // عدد الأيام التي نحدّث فيها حالة الطلب عند كل دخول
+const PAGINATION = { size: 20, page: 1, orders: [] };
 
 /* ===================== Theme (اختياري) ===================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -223,9 +224,29 @@ function renderOrders(orders) {
   const ordersList = document.getElementById("ordersList");
   if (!ordersList) return;
 
+  // حفظ البيانات وتبديل إلى الصفحة الأولى
+  PAGINATION.orders = Array.isArray(orders) ? orders.slice() : [];
+  PAGINATION.page = 1;
+
+  drawOrdersPage();
+}
+
+function drawOrdersPage() {
+  const ordersList = document.getElementById("ordersList");
+  if (!ordersList) return;
+
   ordersList.innerHTML = "";
 
-  orders.forEach(order => {
+  const total = PAGINATION.orders.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGINATION.size));
+  const page = Math.min(Math.max(1, PAGINATION.page), totalPages);
+  PAGINATION.page = page;
+
+  const start = (page - 1) * PAGINATION.size;
+  const end = Math.min(start + PAGINATION.size, total);
+  const slice = PAGINATION.orders.slice(start, end);
+
+  slice.forEach(order => {
     const { code, playerId, total, country, payment, العروض: offers, timestamp, status, proof } = order;
     const existing = document.getElementById(`order-${code}`);
     if (existing) existing.remove();
@@ -290,6 +311,7 @@ function renderOrders(orders) {
   });
 
   attachProofButtons();
+  renderPaginationControls(total, page, totalPages, start, end);
 }
 
 function attachProofButtons() {
@@ -306,6 +328,77 @@ function attachProofButtons() {
       }
     };
   });
+}
+
+function renderPaginationControls(total, page, totalPages, start, end) {
+  const ordersList = document.getElementById('ordersList');
+  if (!ordersList) return;
+
+  let pager = document.getElementById('ordersPagination');
+  if (!pager) {
+    pager = document.createElement('div');
+    pager.id = 'ordersPagination';
+    pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0;flex-wrap:wrap';
+    ordersList.insertAdjacentElement('afterend', pager);
+  }
+
+  if (total <= PAGINATION.size) {
+    pager.innerHTML = '';
+    pager.style.display = 'none';
+    return;
+  }
+  pager.style.display = 'flex';
+
+  const info = document.createElement('div');
+  info.textContent = `عرض ${start + 1}–${end} من ${total}`;
+  info.style.marginInlineStart = '8px';
+
+  const controls = document.createElement('div');
+  controls.style.display = 'flex';
+  controls.style.gap = '6px';
+
+  const mkBtn = (label, disabled, handler) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = 'padding:6px 10px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer';
+    if (document.body.classList.contains('dark-mode')) {
+      b.style.background = '#0f172a'; b.style.color = '#e6edf3'; b.style.borderColor = '#334155';
+    }
+    b.disabled = !!disabled;
+    if (disabled) { b.style.opacity = '0.6'; b.style.cursor = 'not-allowed'; }
+    if (handler) b.addEventListener('click', handler);
+    return b;
+  };
+
+  // Previous
+  controls.appendChild(mkBtn('السابق', page <= 1, () => { PAGINATION.page = Math.max(1, page - 1); drawOrdersPage(); }));
+
+  // Page numbers (compact: 1 ... p-1 p p+1 ... N)
+  const addPageBtn = (p) => {
+    const btn = mkBtn(String(p), false, () => { PAGINATION.page = p; drawOrdersPage(); });
+    if (p === page) { btn.style.fontWeight = '800'; btn.style.borderColor = '#0077cc'; }
+    controls.appendChild(btn);
+  };
+  const addEllipsis = () => {
+    const span = document.createElement('span'); span.textContent = '...'; span.style.padding = '6px 4px';
+    controls.appendChild(span);
+  };
+  if (totalPages <= 7) {
+    for (let p = 1; p <= totalPages; p++) addPageBtn(p);
+  } else {
+    addPageBtn(1);
+    if (page > 3) addEllipsis();
+    for (let p = Math.max(2, page - 1); p <= Math.min(totalPages - 1, page + 1); p++) addPageBtn(p);
+    if (page < totalPages - 2) addEllipsis();
+    addPageBtn(totalPages);
+  }
+
+  // Next
+  controls.appendChild(mkBtn('التالي', page >= totalPages, () => { PAGINATION.page = Math.min(totalPages, page + 1); drawOrdersPage(); }));
+
+  pager.innerHTML = '';
+  pager.appendChild(info);
+  pager.appendChild(controls);
 }
 
 /* ===================== تفاصيل الطلب: Cache-First ثم Firebase لهذا الطلب ===================== */
@@ -420,6 +513,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===================== أدوات صغيرة ===================== */
 function toggleDetails(code) {
   const d = document.getElementById(`details-${code}`);
-  if (!d) return;
-  d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+  const card = document.getElementById(`order-${code}`);
+  if (!d || !card) return;
+  const isOpen = d.style.display === 'block';
+  d.style.display = isOpen ? 'none' : 'block';
+  card.classList.toggle('open', !isOpen);
 }
