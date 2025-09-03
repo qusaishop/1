@@ -83,6 +83,10 @@
     body.dark-mode .chip[data-filter="pending"]{background:#2b2f3a;border-color:#a16207;color:#fde68a}
     body.dark-mode .chip[data-filter="done"]{background:#064e3b;border-color:#047857;color:#bbf7d0}
     body.dark-mode .chip[data-filter="rejected"]{background:#3f1d1d;border-color:#7f1d1d;color:#fecaca}
+
+    /* زر الحالة قابل للنقر دون إلغاء تنسيقات الحالة */
+    .code-status-btn{background:transparent; cursor:pointer}
+    .code-status-btn:focus{outline:2px solid rgba(14,165,233,.35)}
   </style>
 </head>
 <body>
@@ -97,14 +101,9 @@
 
     <div class="toolbar" id="walletToolbar" style="margin:10px 0 16px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="chip" data-filter="all">الكل</button>
-      <button class="chip" data-filter="pending">قيد المراجعة</button>
+      <button class="chip" data-filter="pending">قيد الانتظار</button>
       <button class="chip" data-filter="done">تم</button>
       <button class="chip" data-filter="rejected">مرفوض</button>
-      <style>
-        .chip{padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-weight:700}
-        .chip.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
-        body.dark-mode .chip{background:#0f172a;border-color:#334155;color:#e6edf3}
-      </style>
     </div>
 
     <div id="walletList" class="wallet-list"></div>
@@ -188,7 +187,7 @@
         card.innerHTML = `
           <div class="row">
             <div class="code">كود: <button class="code-btn" data-code="${code}" style="background:none;border:0;padding:0;margin:0;color:inherit;text-decoration:underline;cursor:pointer;font-weight:800">${code}</button></div>
-            <button class="${statusClass(st)} code-status-btn" data-code="${code}" style="border:0;cursor:pointer">${statusLabel(st)}</button>
+            <button class="code-status-btn ${statusClass(st)}" data-code="${code}">${statusLabel(st)}</button>
           </div>
           <div class="meta" style="margin-top:8px">
             ${paid? `<span class="meta-paid"><i class=\"fas fa-money-bill-wave\"></i> المدفوع: <b>${paid}</b></span>`:''}
@@ -206,9 +205,58 @@
 
     // ====== تخزين محلي للحد من القراءات ======
     const WK = (uid)=>`wallet:cache:${uid}`;
-    function readCache(uid){ try{ const r=localStorage.getItem(WK(uid)); return r? JSON.parse(r): {byCode:{}};}catch{return {byCode:{}};} }
-    function saveCache(uid, obj){ try{ localStorage.setItem(WK(uid), JSON.stringify(obj)); }catch{} }
-    function upsertCache(uid, code, data){ const c=readCache(uid); c.byCode = c.byCode||{}; c.byCode[code]= { ...(c.byCode[code]||{}), ...data, __cachedAt: Date.now() }; saveCache(uid, c); }
+    const RECENT_WINDOW_DAYS = 7;
+    const CACHE_TTL_MS = 5*60*1000; // 5 دقائق
+
+    function readCache(uid){
+      try{
+        const raw = localStorage.getItem(WK(uid));
+        if (!raw) return { byCode:{}, order:[], lastSync:0 };
+        const parsed = JSON.parse(raw);
+        return { byCode: parsed.byCode||{}, order: parsed.order||[], lastSync: parsed.lastSync||0 };
+      }catch{ return { byCode:{}, order:[], lastSync:0 }; }
+    }
+    function saveCache(uid, obj){
+      try{ localStorage.setItem(WK(uid), JSON.stringify(obj)); }catch{}
+    }
+    function replaceCache(uid, items){
+      const byCode = {}; const order = [];
+      (items||[]).forEach(it=>{ const code = it.code || it.id; if(!code) return; byCode[code] = it; order.push(code); });
+      saveCache(uid, { byCode, order, lastSync: Date.now() });
+    }
+    function mergeCache(uid, items){
+      const c = readCache(uid);
+      c.byCode = c.byCode || {}; c.order = Array.isArray(c.order)? c.order: [];
+      (items||[]).forEach(it=>{
+        const code = it.code || it.id; if(!code) return;
+        c.byCode[code] = { ...(c.byCode[code]||{}), ...it };
+        if (!c.order.includes(code)) c.order.push(code);
+      });
+      c.lastSync = Date.now();
+      saveCache(uid, c);
+    }
+    function upsertCache(uid, code, data){
+      const c=readCache(uid); c.byCode = c.byCode||{}; c.order = Array.isArray(c.order)? c.order: [];
+      c.byCode[code]= { ...(c.byCode[code]||{}), ...data, __cachedAt: Date.now() };
+      if (!c.order.includes(code)) c.order.unshift(code);
+      c.lastSync = Date.now();
+      saveCache(uid, c);
+    }
+    function cacheToArray(uid){
+      const c = readCache(uid);
+      const arr = (c.order||[]).map(code => ({ code, ...(c.byCode||{})[code] })).filter(x=>x && (x.code||x.id));
+      // ترتيب تنازليًا حسب التاريخ إن وُجد
+      arr.sort((a,b)=>{
+        const ta = asDate(a.createdAt || a.computedAt || a.timestamp)?.getTime() || 0;
+        const tb = asDate(b.createdAt || b.computedAt || b.timestamp)?.getTime() || 0;
+        return tb - ta;
+      });
+      return arr;
+    }
+    function isRecent(ts){
+      const d = asDate(ts); if (!d) return true;
+      return (Date.now() - d.getTime()) <= RECENT_WINDOW_DAYS*24*60*60*1000;
+    }
 
     function updateCardFromData(card, data){
       if (!card || !data) return;
@@ -304,22 +352,47 @@
       const user = auth.currentUser;
       if (!user) { listEl.innerHTML = '<div class="empty">يرجى تسجيل الدخول لعرض محفظتك.</div>'; return; }
 
-      let data = await fetchFromDepositRequests(user.uid);
-      if (!data.length) data = await fetchFromOrdersPrefix(user.uid);
-      ALL_ITEMS = data;
+      // 1) اعرض من الكاش فورًا إن وُجد
+      const cache = readCache(user.uid);
+      let usedCache = false;
+      if (cache.order && cache.order.length){
+        ALL_ITEMS = cacheToArray(user.uid);
+        usedCache = true;
+      } else {
+        // لا يوجد كاش → قراءة أول مرة
+        let data = await fetchFromDepositRequests(user.uid);
+        if (!data.length) data = await fetchFromOrdersPrefix(user.uid);
+        ALL_ITEMS = data;
+        replaceCache(user.uid, data);
+      }
       // استرداد الفلتر المحفوظ
       try{ const savedFilter = localStorage.getItem(`wallet:filter:${user.uid}`); if (savedFilter) CURRENT_FILTER = savedFilter; }catch{}
       renderDeposits(applyFilter(ALL_ITEMS));
-      // علّم الزر النشط إذا وُجد
       if (chipsWrap){ chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', (c.dataset.filter||'all')===CURRENT_FILTER)); }
-      // إبراز آخر كود تم فتحه سابقًا وتحديثه من الكاش/الخادم
-      try{
-        const last = localStorage.getItem(`wallet:lastCode:${user.uid}`);
-        if (last){
-          const btn = listEl.querySelector(`.code-btn[data-code="${last}"]`) || listEl.querySelector(`.code-status-btn[data-code="${last}"]`);
-          if (btn){ const card = btn.closest('.card'); if (card) card.classList.add('selected'); const cached = readCache(user.uid).byCode?.[last]; if (cached) updateCardFromData(card, cached); }
-        }
+      // إبراز آخر كود تم فتحه
+      try{ const last = localStorage.getItem(`wallet:lastCode:${user.uid}`);
+        if (last){ const btn = listEl.querySelector(`.code-btn[data-code="${last}"]`) || listEl.querySelector(`.code-status-btn[data-code="${last}"]`); if (btn){ const card = btn.closest('.card'); if (card) card.classList.add('selected'); const cached = readCache(user.uid).byCode?.[last]; if (cached) updateCardFromData(card, cached); } }
       }catch{}
+
+      // 2) تحديث ذكي: إن كان الكاش أقدم من TTL → حدّث حالات الطلبات الحديثة فقط
+      if (usedCache && (!cache.lastSync || (Date.now()-cache.lastSync) > CACHE_TTL_MS)){
+        const recentCodes = (cache.order||[]).filter(code=>{
+          const it = (cache.byCode||{})[code]||{};
+          return isRecent(it.createdAt || it.computedAt || it.timestamp);
+        }).slice(0, 20); // حدّ أقصى 20 قراءة حديثة
+        for (const code of recentCodes){
+          try{
+            const snap = await db.collection('depositRequests').doc(code).get();
+            if (snap.exists){
+              const fresh = { id:snap.id, ...snap.data() };
+              upsertCache(user.uid, code, fresh);
+              // حدّث البطاقة الظاهرة إن وُجدت
+              const card = listEl.querySelector(`.code-btn[data-code="${code}"]`)?.closest('.card') || listEl.querySelector(`.code-status-btn[data-code="${code}"]`)?.closest('.card');
+              if (card) updateCardFromData(card, fresh);
+            }
+          }catch{}
+        }
+      }
       // اربط مستمع نقر للقراءة عند الطلب
       listEl.addEventListener('click', async (e)=>{
         const btn = e.target.closest('.code-btn, .code-status-btn');
