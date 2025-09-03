@@ -1,4 +1,3 @@
-const bannerBackground = "https://d29u1ihjhteljl.cloudfront.net/_next/image?url=https%3A%2F%2Fs3.amazonaws.com%2Finventoryms-prod%2Fimages%2Finventory_image_yguiwevrgq_09-10-2023_at_09-08_AM.png&w=3840&q=75";
 
 const banner1 = document.getElementById("banner1");
 banner1.style.backgroundImage = `url('${bannerBackground}')`;

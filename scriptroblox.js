@@ -1,4 +1,3 @@
-const bannerBackground = "https://wallpaperaccess.com/full/8489351.jpg";
 
 const banner1 = document.getElementById("banner1");
 banner1.style.backgroundImage = `url('${bannerBackground}')`;

@@ -160,7 +160,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pid = document.getElementById("player-id").value.trim();
+  const pidInput = document.getElementById("modal-player-id");
+  const pid = (pidInput && pidInput.value ? pidInput.value : "").trim();
   const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     jewels: el.dataset.jewels || null,
@@ -168,13 +169,20 @@ async function sendOrder() {
   }));
 
   if (!pid || selectedOffers.length === 0) {
-    showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
+    showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الشراء!", "error");
     return;
   }
 
-  const turnstileToken = turnstile.getResponse();
+  // Turnstile موجود في الصفحة أو داخل المودال
+  let turnstileToken = "";
+  try {
+    const tsEl = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
+    if (window.turnstile && tsEl) {
+      turnstileToken = turnstile.getResponse(tsEl) || "";
+    }
+  } catch (_) {}
   if (!turnstileToken) {
-    showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
+    showToast("❗ يرجى اجتياز اختبار الأمان قبل الشراء!", "error");
     return;
   }
 
@@ -231,7 +239,7 @@ async function sendOrder() {
   const currentUrl = window.location.href;
 
   // ====== Purchase (مع اللودر وتعطيل الزر) ======
-  const submitBtn = document.querySelector('.send-button');
+  const submitBtn = document.getElementById('pm-buy') || document.querySelector('.send-button');
   try {
     // إظهار اللودر وتعطيل الزر
     showPreloader();
@@ -307,6 +315,13 @@ async function sendOrder() {
       submitBtn.style.opacity = '';
       submitBtn.style.pointerEvents = '';
     }
+    // تحديث/إعادة تعيين Turnstile بعد كل عملية
+    try {
+      if (window.turnstile) {
+        const tsEl = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
+        if (tsEl) turnstile.reset(tsEl);
+      }
+    } catch (_) {}
   }
 }
 

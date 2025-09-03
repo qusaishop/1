@@ -1,9 +1,5 @@
 const bannerBackgrounds = [
-  "https://i.ibb.co/G308q5qY/1292474.jpg",
-  "https://i.ibb.co/fzM1fQsQ/810254.jpg",
-  "https://i.ibb.co/LXRMP4kJ/2062187.jpg",
-  "https://i.ibb.co/jvnpYHPM/2342584.jpg",
-  "https://i.ibb.co/s98XJHRM/2342629.jpg"
+
 ];
 
 // تحميل الصور مسبقاً

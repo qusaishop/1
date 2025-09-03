@@ -1,8 +1,5 @@
 const bannerBackgrounds = [
-  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3199170/header.jpg?t=1748342194",
-  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj2m5vSOE9Uhb1xj-7tO9TUOP0VIA6R6irKvfI3LtCffUj0Z5lUUNtcNArePpVE_05qJOw_brmpT2L9s6OEXvgtE6sNGqTrBDZkQRj_fnciq1H_JPyLMX60pSochB1sTvBO4boTkpwlsEI0WixRofJp4WUSPf8IoSfiG_4_pszd-cI88fsx1HKD-00d5yA/s16000/Banner.png",
-  "https://i0.wp.com/www.gamersegames.com.br/wp-content/uploads/2024/12/Blood-Strike.webp?fit=1200%2C675&ssl=1",
-  "https://gamingonphone.com/wp-content/uploads/2023/09/Project-Bloodstrike-Characters-Weapons-Strikers-Guns-Game-Cover.jpg"
+
 ];
 
 // تحميل الصور مسبقاً
