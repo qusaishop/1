@@ -27,7 +27,7 @@
     .wallet-list{display:flex;flex-direction:column;gap:12px}
     .card{border:1px solid #e5e7eb;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:14px}
     .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .code{font-weight:800;color:#111}
+    .code{font-weight:800;color:#374151}
     .status{padding:4px 10px;border-radius:999px;background:#f3f4f6;color:#111;font-weight:700;font-size:.85rem}
     .status.done{background:#dcfce7;color:#065f46}
     .status.pending{background:#fff7ed;color:#7c2d12}
@@ -55,6 +55,12 @@
     body.dark-mode .empty{background:#0f172a;border-color:#334155;color:#9aa7b7}
     body.dark-mode .meta{color:#cbd5e1}
     body.dark-mode .meta i{color:#94a3b8}
+    body.dark-mode .code{color:#cbd5e1}
+
+    /* Desktop: كل معلومة في سطر */
+    @media (min-width: 992px){
+      .meta{display:flex;flex-direction:column;gap:6px}
+    }
   </style>
 </head>
 <body>
@@ -159,21 +165,48 @@
         card.className = 'card';
         card.innerHTML = `
           <div class="row">
-            <div class="code">كود: ${code}</div>
-            <div class="${statusClass(st)}">${statusLabel(st)}</div>
+            <div class="code">كود: <button class="code-btn" data-code="${code}" style="background:none;border:0;padding:0;margin:0;color:inherit;text-decoration:underline;cursor:pointer;font-weight:800">${code}</button></div>
+            <button class="${statusClass(st)} code-status-btn" data-code="${code}" style="border:0;cursor:pointer">${statusLabel(st)}</button>
           </div>
           <div class="meta" style="margin-top:8px">
-            ${paid? `<span><i class="fas fa-money-bill-wave"></i> المدفوع: ${paid}</span>`:''}
-            ${added? `<span><i class="fas fa-plus-circle"></i> سيضاف للمحفظة: ${added}</span>`:''}
-            ${ts? `<span><i class="fas fa-clock"></i> ${formatDate(ts)}</span>`:''}
+            ${paid? `<span class="meta-paid"><i class=\"fas fa-money-bill-wave\"></i> المدفوع: <b>${paid}</b></span>`:''}
+            ${added? `<span class="meta-added"><i class=\"fas fa-plus-circle\"></i> سيضاف للمحفظة: <b>${added}</b></span>`:''}
+            ${ts? `<span class="meta-date"><i class=\"fas fa-clock\"></i> ${formatDate(ts)}</span>`:''}
           </div>
           <div class="details">
-            ${(country||method) ? `<span><i class="fas fa-globe"></i> ${country} ${method? '• '+method:''}</span>` : ''}
-            ${proof? `<div class="proof"><i class="fas fa-image"></i> إثبات: <a href="${proof}" target="_blank" rel="noopener">عرض</a></div>`:''}
+            ${(country||method) ? `<span class="meta-place"><i class=\"fas fa-globe\"></i> ${country} ${method? '• '+method:''}</span>` : ''}
+            ${proof? `<div class="proof"><i class=\"fas fa-image\"></i> إثبات: <a href=\"${proof}\" target=\"_blank\" rel=\"noopener\">عرض</a></div>`:''}
           </div>
         `;
         listEl.appendChild(card);
       });
+    }
+
+    // ====== تخزين محلي للحد من القراءات ======
+    const WK = (uid)=>`wallet:cache:${uid}`;
+    function readCache(uid){ try{ const r=localStorage.getItem(WK(uid)); return r? JSON.parse(r): {byCode:{}};}catch{return {byCode:{}};} }
+    function saveCache(uid, obj){ try{ localStorage.setItem(WK(uid), JSON.stringify(obj)); }catch{} }
+    function upsertCache(uid, code, data){ const c=readCache(uid); c.byCode = c.byCode||{}; c.byCode[code]= { ...(c.byCode[code]||{}), ...data, __cachedAt: Date.now() }; saveCache(uid, c); }
+
+    function updateCardFromData(card, data){
+      if (!card || !data) return;
+      const st = data.status || data.state || 'pending';
+      const paidVal = (data.amountCurrency!=null)? Number(data.amountCurrency) : (data.client_payAmount!=null? Number(data.client_payAmount) : (data.payAmount!=null? Number(data.payAmount): null));
+      const paidCur = data.currency || '';
+      const paid = (paidVal!=null)? (paidVal.toFixed(2) + (paidCur? (' '+paidCur):'')) : '';
+      const added = (data.amountJOD!=null)? (Number(data.amountJOD).toFixed(2) + ' د.أ') : '';
+      const ts = data.createdAt || data.computedAt || data.timestamp || '';
+      const method = data.methodName || data.method || '';
+      const country= data.countryName || data.country || '';
+      const proof = data.proof || data.proofUrl || '';
+
+      const statusBtn = card.querySelector('.code-status-btn');
+      if (statusBtn){ statusBtn.className = `code-status-btn ${statusClass(st)}`; statusBtn.textContent = statusLabel(st); }
+      const paidEl = card.querySelector('.meta-paid'); if (paidEl && paid) paidEl.innerHTML = `<i class="fas fa-money-bill-wave"></i> المدفوع: <b>${paid}</b>`;
+      const addedEl= card.querySelector('.meta-added'); if (addedEl && added) addedEl.innerHTML = `<i class="fas fa-plus-circle"></i> سيضاف للمحفظة: <b>${added}</b>`;
+      const dateEl = card.querySelector('.meta-date'); if (dateEl && ts) dateEl.innerHTML = `<i class="fas fa-clock"></i> ${formatDate(ts)}`;
+      const placeEl= card.querySelector('.meta-place'); if (placeEl) placeEl.innerHTML = `<i class="fas fa-globe"></i> ${country} ${method? '• '+method:''}`;
+      const proofEl= card.querySelector('.proof a'); if (proofEl && proof) proofEl.href = proof;
     }
 
     async function fetchFromDepositRequests(uid){
@@ -253,6 +286,34 @@
       if (!data.length) data = await fetchFromOrdersPrefix(user.uid);
       ALL_ITEMS = data;
       renderDeposits(applyFilter(ALL_ITEMS));
+      // اربط مستمع نقر للقراءة عند الطلب
+      listEl.addEventListener('click', async (e)=>{
+        const btn = e.target.closest('.code-btn, .code-status-btn');
+        if (!btn) return;
+        const code = btn.dataset.code;
+        const card = btn.closest('.card');
+        if (!code || !card) return;
+        const uid = auth.currentUser && auth.currentUser.uid;
+        if (!uid) return;
+
+        // حدّث من الكاش أولًا إن وُجد
+        try{
+          const cached = readCache(uid).byCode?.[code];
+          if (cached) updateCardFromData(card, cached);
+        }catch{}
+        // قراءة عند الطلب من Firestore ثم تخزين
+        try{
+          const snap = await db.collection('depositRequests').doc(code).get();
+          if (snap.exists){
+            const fresh = { id: snap.id, ...snap.data() };
+            updateCardFromData(card, fresh);
+            upsertCache(uid, code, fresh);
+            // حدّث العنصر في ALL_ITEMS كذلك
+            const i = ALL_ITEMS.findIndex(x => (x.code||x.id) === code);
+            if (i >= 0) ALL_ITEMS[i] = { ...ALL_ITEMS[i], ...fresh };
+          }
+        }catch{}
+      });
     }
 
     auth.onAuthStateChanged(()=> loadWallet());
