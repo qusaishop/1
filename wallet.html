@@ -62,7 +62,23 @@
   <div id="sidebarContainer"></div>
 
   <main class="container">
-    <h2><i class="fas fa-wallet" style="color:#0ea5e9"></i> محفظتي</h2>
+    <h2 style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+      <span><i class="fas fa-wallet" style="color:#0ea5e9"></i> محفظتي</span>
+      <button id="refreshWallet" style="border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;background:#fff;cursor:pointer;font-weight:700">تحديث</button>
+    </h2>
+
+    <div class="toolbar" id="walletToolbar" style="margin:10px 0 16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="chip" data-filter="all">الكل</button>
+      <button class="chip" data-filter="pending">قيد المراجعة</button>
+      <button class="chip" data-filter="done">تم</button>
+      <button class="chip" data-filter="rejected">مرفوض</button>
+      <style>
+        .chip{padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-weight:700}
+        .chip.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+        body.dark-mode .chip{background:#0f172a;border-color:#334155;color:#e6edf3}
+      </style>
+    </div>
+
     <div id="walletList" class="wallet-list"></div>
   </main>
 
@@ -85,18 +101,8 @@
     const auth = firebase.auth();
 
     const listEl = document.getElementById('walletList');
-
-    // أدوات تسجيل الأخطاء لتسهيل التشخيص
-    function logError(stage, err){
-      try {
-        console.group && console.group(`[Wallet] ${stage}`);
-        console.error(err && err.message ? err.message : err);
-        if (err && err.stack) console.error(err.stack);
-        console.groupEnd && console.groupEnd();
-      } catch(_) {}
-    }
-    window.addEventListener('error', (e)=>logError('window.error', e.error || e.message));
-    window.addEventListener('unhandledrejection', (e)=>logError('unhandledrejection', e.reason || e));
+    const refreshBtn = document.getElementById('refreshWallet');
+    const chipsWrap = document.getElementById('walletToolbar');
 
     function cardSkeleton(){
       const d = document.createElement('div'); d.className='card loading'; d.style.height='86px'; return d;
@@ -171,23 +177,31 @@
     }
 
     async function fetchFromDepositRequests(uid){
+      const baseRef = db.collection('depositRequests').where('userId','==',uid);
       try{
-        // ترتيب مباشر حسب createdAt (إن لم يوجد سيأتي بدون ترتيب واضح)
-        let q = db.collection('depositRequests').where('userId','==',uid);
-        try { q = q.orderBy('createdAt','desc'); } catch(_) {}
-        const snap = await q.get();
+        // حاول أولاً الاستعلام مع ترتيب على الخادم (يتطلب فهرسًا مركّبًا)
+        const snap = await baseRef.orderBy('createdAt','desc').get();
         let arr = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-        // صِفّ فقط الأكواد التي تبدأ بـ DEP (احتياطاً)
         arr = arr.filter(x => String(x.code || x.id || '').toUpperCase().startsWith('DEP'));
-        // تأكيد الترتيب لو لم يعمل orderBy
-        arr.sort((a,b)=>{
-          const ta = asDate(a.createdAt || a.computedAt || a.timestamp)?.getTime() || 0;
-          const tb = asDate(b.createdAt || b.computedAt || b.timestamp)?.getTime() || 0;
-          return tb - ta;
-        });
         return arr;
       }catch(e){
-        logError('fetchFromDepositRequests', e);
+        // إذا كان الخطأ يتطلب فهرسًا، جرّب دون orderBy ثم فرز على العميل
+        const msg = String(e && e.message || e || '');
+        if (msg.includes('requires an index') || msg.includes('FAILED_PRECONDITION')){
+          try{
+            const snap2 = await baseRef.get();
+            let arr = snap2.docs.map(d=>({ id:d.id, ...d.data() }));
+            arr = arr.filter(x => String(x.code || x.id || '').toUpperCase().startsWith('DEP'));
+            arr.sort((a,b)=>{
+              const ta = asDate(a.createdAt || a.computedAt || a.timestamp)?.getTime() || 0;
+              const tb = asDate(b.createdAt || b.computedAt || b.timestamp)?.getTime() || 0;
+              return tb - ta;
+            });
+            return arr;
+          }catch(e2){
+            return [];
+          }
+        }
         return [];
       }
     }
@@ -214,31 +228,49 @@
           const tb = b.timestamp? new Date(b.timestamp).getTime() : 0;
           return tb - ta;
         });
-      }catch(e){ logError('fetchFromOrdersPrefix', e); return []; }
+      }catch(e){ return []; }
+    }
+
+    let ALL_ITEMS = [];
+    let CURRENT_FILTER = 'all';
+
+    function applyFilter(items){
+      if (CURRENT_FILTER === 'all') return items;
+      return items.filter(x=>{
+        const v = String(x.status||x.state||'').toLowerCase();
+        if (CURRENT_FILTER==='done') return ['approved','done','completed','تم','تم_الإيداع','تم_الشحن'].some(k=>v.includes(k));
+        if (CURRENT_FILTER==='rejected') return v.includes('reject') || v.includes('مرفوض');
+        return v.includes('pend');
+      });
     }
 
     async function loadWallet(){
-      try{
-        showSkeleton(3);
-        const user = auth.currentUser;
-        if (!user) { listEl.innerHTML = '<div class="empty">يرجى تسجيل الدخول لعرض محفظتك.</div>'; return; }
-        console.log('[Wallet] uid =', user.uid);
+      showSkeleton(3);
+      const user = auth.currentUser;
+      if (!user) { listEl.innerHTML = '<div class="empty">يرجى تسجيل الدخول لعرض محفظتك.</div>'; return; }
 
-        let data = await fetchFromDepositRequests(user.uid);
-        console.log('[Wallet] depositRequests count =', data.length);
-        if (!data.length) {
-          console.info('[Wallet] لا توجد طلبات في depositRequests — سيتم القراءة من orders (فلترة DEP)');
-          data = await fetchFromOrdersPrefix(user.uid);
-          console.log('[Wallet] orders(DEP*) count =', data.length);
-        }
-        renderDeposits(data);
-      }catch(e){
-        logError('loadWallet', e);
-        listEl.innerHTML = '<div class="empty">حدث خطأ أثناء تحميل المحفظة. راجع الـConsole.</div>';
-      }
+      let data = await fetchFromDepositRequests(user.uid);
+      if (!data.length) data = await fetchFromOrdersPrefix(user.uid);
+      ALL_ITEMS = data;
+      renderDeposits(applyFilter(ALL_ITEMS));
     }
 
-    auth.onAuthStateChanged((u)=>{ console.log('[Wallet] onAuthStateChanged', !!u); loadWallet(); });
+    auth.onAuthStateChanged(()=> loadWallet());
+
+    // تبديل الفلاتر
+    if (chipsWrap){
+      chipsWrap.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.chip');
+        if (!btn) return;
+        CURRENT_FILTER = btn.dataset.filter || 'all';
+        chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c===btn));
+        renderDeposits(applyFilter(ALL_ITEMS));
+      });
+      const first = chipsWrap.querySelector('.chip[data-filter="all"]');
+      if (first) first.classList.add('active');
+    }
+
+    if (refreshBtn){ refreshBtn.addEventListener('click', loadWallet); }
   </script>
 </body>
 </html>
