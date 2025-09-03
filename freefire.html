@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
  <head>
   <meta charset="utf-8"/>
@@ -74,10 +74,35 @@
   <script src="loader.js" defer></script>
   <audio id="toast-success-sound" preload="none" src="success.mp3"></audio>
   <audio id="toast-error-sound" preload="none" src="error.mp3"></audio>
+
+
+  
   <style>
+    /* متغيرات للألوان ليتوافق المودال مع الثيم */
+    :root{ --card-bg:#ffffff; --card-text:#111827; --card-border:#e5e7eb; --input-bg:#ffffff; --input-text:#111827; --btn-bg:#6366f1; --btn-bg-hover:#4f46e5; --btn-text:#ffffff }
+    html[data-theme="dark"], body.dark-mode{ --card-bg:#0f172a; --card-text:#e6edf3; --card-border:#334155; --input-bg:#0b1220; --input-text:#e6edf3; --btn-bg:#475569; --btn-bg-hover:#64748b; --btn-text:#ffffff }
     /* اتجاه عام مساعد */
     .rtl { direction: rtl; text-align: right; unicode-bidi: embed; }
 
+    /* Modal theme-aware */
+    #purchase-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); z-index:10000 }
+    #purchase-modal.show{ display:flex }
+    #purchase-modal .pm-card{ width:min(560px,92vw); background:var(--card-bg); color:var(--card-text); border:1px solid var(--card-border); border-radius:18px; box-shadow:0 24px 70px rgba(0,0,0,.35); padding:22px 20px; direction:rtl }
+    #purchase-modal .pm-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px }
+    #purchase-modal .pm-pill{ background:var(--input-bg); color:var(--text); border-radius:999px; padding:8px 14px; font-weight:800; border:1px solid var(--card-border) }
+    #purchase-modal .pm-title{ font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px }
+    #purchase-modal .pm-input{ width:100%; margin:12px 0 6px }
+    #purchase-modal .pm-input input{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--card-border); font-size:16px; outline:none; background:var(--input-bg); color:var(--input-text) }
+    #purchase-modal .pm-actions{ display:flex; gap:12px; margin-top:12px }
+    #purchase-modal .btn{ flex:1; padding:12px 16px; border-radius:14px; font-weight:800; cursor:pointer; border:1px solid transparent }
+    #purchase-modal .btn-primary{ background:var(--btn-bg); color:var(--btn-text) }
+    #purchase-modal .btn-primary:hover{ background:var(--btn-bg-hover) }
+    #purchase-modal .btn-outline{ background:transparent; color:#ef4444; border-color:#ef4444 }
+    #purchase-modal .pm-note{ margin-top:10px; font-size:14px; color:#16a34a; font-weight:700; text-align:center }
+
+    /* عند فتح المودال أخفِ مظهر التحديد على الكروت (إزالة الصندوق/العلامة خلف المودال) */
+    body.modal-open .offer-box.selected{ outline:none !important; border-color:transparent !important; box-shadow:none !important }
+    body.modal-open .offer-box.selected::after{ display:none !important; content:none !important }
 
     /* صندوق الملخص */
     #selected-amount-container {
@@ -103,6 +128,110 @@
     .voucher .ltr{ direction: ltr; unicode-bidi: isolate; display:inline-block; white-space: nowrap; }
     .voucher .sep{ unicode-bidi: isolate; display:inline-block; padding: 0 .15rem; }
     .voucher .price{ white-space: nowrap; }
+
+    /* شريط البحث + شبكة الكروت (مطابقة لطابع freefireinbut) */
+    .search-container input[type="text"]{flex:1;padding:12px 15px;background:#fff;color:#111;border:2px solid #0077cc;border-radius:25px;font-size:1rem;outline:none;transition:.3s}
+    .search-container input[type="text"]:focus{box-shadow:0 0 6px rgba(0,119,204,.5);border-color:#005fa3}
+    .search-container button{background:#0077cc;border:none;padding:12px 20px;border-radius:25px;color:#fff;font-size:1rem;cursor:pointer;transition:.3s}
+    .search-container button:hover{background:#005fa3}
+
+    /* نظام الشبكة والبطاقات مطابق للرئيسية index.html */
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(160px, 1fr));
+      gap: 20px;
+      justify-content: center;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .offer-box.card, .card {
+      background: var(--card-bg);
+      color: var(--card-text);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: var(--elev-shadow);
+      text-align: center;
+      padding: 16px;
+      text-decoration: none;
+      transition: transform .3s ease, box-shadow .3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+      max-width: 200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .offer-box.card:hover, .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    }
+    .offer-box.card h2, .card h2 {
+      font-weight: 700;
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .offer-box.card img, .card img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      height: auto;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 8px;
+      user-select: none;
+      background-color: var(--skeleton);
+      display: block;
+      margin: 0 auto;
+    }
+    @media (max-width: 992px) {
+      .categories {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      .offer-box.card, .card {
+        max-width: 160px;
+        padding: 12px !important;
+      }
+      .offer-box.card h2, .card h2 {
+        font-size: .9rem !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .categories {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 8px;
+      }
+      .offer-box.card, .card {
+        max-width: 130px;
+        padding: 8px !important;
+      }
+      .offer-box.card h2, .card h2 {
+        font-size: .85rem !important;
+      }
+    }
+    .offer-box.card{background:#fff;color:#111;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center;padding:16px;text-decoration:none;transition:transform .3s ease,box-shadow .3s ease;display:flex;flex-direction:column;gap:12px}
+    /* منع صعود البطاقة حتى لا تتداخل مع الصف الذي فوقها */
+    .offer-box.card:hover{transform:none;box-shadow:0 8px 20px rgba(0,0,0,.15)}
+    .offer-box.card h2{font-weight:700;font-size:1rem;margin:0;line-height:1.4;word-break:break-word}
+    .offer-box.card .caption{margin-top:8px; line-height:1.35}
+    .offer-box.card .caption .jewels{display:block; color:#475569; font-weight:700}
+    .offer-box.card .caption .price{display:block; color:#0f172a; font-weight:800}
+    .offer-box.card img{width:100%;aspect-ratio:1/1;height:auto;object-fit:cover;object-position:center;border-radius:8px;user-select:none;background-color:#f0f0f0;display:block;margin:0 auto}
+
+    /* رسالة لا نتائج مثل الرئيسية */
+    .no-results{ text-align:center; font-size:1.2rem; color:#888; margin-top:30px }
+    body.dark-mode .no-results{ color:#94a3b8 }
+
+    /* وضع داكن */
+    body.dark-mode .search-container input[type="text"]{background:#0b1220;color:#e6edf3;border-color:#334155}
+    body.dark-mode .search-container button{background:#475569}
+    body.dark-mode .search-container button:hover{background:#64748b}
+    body.dark-mode .offer-box.card{background:#101826;color:#e6edf3;border-color:#334155;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+    body.dark-mode .offer-box.card img{background:#162032}
+    body.dark-mode .offer-box.card .caption .jewels{color:#cbd5e1}
+    body.dark-mode .offer-box.card .caption .price{color:#e6edf3}
 
     /* البطاقات + تغطية "غير متوفر" */
     .offer-box { position: relative; cursor: pointer; }
@@ -156,7 +285,7 @@ body.dark-mode .offer-box{
 }
 body.dark-mode .offer-box span{ color:#e6edf3 !important; }
 body.dark-mode .offer-box.selected{ outline:2px solid #38bdf8; }
-body.dark-mode .offer-box.disabled .unavailable-badge{ background:rgba(0,0,0,.45); }
+    body.dark-mode .offer-box.disabled .unavailable-badge{ background:rgba(0,0,0,.45); }
 
 /* عناوين الأقسام */
 body.dark-mode .section-title{ color:#7dd3fc !important; }
@@ -209,7 +338,127 @@ body.dark-mode .footer-title{
   color: #e6edf3 !important;
 }
 
-  </style> </head>
+
+    /* استجابة للجوال */
+    @media (max-width: 900px) {
+      .categories {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+      .offer-box.card {
+        max-width: 180px;
+      }
+    }
+    @media (max-width: 600px) {
+      .categories {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+      }
+      .offer-box.card {
+        max-width: 140px;
+        padding: 10px !important;
+      }
+    }
+
+  
+/* إزالة الأنماط التي كانت تُفرغ البطاقات والخلفيات لتطابق عرض index.html */
+/* Note: السماح بقواعد .card الافتراضية (خلفية، حد، ظل، ورفع عند التحويم) */
+/* 5 أعمدة ثابتة بدون تراكب (مطابقة الرئيسية) مع مسافة أفقية أكبر */
+#myOffersContainer .categories,
+.categories{
+  grid-template-columns: repeat(5, minmax(0,1fr)) !important;
+  column-gap: 28px !important;
+  row-gap: 28px !important;
+  justify-content: center;
+}
+
+/* حافظ على تأثير الرفع القياسي كالرئيسية */
+
+
+/* === نفس سلوك البطاقات كما في الرئيسية (الإبقاء على تأثير الرفع فقط) === */
+
+/* طبّق شكل البطاقة على عناصرك (.offer-box.card) لتطابق .card */
+#myOffersContainer .offer-box.card,
+.card{
+  background: var(--card-bg) !important;
+  color: var(--card-text) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 12px;
+  box-shadow: var(--elev-shadow);
+  text-align: center;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform .3s ease, box-shadow .3s ease;
+  position: relative;
+  z-index: 0;
+  overflow: hidden; /* يمنع بروز الصورة عند التحريك */
+}
+
+/* نفس الرفع على hover بدون أن تُغطّي بطاقة أخرى */
+#myOffersContainer .offer-box.card:hover,
+.card:hover{
+  transform: none; /* لا تتحرك البطاقة نفسها لتجنب التداخل العمودي */
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+  z-index: 1;
+}
+
+/* الصورة: نفس السلوك */
+#myOffersContainer .offer-box.card img,
+.card img{
+  width: 100%;
+  aspect-ratio: 1/1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: var(--skeleton);
+  transition: transform .45s ease, filter .35s ease;
+  will-change: transform;
+}
+#myOffersContainer .offer-box.card:hover img,
+.card:hover img{
+  transform: scale(1.06) translateY(-2px);
+  filter: saturate(1.08) contrast(1.05);
+}
+
+/* اجعل الشبكة تتحكم بعرض العناصر وليس قيم style1.css القديمة */
+.offer-box.card{ width:auto !important; margin:0 !important; }
+
+/* منع خروج المحتوى خارج حدود صندوق الحقول إن وجدت */
+.offers-box{ overflow:hidden; }
+
+/* نسخة auto (اختياري): نفس التنسيق الخاص والرفع الخفيف */
+#myOffersContainer .offer-box.card.auto,
+a.card.auto{
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--card-bg),var(--card-bg)) padding-box,
+    linear-gradient(135deg,#06b6d4,#10b981) border-box;
+}
+html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
+  background:
+    linear-gradient(var(--card-bg),var(--card-bg)) padding-box,
+    linear-gradient(135deg,#22c55e,#06b6d4) border-box;
+}
+#myOffersContainer .offer-box.card.auto:hover{
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 36px rgba(0,0,0,.18), 0 0 28px rgba(250,204,21,.16);
+}
+
+/* استجابة للشاشات الصغيرة */
+@media (max-width: 768px){
+  #myOffersContainer .categories{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; column-gap: 12px !important; row-gap: 20px !important; }
+}
+@media (max-width: 480px){
+  #myOffersContainer .categories{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; column-gap: 10px !important; row-gap: 16px !important; }
+}
+
+
+
+</style> 
+
+</head>
  <body>
   <div id="headerContainer"></div>
   <div id="sidebarContainer"></div>
@@ -244,48 +493,49 @@ body.dark-mode .footer-title{
   <form id="orderForm" novalidate>
     <div class="container">
 
-      <div id="top-banner">
-        <div class="banner-layer" id="banner1"></div>
-        <div class="banner-layer" id="banner2"></div>
-      </div>
+      
 
-      <div class="player-id-box" style="
-        max-width: 500px; margin: 20px auto; padding: 20px;
-        border: 2px solid #007bff; border-radius: 10px; background-color: #f9f9f9;">
-        <label for="player-id" style="font-size:16px; font-weight:bold; margin-bottom:10px; display:block;">
-          معرف اللاعب 🎮
-          <i onclick="openPopup()" style="color:#007bff; cursor: pointer;" title="معرف اللاعب داخل اللعبة">❓</i>
-        </label>
-        <div class="input-group" style="display:flex;">
-          <input id="player-id" placeholder="أدخل معرف اللاعب هنا"
-                 style="flex:1; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:8px 0 0 8px;" type="text" />
+      <!-- نافذة الشراء المنبثقة -->
+      <div id="purchase-modal">
+        <div class="pm-card" role="dialog" aria-modal="true">
+          <div class="pm-header">
+            <span id="pm-price" class="pm-pill">—</span>
+            <div class="pm-title">
+              <i class="fa-regular fa-heart" aria-hidden="true"></i>
+              <span id="pm-title">—</span>
+            </div>
+          </div>
+          <div class="pm-input">
+            <input id="modal-player-id" inputmode="numeric" autocomplete="off" placeholder="ادخل الايدي هنا" />
+          </div>
+          <div class="pm-turnstile">
+            <div id="cf-turnstile-modal" class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="auto"></div>
+          </div>
+          <div class="pm-actions">
+            <button type="button" id="pm-cancel" class="btn btn-outline">إلغاء</button>
+            <button type="button" id="pm-buy" class="btn btn-primary">شراء</button>
+          </div>
+          <div class="pm-note">الخدمة يدوية وتستغرق وقتا اكثر من الخدمات التلقائيه</div>
         </div>
       </div>
 
-      <!-- النافذة المنبثقة -->
-      <div id="popup" onclick="closePopupOnOutsideClick(event)"
-           style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
-        <div onclick="event.stopPropagation()" style="position:relative; background:white; padding:10px; border-radius:10px; max-width:90%; max-height:90%;">
-          <span onclick="closePopup()" style="position:absolute; top:5px; right:10px; font-size:32px; color:red; cursor:pointer;">×</span>
-          <img alt="معلومات" src="https://i.ibb.co/Xr0rms0C/ff.webp" style="max-width:100%; max-height:80vh; display:block; margin:auto;"/>
-        </div>
+      
+
+      
+      <!-- شريط البحث (مطابق لـ freefireinbut) -->
+      <div class="search-container">
+        <input type="text" id="ffSearchInput" placeholder="ابحث عن الباقات..." aria-label="بحث" />
       </div>
+
 
         <div id="myOffersContainer"></div>
 
-        <div id="selected-amount-container" style="
-          margin:20px auto; max-width:400px; padding:20px; text-align:center;
-          border:2px solid #007bff; border-radius:10px; background-color:#f9f9f9; font-weight:bold;">
-          <h2> المبلغ المطلوب : </h2>
-          <div class="voucher"><span id="selected-amount">لم يتم اختيار عرض شحن</span></div>
-        </div>
-
-        <!-- ✅ Turnstile -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="auto"></div>
-
-        <button class="send-button" style="margin-top:20px; padding:10px 20px; font-size:18px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer;" type="submit">شراء</button>
+        
       </div>
     </div>
+
+    <!-- رسالة لا نتائج مثل الرئيسية -->
+    <p class="no-results" id="ffNoResults" style="display:none;">عذراً، لم يتم العثور على نتائج.</p>
 
     <div style="height: 40px;"></div>
     <div id="footerContainer"></div>
@@ -337,21 +587,21 @@ body.dark-mode .footer-title{
   // ===== بطاقات العروض =====
   function createOfferBox({ type, jewels, offer, imgSrc, imgAlt }) {
     const div = document.createElement("div");
-    div.className = "offer-box";
+    div.className = "offer-box card";
     div.dataset.type = type;
     if (jewels) div.dataset.jewels = jewels;
     if (offer) div.dataset.offer = offer;
-    div.onclick = function () { toggleOffer(this); };
+    div.onclick = function () { openPurchaseModal(this); };
     const img = document.createElement("img");
     img.src = imgSrc; img.alt = imgAlt;
     img.loading = 'lazy'; img.decoding = 'async'; img.setAttribute('fetchpriority','low');
     div.appendChild(img);
-    const span = document.createElement("span"); span.textContent = jewels ? `${jewels} جوهرة` : offer; div.appendChild(span);
+    const h2 = document.createElement("h2"); h2.textContent = jewels ? `${jewels} جوهرة` : offer; div.appendChild(h2);
     return div;
   }
 
   const offersBox = document.createElement("div"); offersBox.className = "offers-box";
-  const label = document.createElement("label"); label.textContent = "اختر عرض الشحن 🎁"; offersBox.appendChild(label);
+  const grid = document.createElement("section"); grid.className = "categories"; offersBox.appendChild(grid);
   const topupOffers = [
     { jewels: 110, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "110 جوهرة" },
     { jewels: 340, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "340 جوهرة" },
@@ -364,28 +614,25 @@ body.dark-mode .footer-title{
     { jewels: 10000, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "10000 جوهرة" },
     { jewels: 20000, imgSrc: "https://i.ibb.co/m5HLhf1n/1756802404151-1.jpg", imgAlt: "20000 جوهرة" }
   ];
-  topupOffers.forEach(offer => { offersBox.appendChild(createOfferBox({ type: "topup", jewels: offer.jewels, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
-  const membershipTitle = document.createElement("div"); membershipTitle.className = "section-title"; membershipTitle.textContent = "عروض العضوية والبويا باس"; offersBox.appendChild(membershipTitle);
-  const membershipOffersGrid = document.createElement("div"); membershipOffersGrid.id = "membership-offers"; membershipOffersGrid.className = "offers-grid"; membershipOffersGrid.style.justifyContent = "center";
+  topupOffers.forEach(offer => { grid.appendChild(createOfferBox({ type: "topup", jewels: offer.jewels, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
+  const membershipOffersGrid = document.createElement("div");
   const membershipOffers = [
     { offer: "عضوية أسبوعية", imgSrc: "https://i.ibb.co/sJsqbdfL/weekly.png", imgAlt: "عضوية أسبوعية" },
     { offer: "عضوية شهرية", imgSrc: "https://i.ibb.co/6cR4j9xc/monthly.png", imgAlt: "عضوية شهرية" },
     { offer: "البويا باس", imgSrc: "https://i.ibb.co/nNNqHg9g/booyah.png", imgAlt: "البويا باس" }
   ];
-  membershipOffers.forEach(offer => { membershipOffersGrid.appendChild(createOfferBox({ type: "membership", offer: offer.offer, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
-  offersBox.appendChild(membershipOffersGrid);
+  membershipOffers.forEach(offer => { grid.appendChild(createOfferBox({ type: "membership", offer: offer.offer, imgSrc: offer.imgSrc, imgAlt: offer.imgAlt })); });
 
   window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById("myOffersContainer");
     if (container) container.appendChild(offersBox);
-    // ✅ اربط الفورم بـ sendOrder ومنع إعادة التحميل
-    const form = document.getElementById('orderForm');
-    if (form) {
-      form.addEventListener('submit', function(e){
-        e.preventDefault();
-        if (typeof sendOrder === 'function') sendOrder();
-      });
-    }
+    // البحث مثل inbut
+    const input = document.getElementById('ffSearchInput');
+    const btn = document.getElementById('ffSearchButton');
+    const apply = () => filterCardsBySearch({ target: { value: input.value } });
+    btn && btn.addEventListener('click', apply);
+    input && input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); apply(); }});
+    let t; input && input.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(apply,150); });
   });
 
   // ===== حساب السعر وعرضه =====
@@ -401,7 +648,6 @@ function toggleOffer(element) {
   });
 
   // ✅ تحديد العنصر الحالي فقط
-  element.classList.add("selected");
 
   const selectedOffers = [{
     type: element.dataset.type,
@@ -440,6 +686,103 @@ if (breakdownLines.length === 0) {
   el.innerHTML = `${breakdownLines.join("<br>")}<br><br><strong>المجموع: ${total.toFixed(2)} د.أ</strong>`;
   el.classList.remove("no-selection");
 }
+
+// فلترة البحث بنفس أسلوب freefireinbut + إظهار رسالة لا نتائج كالرئيسية
+function filterCardsBySearch(ev){
+  const raw = (ev.target.value || '').toString();
+  const norm = s => s.toLowerCase()
+    .replace(/[ًٌٍَُِّْـ]/g,'')
+    .replace(/[إأآا]/g,'ا')
+    .replace(/ى/g,'ي')
+    .replace(/ة/g,'ه')
+    .replace(/[^\p{L}\p{N}\s]/gu,'')
+    .trim();
+  const q = norm(raw);
+  const cards = document.querySelectorAll('.offer-box.card');
+  let shown = 0;
+  if (!q){ cards.forEach(c => {c.style.display=''; shown++;}); } else {
+    cards.forEach(c => {
+      const jewels = (c.dataset.jewels || '').toString();
+      const offer  = (c.dataset.offer  || '');
+      const text   = norm(`${jewels} ${offer}`);
+      const ok = text.includes(q);
+      c.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+  }
+  const noRes = document.getElementById('ffNoResults');
+  if (noRes) noRes.style.display = shown ? 'none' : 'block';
+}
+
+// ===== نافذة الشراء =====
+let _pm_currentCard = null;
+function _readOfferPriceForElement(el){
+  const raw = JSON.parse(localStorage.getItem("offersPrices") || "{}");
+  const prices = raw.prices || raw || {};
+  const key = el.dataset.jewels ? `${el.dataset.jewels}_jewels` : el.dataset.offer;
+  const p = prices[key];
+  const num = p !== undefined ? Number(p) : NaN;
+  return { key, price: p, priceText: isNaN(num)? '—' : `${num.toFixed(3)} د.أ` };
+}
+
+  function openPurchaseModal(el){
+  if (el.classList.contains('disabled')){ showToast('غير متوفر', 'warning'); return; }
+  // اجعل البطاقة المختارة هي فقط المحددة
+  document.querySelectorAll('.offer-box.selected').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  _pm_currentCard = el;
+    const title = el.dataset.jewels ? `${el.dataset.jewels} جوهرة` : (el.dataset.offer || '—');
+
+    const { priceText } = _readOfferPriceForElement(el);
+    document.getElementById('pm-title').textContent = title;
+    document.getElementById('pm-price').textContent = priceText;
+
+    const pid  = document.getElementById('player-id');
+    const mpid = document.getElementById('modal-player-id');
+    if (pid && mpid) mpid.value = (pid.value || '').trim();
+
+    const pm = document.getElementById('purchase-modal');
+
+    try{
+      const ts = document.getElementById('cf-turnstile-modal');
+      if (ts){
+        const isDark = document.body.classList.contains('dark-mode')
+          || (document.documentElement.getAttribute('data-theme')||'').toLowerCase()==='dark';
+        ts.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      }
+    }catch(_){}
+
+    pm.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+
+  function closePurchaseModal(){
+    const pm = document.getElementById('purchase-modal');
+    pm.classList.remove('show');
+    document.body.classList.remove('modal-open');
+
+    document.querySelectorAll('.offer-box.selected').forEach(x => x.classList.remove('selected'));
+  }
+
+// ربط أزرار المودال
+window.addEventListener('DOMContentLoaded', () => {
+  const pm = document.getElementById('purchase-modal');
+  if (!pm) return;
+  pm.addEventListener('click', (e)=>{ if(e.target === pm) closePurchaseModal(); });
+  const cancelBtn = document.getElementById('pm-cancel');
+  const buyBtn = document.getElementById('pm-buy');
+  cancelBtn && cancelBtn.addEventListener('click', closePurchaseModal);
+  buyBtn && buyBtn.addEventListener('click', async () => {
+    // انقل الايدي
+    const mpid = document.getElementById('modal-player-id');
+    const pid = document.getElementById('player-id');
+    if (pid && mpid) pid.value = mpid.value.trim();
+    if (!_pm_currentCard){ showToast('الرجاء اختيار عرض', 'warning'); return; }
+    // أرسل الطلب
+    try { if (typeof sendOrder === 'function') await sendOrder(); }
+    finally { closePurchaseModal(); }
+  });
+});
 
 
 
