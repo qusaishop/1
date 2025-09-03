@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -161,8 +161,8 @@
     }
     function statusLabel(s){
       const v = (s||'').toString().toLowerCase();
-      if (v === 'rejected' || v === 'مرفوض') return 'مرفوض';
-      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم') return 'تم';
+      if (v === 'rejected' || v.includes('reject') || v === 'مرفوض' || v === 'مرفوضه' || v === 'مرفوضة') return 'مرفوضة';
+      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم' || v === 'مقبول' || v === 'مقبوله' || v === 'مقبولة') return 'مقبولة';
       if (v.includes('pend') || v.includes('انتظار') || v.includes('review')) return 'قيد الانتظار';
       return s || 'قيد الانتظار';
     }
@@ -446,3 +446,4 @@
   </script>
 </body>
 </html>
+
