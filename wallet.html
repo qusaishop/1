@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قصي ستور - محفظتي</title>
+  <link rel="icon" href="emp.png" type="image/png">
+
+  <!-- خطوط وأيقونات -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+  <!-- Firebase SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <!-- الهيدر -->
+  <link rel="stylesheet" href="header.css" />
+  <script src="header.js" defer></script>
+
+  <style>
+    body{font-family:'Cairo',sans-serif;margin:0;direction:rtl;background:#f9f9f9;color:#333}
+    .container{max-width: 1100px; margin: 80px auto 20px; padding: 0 15px}
+    h2{margin:0 0 14px}
+
+    .wallet-list{display:flex;flex-direction:column;gap:12px}
+    .card{border:1px solid #e5e7eb;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:14px}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .code{font-weight:800;color:#111}
+    .status{padding:4px 10px;border-radius:999px;background:#f3f4f6;color:#111;font-weight:700;font-size:.85rem}
+    .status.done{background:#dcfce7;color:#065f46}
+    .status.pending{background:#fff7ed;color:#7c2d12}
+    .status.rejected{background:#fee2e2;color:#7f1d1d}
+    .meta{display:flex;gap:14px;flex-wrap:wrap;color:#374151}
+    .meta span{display:inline-flex;align-items:center;gap:6px}
+    .meta i{color:#6b7280}
+    .details{margin-top:10px; color:#4b5563; line-height:1.8}
+    .proof{margin-top:8px}
+    .proof a{color:#0077cc;text-decoration:none}
+
+    .loading{position:relative;overflow:hidden;pointer-events:none}
+    .loading::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,#fff6,transparent);animation:shimmer 1.2s infinite}
+    @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+    .empty{padding:24px;text-align:center;border:1px dashed #e5e7eb;border-radius:12px;color:#6b7280;background:#fff}
+
+    /* Dark */
+    body.dark-mode{background:#0b1220;color:#e6edf3}
+    body.dark-mode .card{background:#1a2234;color:#e6edf3;border-color:#334155;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+    body.dark-mode .status{background:#111827;color:#e6edf3}
+    body.dark-mode .status.done{background:#064e3b;color:#bbf7d0}
+    body.dark-mode .status.pending{background:#2b2f3a;color:#fde68a}
+    body.dark-mode .status.rejected{background:#3f1d1d;color:#fecaca}
+    body.dark-mode .empty{background:#0f172a;border-color:#334155;color:#9aa7b7}
+    body.dark-mode .meta{color:#cbd5e1}
+    body.dark-mode .meta i{color:#94a3b8}
+  </style>
+</head>
+<body>
+  <div id="headerContainer"></div>
+  <div id="sidebarContainer"></div>
+
+  <main class="container">
+    <h2><i class="fas fa-wallet" style="color:#0ea5e9"></i> محفظتي</h2>
+    <div id="walletList" class="wallet-list"></div>
+  </main>
+
+  <script>
+    // تفعيل الوضع الداكن حسب الإعداد المحفوظ
+    (function(){ try{ if(localStorage.getItem('theme')==='dark'){ document.body.classList.add('dark-mode'); } }catch(e){} })();
+
+    // Firebase init (نفس الإعدادات المستخدمة ببقية الصفحات)
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6dC1UAS0-ilt-dj9UpcLIPljwbI3FCZs",
+      authDomain: "qusaystore-ec327.firebaseapp.com",
+      projectId: "qusaystore-ec327",
+      storageBucket: "qusaystore-ec327.firebasestorage.app",
+      messagingSenderId: "701743074708",
+      appId: "1:701743074708:web:defc2de594567b6624d381",
+      measurementId: "G-00R4XQCB1V"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    const listEl = document.getElementById('walletList');
+
+    // أدوات تسجيل الأخطاء لتسهيل التشخيص
+    function logError(stage, err){
+      try {
+        console.group && console.group(`[Wallet] ${stage}`);
+        console.error(err && err.message ? err.message : err);
+        if (err && err.stack) console.error(err.stack);
+        console.groupEnd && console.groupEnd();
+      } catch(_) {}
+    }
+    window.addEventListener('error', (e)=>logError('window.error', e.error || e.message));
+    window.addEventListener('unhandledrejection', (e)=>logError('unhandledrejection', e.reason || e));
+
+    function cardSkeleton(){
+      const d = document.createElement('div'); d.className='card loading'; d.style.height='86px'; return d;
+    }
+
+    function showSkeleton(n=3){ listEl.innerHTML=''; for(let i=0;i<n;i++) listEl.appendChild(cardSkeleton()); }
+    function showEmpty(){ listEl.innerHTML = '<div class="empty">لا توجد عمليات إيداع حتى الآن.</div>'; }
+
+    function asDate(ts){
+      try{
+        if (!ts) return null;
+        if (ts.toDate) return ts.toDate();
+        if (typeof ts === 'object' && ts.seconds) return new Date(ts.seconds * 1000);
+        return new Date(ts);
+      }catch{ return null; }
+    }
+    function formatDate(ts){
+      const d = asDate(ts);
+      if (!d || isNaN(d.getTime())) return ts || '-';
+      try{ return d.toLocaleString('ar-EG',{ weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }); }
+      catch{ return d.toString(); }
+    }
+
+    function statusClass(s){
+      const v = (s||'').toString().toLowerCase();
+      if (v === 'rejected' || v === 'مرفوض') return 'status rejected';
+      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم') return 'status done';
+      return 'status pending';
+    }
+    function statusLabel(s){
+      const v = (s||'').toString().toLowerCase();
+      if (v === 'rejected' || v === 'مرفوض') return 'مرفوض';
+      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم') return 'تم';
+      if (v === 'pending') return 'قيد المراجعة';
+      return s || 'قيد المراجعة';
+    }
+
+    function renderDeposits(items){
+      listEl.innerHTML='';
+      if (!items.length) return showEmpty();
+      items.forEach(it=>{
+        const code = it.code || it.depositCode || it.id || '-';
+        const st   = it.status || it.state || it.depositStatus || 'pending';
+        const ts   = it.timestamp || it.createdAt || it.created_at || '';
+        const paidVal = (it.amountCurrency!=null) ? Number(it.amountCurrency) : (it.client_payAmount!=null ? Number(it.client_payAmount) : (it.payAmount!=null ? Number(it.payAmount) : null));
+        const paidCur = it.currency || '';
+        const paid = (paidVal!=null) ? (paidVal.toFixed(2) + (paidCur? (' ' + paidCur):'')) : '';
+        const added= (it.amountJOD!=null) ? (Number(it.amountJOD).toFixed(2) + ' د.أ') : '';
+        const proof= it.proof || it.proofUrl || '';
+        const method = it.methodName || it.method || '';
+        const country= it.countryName || it.country || '';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="row">
+            <div class="code">كود: ${code}</div>
+            <div class="${statusClass(st)}">${statusLabel(st)}</div>
+          </div>
+          <div class="meta" style="margin-top:8px">
+            ${paid? `<span><i class="fas fa-money-bill-wave"></i> المدفوع: ${paid}</span>`:''}
+            ${added? `<span><i class="fas fa-plus-circle"></i> سيضاف للمحفظة: ${added}</span>`:''}
+            ${ts? `<span><i class="fas fa-clock"></i> ${formatDate(ts)}</span>`:''}
+          </div>
+          <div class="details">
+            ${(country||method) ? `<span><i class="fas fa-globe"></i> ${country} ${method? '• '+method:''}</span>` : ''}
+            ${proof? `<div class="proof"><i class="fas fa-image"></i> إثبات: <a href="${proof}" target="_blank" rel="noopener">عرض</a></div>`:''}
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    async function fetchFromDepositRequests(uid){
+      try{
+        // ترتيب مباشر حسب createdAt (إن لم يوجد سيأتي بدون ترتيب واضح)
+        let q = db.collection('depositRequests').where('userId','==',uid);
+        try { q = q.orderBy('createdAt','desc'); } catch(_) {}
+        const snap = await q.get();
+        let arr = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+        // صِفّ فقط الأكواد التي تبدأ بـ DEP (احتياطاً)
+        arr = arr.filter(x => String(x.code || x.id || '').toUpperCase().startsWith('DEP'));
+        // تأكيد الترتيب لو لم يعمل orderBy
+        arr.sort((a,b)=>{
+          const ta = asDate(a.createdAt || a.computedAt || a.timestamp)?.getTime() || 0;
+          const tb = asDate(b.createdAt || b.computedAt || b.timestamp)?.getTime() || 0;
+          return tb - ta;
+        });
+        return arr;
+      }catch(e){
+        logError('fetchFromDepositRequests', e);
+        return [];
+      }
+    }
+
+    async function fetchFromOrdersPrefix(uid){
+      // نحاول أولاً جلب أوامر المستخدم ثم نصفي DEP على العميل لتجنب متطلبات الفهارس
+      try{
+        const userOrders = await db.collection('orders').where('userId','==',uid).get();
+        const rows = await Promise.all(userOrders.docs.map(async (doc)=>{
+          const base = { id: doc.id, ...doc.data() };
+          let pub = {};
+          try{
+            const pubSnap = await doc.ref.collection('public').doc('main').get();
+            if (pubSnap.exists) pub = pubSnap.data() || {};
+          }catch(e){}
+          return { ...pub, ...base };
+        }));
+        // ترشيح الأكواد التي تبدأ بـ DEP
+        return rows.filter(r=>{
+          const c = (r.code || r.id || r.depositCode || '').toString();
+          return c.toUpperCase().startsWith('DEP');
+        }).sort((a,b)=>{
+          const ta = a.timestamp? new Date(a.timestamp).getTime() : 0;
+          const tb = b.timestamp? new Date(b.timestamp).getTime() : 0;
+          return tb - ta;
+        });
+      }catch(e){ logError('fetchFromOrdersPrefix', e); return []; }
+    }
+
+    async function loadWallet(){
+      try{
+        showSkeleton(3);
+        const user = auth.currentUser;
+        if (!user) { listEl.innerHTML = '<div class="empty">يرجى تسجيل الدخول لعرض محفظتك.</div>'; return; }
+        console.log('[Wallet] uid =', user.uid);
+
+        let data = await fetchFromDepositRequests(user.uid);
+        console.log('[Wallet] depositRequests count =', data.length);
+        if (!data.length) {
+          console.info('[Wallet] لا توجد طلبات في depositRequests — سيتم القراءة من orders (فلترة DEP)');
+          data = await fetchFromOrdersPrefix(user.uid);
+          console.log('[Wallet] orders(DEP*) count =', data.length);
+        }
+        renderDeposits(data);
+      }catch(e){
+        logError('loadWallet', e);
+        listEl.innerHTML = '<div class="empty">حدث خطأ أثناء تحميل المحفظة. راجع الـConsole.</div>';
+      }
+    }
+
+    auth.onAuthStateChanged((u)=>{ console.log('[Wallet] onAuthStateChanged', !!u); loadWallet(); });
+  </script>
+</body>
+</html>

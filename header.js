@@ -119,6 +119,7 @@ firebase.auth().onAuthStateChanged(user => {
   const loginItem = document.getElementById('loginSidebarBtn');
   const depositItem = document.getElementById('depositBtn');
   const sahbItem = document.getElementById('sahbBtn'); // ⬅️ جديد
+  const walletItem = document.getElementById('walletBtn'); // ⬅️ محفظتي
 
   if (user && user.emailVerified) {
     if (loginItem) loginItem.style.display = "none";
@@ -126,6 +127,7 @@ firebase.auth().onAuthStateChanged(user => {
     // أظهر زرّي الإيداع والسحب للمسجّلين
     if (depositItem) depositItem.style.display = "flex";
     if (sahbItem) sahbItem.style.display = "flex"; // ⬅️ جديد
+    if (walletItem) walletItem.style.display = "flex"; // ⬅️ محفظتي
 
     // أضف زر الإعدادات إذا لم يكن موجوداً
     if (!document.getElementById("settingsBtn")) {
@@ -144,6 +146,7 @@ firebase.auth().onAuthStateChanged(user => {
     // أخفِ زرّي الإيداع والسحب لغير المسجّلين
     if (depositItem) depositItem.style.display = "none";
     if (sahbItem) sahbItem.style.display = "none"; // ⬅️ جديد
+    if (walletItem) walletItem.style.display = "none"; // ⬅️ محفظتي
 
     const settingsLi = document.getElementById("settingsBtn");
     if (settingsLi) settingsLi.remove();
@@ -167,6 +170,14 @@ const ordersLi = document.createElement("li");
 ordersLi.onclick = () => navigateTo("talabat.html");
 ordersLi.innerHTML = `<i class="fas fa-list"></i><a href="#">طلباتي</a>`;
 ul.appendChild(ordersLi);
+
+// عنصر: محفظتي (يظهر للمسجّلين)
+const walletLi = document.createElement("li");
+walletLi.id = "walletBtn";
+walletLi.innerHTML = `<i class="fas fa-wallet"></i><a href="#">محفظتي</a>`;
+walletLi.onclick = () => navigateTo("wallet.html");
+walletLi.style.display = "none"; // نظهره للمستخدمين المسجلين
+ul.appendChild(walletLi);
 
 // عنصر: الإيداع (يوضع بعد الرئيسية وقبل "طلباتي")
 // عنصر: الإيداع (يوضع بعد الرئيسية وقبل "طلباتي")
