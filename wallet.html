@@ -67,6 +67,22 @@
     /* إبراز اختيار المستخدم */
     .card.selected{outline:2px solid #0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15)}
     body.dark-mode .card.selected{outline-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.25)}
+
+    /* تمييز أزرار الفلاتر بحسب النوع */
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-weight:700}
+    .chip.active{box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+    .chip[data-filter="all"].active{background:#e5f3fb;border-color:#0ea5e9;color:#0b4a67}
+    .chip[data-filter="pending"]{background:#fff7ed;border-color:#fed7aa;color:#7c2d12}
+    .chip[data-filter="pending"].active{background:#fde7c7;border-color:#fb923c;color:#7c2d12}
+    .chip[data-filter="done"]{background:#dcfce7;border-color:#86efac;color:#065f46}
+    .chip[data-filter="done"].active{background:#bbf7d0;border-color:#22c55e;color:#065f46}
+    .chip[data-filter="rejected"]{background:#fee2e2;border-color:#fecaca;color:#7f1d1d}
+    .chip[data-filter="rejected"].active{background:#fecaca;border-color:#ef4444;color:#7f1d1d}
+    body.dark-mode .chip{background:#0f172a;border-color:#334155;color:#e6edf3}
+    body.dark-mode .chip[data-filter="all"].active{background:#0b2840;border-color:#0ea5e9;color:#7dd3fc}
+    body.dark-mode .chip[data-filter="pending"]{background:#2b2f3a;border-color:#a16207;color:#fde68a}
+    body.dark-mode .chip[data-filter="done"]{background:#064e3b;border-color:#047857;color:#bbf7d0}
+    body.dark-mode .chip[data-filter="rejected"]{background:#3f1d1d;border-color:#7f1d1d;color:#fecaca}
   </style>
 </head>
 <body>
@@ -148,8 +164,8 @@
       const v = (s||'').toString().toLowerCase();
       if (v === 'rejected' || v === 'مرفوض') return 'مرفوض';
       if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم') return 'تم';
-      if (v === 'pending') return 'قيد المراجعة';
-      return s || 'قيد المراجعة';
+      if (v.includes('pend') || v.includes('انتظار') || v.includes('review')) return 'قيد الانتظار';
+      return s || 'قيد الانتظار';
     }
 
     function renderDeposits(items){
