@@ -74,14 +74,14 @@
     .chip[data-filter="all"].active{background:#e5f3fb;border-color:#0ea5e9;color:#0b4a67}
     .chip[data-filter="pending"]{background:#fff7ed;border-color:#fed7aa;color:#7c2d12}
     .chip[data-filter="pending"].active{background:#fde7c7;border-color:#fb923c;color:#7c2d12}
-    .chip[data-filter="done"]{background:#dcfce7;border-color:#86efac;color:#065f46}
-    .chip[data-filter="done"].active{background:#bbf7d0;border-color:#22c55e;color:#065f46}
+    .chip[data-filter="approved"]{background:#dcfce7;border-color:#86efac;color:#065f46}
+    .chip[data-filter="approved"].active{background:#bbf7d0;border-color:#22c55e;color:#065f46}
     .chip[data-filter="rejected"]{background:#fee2e2;border-color:#fecaca;color:#7f1d1d}
     .chip[data-filter="rejected"].active{background:#fecaca;border-color:#ef4444;color:#7f1d1d}
     body.dark-mode .chip{background:#0f172a;border-color:#334155;color:#e6edf3}
     body.dark-mode .chip[data-filter="all"].active{background:#0b2840;border-color:#0ea5e9;color:#7dd3fc}
     body.dark-mode .chip[data-filter="pending"]{background:#2b2f3a;border-color:#a16207;color:#fde68a}
-    body.dark-mode .chip[data-filter="done"]{background:#064e3b;border-color:#047857;color:#bbf7d0}
+    body.dark-mode .chip[data-filter="approved"]{background:#064e3b;border-color:#047857;color:#bbf7d0}
     body.dark-mode .chip[data-filter="rejected"]{background:#3f1d1d;border-color:#7f1d1d;color:#fecaca}
 
     /* زر الحالة قابل للنقر دون إلغاء تنسيقات الحالة */
@@ -101,9 +101,9 @@
 
     <div class="toolbar" id="walletToolbar" style="margin:10px 0 16px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="chip" data-filter="all">الكل</button>
-      <button class="chip" data-filter="pending">قيد الانتظار</button>
-      <button class="chip" data-filter="done">تم</button>
-      <button class="chip" data-filter="rejected">مرفوض</button>
+      <button class="chip" data-filter="pending">قيد المراجعة</button>
+      <button class="chip" data-filter="approved">مقبولة</button>
+      <button class="chip" data-filter="rejected">مرفوضة</button>
     </div>
 
     <div id="walletList" class="wallet-list"></div>
@@ -153,18 +153,23 @@
       catch{ return d.toString(); }
     }
 
-    function statusClass(s){
+    function normStatus(s){
       const v = (s||'').toString().toLowerCase();
-      if (v === 'rejected' || v === 'مرفوض') return 'status rejected';
-      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم') return 'status done';
+      if (v.includes('reject') || v.includes('مرفوض')) return 'rejected';
+      if (v.includes('approved') || v.includes('done') || v.includes('completed') || v.includes('تم_') || v === 'تم' || v.includes('مقبول')) return 'approved';
+      return 'pending';
+    }
+    function statusClass(s){
+      const n = normStatus(s);
+      if (n === 'rejected') return 'status rejected';
+      if (n === 'approved') return 'status done';
       return 'status pending';
     }
     function statusLabel(s){
-      const v = (s||'').toString().toLowerCase();
-      if (v === 'rejected' || v.includes('reject') || v === 'مرفوض' || v === 'مرفوضه' || v === 'مرفوضة') return 'مرفوضة';
-      if (v === 'approved' || v === 'done' || v === 'completed' || v === 'تم_الإيداع' || v === 'تم_الشحن' || v === 'تم' || v === 'مقبول' || v === 'مقبوله' || v === 'مقبولة') return 'مقبولة';
-      if (v.includes('pend') || v.includes('انتظار') || v.includes('review')) return 'قيد الانتظار';
-      return s || 'قيد الانتظار';
+      const n = normStatus(s);
+      if (n === 'rejected') return 'مرفوضة';
+      if (n === 'approved') return 'مقبولة';
+      return 'قيد المراجعة';
     }
 
     function renderDeposits(items){
@@ -340,10 +345,10 @@
     function applyFilter(items){
       if (CURRENT_FILTER === 'all') return items;
       return items.filter(x=>{
-        const v = String(x.status||x.state||'').toLowerCase();
-        if (CURRENT_FILTER==='done') return ['approved','done','completed','تم','تم_الإيداع','تم_الشحن'].some(k=>v.includes(k));
-        if (CURRENT_FILTER==='rejected') return v.includes('reject') || v.includes('مرفوض');
-        return v.includes('pend');
+        const n = normStatus(x.status || x.state || '');
+        if (CURRENT_FILTER==='approved') return n === 'approved';
+        if (CURRENT_FILTER==='rejected') return n === 'rejected';
+        return n === 'pending';
       });
     }
 
