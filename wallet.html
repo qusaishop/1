@@ -29,9 +29,10 @@
     .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
     .code{font-weight:800;color:#374151}
     .status{padding:4px 10px;border-radius:999px;background:#f3f4f6;color:#111;font-weight:700;font-size:.85rem}
-    .status.done{background:#dcfce7;color:#065f46}
-    .status.pending{background:#fff7ed;color:#7c2d12}
-    .status.rejected{background:#fee2e2;color:#7f1d1d}
+    .status{border:1px solid #e5e7eb}
+    .status.done{background:#dcfce7;color:#065f46;border-color:#86efac}
+    .status.pending{background:#fff7ed;color:#7c2d12;border-color:#fed7aa}
+    .status.rejected{background:#fee2e2;color:#7f1d1d;border-color:#fecaca}
     .meta{display:flex;gap:14px;flex-wrap:wrap;color:#374151}
     .meta span{display:inline-flex;align-items:center;gap:6px}
     .meta i{color:#6b7280}
@@ -49,9 +50,10 @@
     body.dark-mode{background:#0b1220;color:#e6edf3}
     body.dark-mode .card{background:#1a2234;color:#e6edf3;border-color:#334155;box-shadow:0 2px 10px rgba(0,0,0,.35)}
     body.dark-mode .status{background:#111827;color:#e6edf3}
-    body.dark-mode .status.done{background:#064e3b;color:#bbf7d0}
-    body.dark-mode .status.pending{background:#2b2f3a;color:#fde68a}
-    body.dark-mode .status.rejected{background:#3f1d1d;color:#fecaca}
+    body.dark-mode .status{border-color:#334155}
+    body.dark-mode .status.done{background:#064e3b;color:#bbf7d0;border-color:#047857}
+    body.dark-mode .status.pending{background:#2b2f3a;color:#fde68a;border-color:#a16207}
+    body.dark-mode .status.rejected{background:#3f1d1d;color:#fecaca;border-color:#7f1d1d}
     body.dark-mode .empty{background:#0f172a;border-color:#334155;color:#9aa7b7}
     body.dark-mode .meta{color:#cbd5e1}
     body.dark-mode .meta i{color:#94a3b8}
@@ -61,6 +63,10 @@
     @media (min-width: 992px){
       .meta{display:flex;flex-direction:column;gap:6px}
     }
+
+    /* إبراز اختيار المستخدم */
+    .card.selected{outline:2px solid #0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+    body.dark-mode .card.selected{outline-color:#0ea5e9; box-shadow:0 0 0 2px rgba(14,165,233,.25)}
   </style>
 </head>
 <body>
@@ -285,7 +291,19 @@
       let data = await fetchFromDepositRequests(user.uid);
       if (!data.length) data = await fetchFromOrdersPrefix(user.uid);
       ALL_ITEMS = data;
+      // استرداد الفلتر المحفوظ
+      try{ const savedFilter = localStorage.getItem(`wallet:filter:${user.uid}`); if (savedFilter) CURRENT_FILTER = savedFilter; }catch{}
       renderDeposits(applyFilter(ALL_ITEMS));
+      // علّم الزر النشط إذا وُجد
+      if (chipsWrap){ chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', (c.dataset.filter||'all')===CURRENT_FILTER)); }
+      // إبراز آخر كود تم فتحه سابقًا وتحديثه من الكاش/الخادم
+      try{
+        const last = localStorage.getItem(`wallet:lastCode:${user.uid}`);
+        if (last){
+          const btn = listEl.querySelector(`.code-btn[data-code="${last}"]`) || listEl.querySelector(`.code-status-btn[data-code="${last}"]`);
+          if (btn){ const card = btn.closest('.card'); if (card) card.classList.add('selected'); const cached = readCache(user.uid).byCode?.[last]; if (cached) updateCardFromData(card, cached); }
+        }
+      }catch{}
       // اربط مستمع نقر للقراءة عند الطلب
       listEl.addEventListener('click', async (e)=>{
         const btn = e.target.closest('.code-btn, .code-status-btn');
@@ -308,11 +326,15 @@
             const fresh = { id: snap.id, ...snap.data() };
             updateCardFromData(card, fresh);
             upsertCache(uid, code, fresh);
+            try{ localStorage.setItem(`wallet:lastCode:${uid}`, code); }catch{}
             // حدّث العنصر في ALL_ITEMS كذلك
             const i = ALL_ITEMS.findIndex(x => (x.code||x.id) === code);
             if (i >= 0) ALL_ITEMS[i] = { ...ALL_ITEMS[i], ...fresh };
           }
         }catch{}
+        // إبراز هذه البطاقة وإلغاء إبراز البقية
+        listEl.querySelectorAll('.card.selected').forEach(el=>{ if (el!==card) el.classList.remove('selected'); });
+        card.classList.add('selected');
       });
     }
 
