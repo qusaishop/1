@@ -14,8 +14,11 @@
         var type = nav[0] ? nav[0].type : (performance.navigation ? (performance.navigation.type === 1 ? 'reload' : (performance.navigation.type === 2 ? 'back_forward' : '')) : '');
         var isReload = type === 'reload';
         var isBF = type === 'back_forward';
+        var refOk = false; try { var r=document.referrer; if (r) { var u=new URL(r); refOk = (u.origin === location.origin); } } catch(e){}
+        var paramsAllow = false; try { paramsAllow = (new URLSearchParams(location.search)).has('allow'); } catch(e){}
+        var guardOff = false; try { guardOff = localStorage.getItem('nav:guardOff') === '1'; } catch(e){}
         var ok = sessionStorage.getItem('nav:fromHome') === '1';
-        if (!ok && !isReload && !isBF) {
+        if (!ok && !isReload && !isBF && !refOk && !paramsAllow && !guardOff) {
           sessionStorage.setItem('nav:redirectedFrom', location.pathname.split('/').pop());
           window.location.replace('index.html');
         } else if (ok) {
