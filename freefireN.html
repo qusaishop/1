@@ -881,7 +881,7 @@ function filterCardsBySearch(ev){
 }
 
 // ===== نافذة الشراء =====
-let _pm_currentCard = null;
+window._pm_currentCard = null;
 function _readOfferPriceForElement(el){
   const raw = JSON.parse(localStorage.getItem("offersPrices") || "{}");
   const prices = raw.prices || raw || {};
@@ -902,7 +902,7 @@ function _readOfferPriceForElement(el){
     // اجعل البطاقة المختارة هي فقط المحددة
     document.querySelectorAll('.offer-box.selected').forEach(x => x.classList.remove('selected'));
     el.classList.add('selected');
-    _pm_currentCard = el;
+    window._pm_currentCard = el;
     const title = el.dataset.jewels ? `${el.dataset.jewels} جوهرة` : (el.dataset.offer || '—');
     const { priceText } = _readOfferPriceForElement(el);
     document.getElementById('pm-title').textContent = title;
