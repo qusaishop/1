@@ -158,59 +158,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
   }
 });
 
-// الحصول على توكن Turnstile بأمان (مع محاولة render عند الحاجة)
-async function ensureTurnstileToken({ timeoutMs = 8000 } = {}) {
-  try {
-    if (!(window.turnstile && typeof window.turnstile.getResponse === 'function')) return "";
-
-    // حاول أخذ التوكن مباشرة إن كان الودجت جاهزًا
-    try {
-      const direct = window.turnstile.getResponse();
-      if (direct) return direct;
-    } catch (_) {}
-
-    // ابحث عن العنصر
-    const el = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
-    if (!el) return "";
-
-    // إن كان لدينا widgetId مجلّد مسبقًا فجرب مرة أخرى
-    if (el.dataset.widgetId) {
-      try {
-        const t = window.turnstile.getResponse(el.dataset.widgetId);
-        if (t) return t;
-      } catch (_) {}
-    }
-
-    const sitekey = el.getAttribute('data-sitekey') || "";
-    if (!sitekey) return "";
-    const isDark = document.body.classList.contains('dark-mode') || (document.documentElement.getAttribute('data-theme') || '').toLowerCase() === 'dark';
-
-    // اعرض الودجت وانتظر التوكن عبر callback أو فحص دوري
-    return await new Promise((resolve) => {
-      let settled = false;
-      const id = window.turnstile.render(el, {
-        sitekey,
-        theme: isDark ? 'dark' : 'light',
-        callback: (token) => { if (!settled) { settled = true; resolve(token || ""); } },
-        'error-callback': () => { if (!settled) { settled = true; resolve(""); } },
-      });
-      el.dataset.widgetId = id;
-
-      // فحص احتياطي حتى لو لم تُستدع callback
-      let tries = 0;
-      const iv = setInterval(() => {
-        try {
-          const tok = window.turnstile.getResponse(id);
-          if (tok) { clearInterval(iv); if (!settled) { settled = true; resolve(tok); } }
-        } catch {}
-        if (++tries > Math.ceil(timeoutMs / 300)) { clearInterval(iv); if (!settled) { settled = true; resolve(""); } }
-      }, 300);
-    });
-  } catch {
-    return "";
-  }
-}
-
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
   // التقط قيمة الآيدي من حقل المودال أو الحقل الأساسي إن وُجد
@@ -237,11 +184,7 @@ async function sendOrder() {
     return;
   }
 
-  const turnstileToken = await ensureTurnstileToken();
-  if (!turnstileToken) {
-    showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
-    return;
-  }
+  // تم تعطيل Turnstile بناءً على طلبك
 
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -320,7 +263,6 @@ async function sendOrder() {
         offers: selectedOffers,
         currency: "دأ",
         currentUrl,
-        turnstileToken,
         authkey
       })
     });

@@ -59,7 +59,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  
   <!-- تهيئة Firebase أولاً -->
   <script src="script1N.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"/>
@@ -586,9 +586,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
           </div>
           <div class="pm-note">الخدمة يدوية وتستغرق وقتا اكثر من الخدمات التلقائيه</div>
 
-          <div class="pm-turnstile">
-            <div id="cf-turnstile-modal" class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="auto"></div>
-          </div>
+          
         </div>
       </div>
 
@@ -622,9 +620,6 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
     var saved = localStorage.getItem('theme');
     if(saved === 'dark'){
       document.body.classList.add('dark-mode');
-      // لو رغبت فرض Turnstile داكنًا دومًا:
-      var t = document.querySelector('.cf-turnstile');
-      if(t) t.setAttribute('data-theme','dark');
     }
   }catch(e){}
 })();

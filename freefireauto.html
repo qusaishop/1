@@ -587,9 +587,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
           <div class="pm-note">الخدمة تلقائية وتعمل على مدار ال24 ساعة</div>
             <div class="pm-note">مدة الشحن : دقيقتين</div>
 
-          <div class="pm-turnstile">
-            <div id="cf-turnstile-modal" class="cf-turnstile" data-sitekey="0x4AAAAAABuMTLzhZ91H8VE1" data-theme="auto"></div>
-          </div>
+          
         </div>
       </div>
 
@@ -623,9 +621,6 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
     var saved = localStorage.getItem('theme');
     if(saved === 'dark'){
       document.body.classList.add('dark-mode');
-      // لو رغبت فرض Turnstile داكنًا دومًا:
-      var t = document.querySelector('.cf-turnstile');
-      if(t) t.setAttribute('data-theme','dark');
     }
   }catch(e){}
 })();
