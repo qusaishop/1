@@ -158,21 +158,86 @@ firebase.auth().onAuthStateChanged(async (user) => {
   }
 });
 
+// الحصول على توكن Turnstile بأمان (مع محاولة render عند الحاجة)
+async function ensureTurnstileToken({ timeoutMs = 8000 } = {}) {
+  try {
+    if (!(window.turnstile && typeof window.turnstile.getResponse === 'function')) return "";
+
+    // حاول أخذ التوكن مباشرة إن كان الودجت جاهزًا
+    try {
+      const direct = window.turnstile.getResponse();
+      if (direct) return direct;
+    } catch (_) {}
+
+    // ابحث عن العنصر
+    const el = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
+    if (!el) return "";
+
+    // إن كان لدينا widgetId مجلّد مسبقًا فجرب مرة أخرى
+    if (el.dataset.widgetId) {
+      try {
+        const t = window.turnstile.getResponse(el.dataset.widgetId);
+        if (t) return t;
+      } catch (_) {}
+    }
+
+    const sitekey = el.getAttribute('data-sitekey') || "";
+    if (!sitekey) return "";
+    const isDark = document.body.classList.contains('dark-mode') || (document.documentElement.getAttribute('data-theme') || '').toLowerCase() === 'dark';
+
+    // اعرض الودجت وانتظر التوكن عبر callback أو فحص دوري
+    return await new Promise((resolve) => {
+      let settled = false;
+      const id = window.turnstile.render(el, {
+        sitekey,
+        theme: isDark ? 'dark' : 'light',
+        callback: (token) => { if (!settled) { settled = true; resolve(token || ""); } },
+        'error-callback': () => { if (!settled) { settled = true; resolve(""); } },
+      });
+      el.dataset.widgetId = id;
+
+      // فحص احتياطي حتى لو لم تُستدع callback
+      let tries = 0;
+      const iv = setInterval(() => {
+        try {
+          const tok = window.turnstile.getResponse(id);
+          if (tok) { clearInterval(iv); if (!settled) { settled = true; resolve(tok); } }
+        } catch {}
+        if (++tries > Math.ceil(timeoutMs / 300)) { clearInterval(iv); if (!settled) { settled = true; resolve(""); } }
+      }, 300);
+    });
+  } catch {
+    return "";
+  }
+}
+
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pid = document.getElementById("player-id").value.trim();
-  const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
+  // التقط قيمة الآيدي من حقل المودال أو الحقل الأساسي إن وُجد
+  const pidInput = document.getElementById("player-id") || document.getElementById("modal-player-id");
+  const pid = pidInput ? (pidInput.value || "").trim() : "";
+
+  // التقط العرض المحدد من الكلاسات، مع احتياط باستخدام _pm_currentCard إن لم توجد كلاس selected
+  let selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     jewels: el.dataset.jewels || null,
     offerName: el.dataset.offer || null
   }));
+  if (selectedOffers.length === 0 && window._pm_currentCard && window._pm_currentCard.dataset) {
+    const el = window._pm_currentCard;
+    selectedOffers = [{
+      type: el.dataset.type,
+      jewels: el.dataset.jewels || null,
+      offerName: el.dataset.offer || null
+    }];
+  }
 
   if (!pid || selectedOffers.length === 0) {
     showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
     return;
   }
 
-  const turnstileToken = turnstile.getResponse();
+  const turnstileToken = await ensureTurnstileToken();
   if (!turnstileToken) {
     showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
     return;

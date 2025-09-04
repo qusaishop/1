@@ -33,7 +33,9 @@ firebase.auth().onAuthStateChanged(async user => {
     window.location.href = "index.html";
   } else {
     await loadOrdersCacheFirst(user.uid);   // اعرض من الكاش أو اجلب مرة واحدة إذا فاضي
-    refreshRecentStatuses(user.uid);        // عند كل دخول: حدّث حالة الطلبات الحديثة (≤ 7 أيام)
+    await syncOrdersMerge(user.uid);        // عند كل دخول: اجلب وادمج الطلبات الجديدة وتحديث حالاتها
+    refreshRecentStatuses(user.uid);        // كتحسين: حدّث حديثة فقط (احتياطي)
+    listenOrdersRealtime(user.uid);         // متابعة فورية لأي طلب جديد/معدل
   }
 });
 
@@ -173,6 +175,33 @@ async function fetchOrdersFromFirebaseOnce(uid) {
     const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
     return tB - tA;
   });
+}
+
+// جلب جميع الطلبات ودمجها مع الكاش (يضمن ظهور الجديدة بعد كل دخول)
+async function syncOrdersMerge(uid) {
+  try {
+    const ordersRef = db.collection("orders").where("userId", "==", uid);
+    const snapshot = await ordersRef.get();
+
+    const promises = snapshot.docs.map(async (doc) => {
+      const orderData = doc.data() || {};
+      const pubSnap = await doc.ref.collection("public").doc("main").get();
+      const pubData = pubSnap.exists ? pubSnap.data() : {};
+      return {
+        code: orderData.code || doc.id,
+        ...pubData,
+        proof: orderData.proof || "",
+        __fetchedAt: Date.now()
+      };
+    });
+
+    const fresh = await Promise.all(promises);
+    // دمج مع الكاش ثم أعد الرسم من الكاش المدمج (مرتب زمنياً)
+    LS.merge(uid, fresh);
+    renderOrders(cacheToSortedArray(uid));
+  } catch (e) {
+    console.error("syncOrdersMerge error:", e);
+  }
 }
 
 /* ===================== تحديث حالة الطلبات الحديثة عند كل دخول ===================== */
@@ -328,6 +357,53 @@ function attachProofButtons() {
       }
     };
   });
+}
+
+/* ===================== استماع فوري لتغيرات الطلبات ===================== */
+let _ordersUnsub = null;
+function listenOrdersRealtime(uid) {
+  try { if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; } } catch {}
+  try {
+    const q = db.collection('orders').where('userId', '==', uid);
+    _ordersUnsub = q.onSnapshot(async (snap) => {
+      if (snap.empty) return;
+      try {
+        const changes = snap.docChanges();
+        // اجلب public/main للوثائق المضافة/المعدلة فقط
+        const updates = await Promise.all(changes.map(async (ch) => {
+          if (ch.type !== 'added' && ch.type !== 'modified') return null;
+          const doc = ch.doc;
+          const data = doc.data() || {};
+          try {
+            const pubSnap = await doc.ref.collection('public').doc('main').get();
+            const pub = pubSnap.exists ? pubSnap.data() : {};
+            return {
+              code: data.code || doc.id,
+              ...pub,
+              proof: data.proof || ''
+            };
+          } catch {
+            return {
+              code: data.code || doc.id,
+              proof: data.proof || ''
+            };
+          }
+        }));
+        const valid = updates.filter(Boolean);
+        if (valid.length) {
+          const uidNow = (auth.currentUser || firebase.auth().currentUser)?.uid;
+          if (uidNow) {
+            LS.merge(uidNow, valid);
+            renderOrders(cacheToSortedArray(uidNow));
+          }
+        }
+      } catch (e) {
+        console.warn('orders realtime merge failed', e);
+      }
+    });
+  } catch (e) {
+    console.warn('listenOrdersRealtime failed', e);
+  }
 }
 
 function renderPaginationControls(total, page, totalPages, start, end) {
