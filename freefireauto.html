@@ -578,7 +578,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
             </div>
           </div>
           <div class="pm-input">
-            <input id="modal-player-id" inputmode="numeric" autocomplete="off" placeholder="ادخل الايدي هنا" />
+<input id="player-id" inputmode="numeric" autocomplete="off" placeholder="ادخل الايدي هنا" />
           </div>
           <div class="pm-actions">
             <button type="button" id="pm-cancel" class="btn btn-outline">إلغاء</button>
@@ -961,7 +961,7 @@ window.addEventListener('DOMContentLoaded', () => {
   buyBtn && buyBtn.addEventListener('click', async () => {
     // انقل الايدي
     const mpid = document.getElementById('modal-player-id');
-    const pid = document.getElementById('player-id');
+const pid = document.getElementById("player-id").value.trim();
     if (pid && mpid) pid.value = mpid.value.trim();
     if (!_pm_currentCard){ showToast('الرجاء اختيار عرض', 'warning'); return; }
     // أرسل الطلب

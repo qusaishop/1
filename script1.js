@@ -122,7 +122,7 @@ async function rotateSessionKeyAfterOrder(uid, ttlSeconds = 0) {
 /* ================== الأسعار كما هي ================== */
 async function loadPrices(useruid = null) {
   try {
-    const url = new URL("https://qusaystorefreefire.qusaistore22.workers.dev/");
+    const url = new URL("https://qusaystorefreefire.qusaistore22.workers.dev");
     url.searchParams.set("mode", "all");
     if (useruid) url.searchParams.set("useruid", useruid);
 
@@ -160,8 +160,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pidInput = document.getElementById("modal-player-id");
-  const pid = (pidInput && pidInput.value ? pidInput.value : "").trim();
+  const pid = document.getElementById("player-id").value.trim();
   const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     jewels: el.dataset.jewels || null,
@@ -169,20 +168,13 @@ async function sendOrder() {
   }));
 
   if (!pid || selectedOffers.length === 0) {
-    showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الشراء!", "error");
+    showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
     return;
   }
 
-  // Turnstile موجود في الصفحة أو داخل المودال
-  let turnstileToken = "";
-  try {
-    const tsEl = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
-    if (window.turnstile && tsEl) {
-      turnstileToken = turnstile.getResponse(tsEl) || "";
-    }
-  } catch (_) {}
+  const turnstileToken = turnstile.getResponse();
   if (!turnstileToken) {
-    showToast("❗ يرجى اجتياز اختبار الأمان قبل الشراء!", "error");
+    showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
     return;
   }
 
@@ -239,7 +231,7 @@ async function sendOrder() {
   const currentUrl = window.location.href;
 
   // ====== Purchase (مع اللودر وتعطيل الزر) ======
-  const submitBtn = document.getElementById('pm-buy') || document.querySelector('.send-button');
+  const submitBtn = document.querySelector('.send-button');
   try {
     // إظهار اللودر وتعطيل الزر
     showPreloader();
@@ -315,18 +307,10 @@ async function sendOrder() {
       submitBtn.style.opacity = '';
       submitBtn.style.pointerEvents = '';
     }
-    // تحديث/إعادة تعيين Turnstile بعد كل عملية
-    try {
-      if (window.turnstile) {
-        const tsEl = document.getElementById('cf-turnstile-modal') || document.querySelector('.cf-turnstile');
-        if (tsEl) turnstile.reset(tsEl);
-      }
-    } catch (_) {}
   }
 }
 
 /* ================== نافذة التأكيد كما هي ================== */
-// نافذة نجاح مع دعم ثيم: auto | light | dark
 function showConfirmation(orderCode, {
   orderUrl = "talabat.html",
   homeUrl  = "index.html",
@@ -490,7 +474,6 @@ const detectTheme = () => {
   // صوت نجاح (اختياري)
   try { new Audio("success.mp3").play(); } catch {}
 }
-
 
 
 // ✅ عند تحميل الصفحة سننتظر onAuthStateChanged لتحديد useruid ثم ننادي loadPrices()
