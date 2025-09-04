@@ -160,12 +160,24 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pid = document.getElementById("player-id").value.trim();
-  const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
+  // التقط قيمة الآيدي من حقل المودال أو الحقل الأساسي إن وُجد
+  const pidInput = document.getElementById("player-id") || document.getElementById("modal-player-id");
+  const pid = pidInput ? (pidInput.value || "").trim() : "";
+
+  // التقط العرض المحدد من الكلاسات، مع احتياط باستخدام _pm_currentCard إن لم توجد كلاس selected
+  let selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     jewels: el.dataset.jewels || null,
     offerName: el.dataset.offer || null
   }));
+  if (selectedOffers.length === 0 && window._pm_currentCard && window._pm_currentCard.dataset) {
+    const el = window._pm_currentCard;
+    selectedOffers = [{
+      type: el.dataset.type,
+      jewels: el.dataset.jewels || null,
+      offerName: el.dataset.offer || null
+    }];
+  }
 
   if (!pid || selectedOffers.length === 0) {
     showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
