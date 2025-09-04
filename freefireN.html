@@ -129,7 +129,7 @@
     .voucher .sep{ unicode-bidi: isolate; display:inline-block; padding: 0 .15rem; }
     .voucher .price{ white-space: nowrap; }
 
-    /* شريط البحث + شبكة الكروت (مطابقة لطابع freefireautoinbut) */
+    /* شريط البحث + شبكة الكروت (مطابقة لطابع freefireNinbut) */
     .search-container {
       max-width: 600px;
       margin: 0 auto 24px auto;
@@ -584,8 +584,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
             <button type="button" id="pm-cancel" class="btn btn-outline">إلغاء</button>
             <button type="button" id="pm-buy" class="btn btn-primary">شراء</button>
           </div>
-          <div class="pm-note">الخدمة تلقائية وتعمل على مدار ال24 ساعة</div>
-            <div class="pm-note">مدة الشحن : دقيقتين</div>
+          <div class="pm-note">الخدمة يدوية وتستغرق وقتا اكثر من الخدمات التلقائيه</div>
 
           <div class="pm-turnstile">
             <div id="cf-turnstile-modal" class="cf-turnstile" data-sitekey="0x4AAAAAABp8OAsMh1suKD6b" data-theme="auto"></div>
@@ -596,7 +595,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
       
 
       
-      <!-- شريط البحث (مطابق لـ freefireautoinbut) -->
+      <!-- شريط البحث (مطابق لـ freefireNinbut) -->
       <div class="search-container">
         <input type="text" id="ffSearchInput" placeholder="ابحث عن الباقات..." aria-label="بحث" />
       </div>
@@ -859,7 +858,7 @@ if (breakdownLines.length === 0) {
   el.classList.remove("no-selection");
 }
 
-// فلترة البحث بنفس أسلوب freefireautoinbut + إظهار رسالة لا نتائج كالرئيسية
+// فلترة البحث بنفس أسلوب freefireNinbut + إظهار رسالة لا نتائج كالرئيسية
 function filterCardsBySearch(ev){
   const raw = (ev.target.value || '').toString();
   const norm = s => s.toLowerCase()
@@ -1014,8 +1013,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      // جلب من topup > freefireauto والحقل state نص JSON
-      const stateDoc = await firebase.firestore().collection("topup").doc("freefireauto").get();
+      // جلب من topup > freefireN والحقل state نص JSON
+      const stateDoc = await firebase.firestore().collection("topup").doc("freefireN").get();
       if (stateDoc.exists) {
         let stateData = stateDoc.data();
         if (stateData && typeof stateData.state === 'string') {
@@ -1068,7 +1067,7 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         });
       } else {
-        console.warn("⚠️ لم يتم العثور على وثيقة الحالة في Firestore (topup/freefireauto)");
+        console.warn("⚠️ لم يتم العثور على وثيقة الحالة في Firestore (topup/freefireN)");
       }
     } catch (e) { console.error("❌ فشل في جلب حالة العروض:", e); }
   });
