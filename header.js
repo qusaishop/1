@@ -326,7 +326,18 @@ function navigateTo(url) {
 }
 
 // تعطيل القائمة اليمنى وسحب الصور
+// السماح بالقائمة داخل الحقول النصية (لتمكين النسخ/اللصق/تحديد الكل على الجوال)
 document.addEventListener('contextmenu', function (e) {
+  const t = e.target;
+  const isEditable = (
+    (t && (
+      t.tagName === 'INPUT' ||
+      t.tagName === 'TEXTAREA' ||
+      t.isContentEditable ||
+      (t.closest && t.closest('input, textarea, [contenteditable="true"]'))
+    ))
+  );
+  if (isEditable) return; // لا تمنع داخل الحقول النصية
   e.preventDefault();
 });
 document.addEventListener('dragstart', function (e) {

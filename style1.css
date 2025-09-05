@@ -1175,4 +1175,20 @@ body.dark-mode #selected-amount-container h2{
   opacity: 1 !important; /* لو كان عليه شفافية قديمة */
 }
 
+/* ===== تمكين التحديد والنسخ/اللصق في حقل الايدي داخل نافذة الشراء (للجوال) ===== */
+/* بعض الأنماط على بعض الهواتف قد تعطل قائمة التحديد واللصق؛ نعيد تفعيله هنا بشكل صريح */
+#purchase-modal .pm-input,
+#purchase-modal .pm-input input,
+#purchase-modal input#player-id {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  /* السماح بقائمة اللمس المطوّل (iOS) */
+  -webkit-touch-callout: default !important;
+  /* لا تمنع إيماءات اللمس الافتراضية */
+  touch-action: auto;
+  caret-color: auto;
+}
+
 
