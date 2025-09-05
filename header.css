@@ -223,6 +223,10 @@ padding-left: 45px;
   100% { right: 100%;   }
 }
 
+/* اجعل التوست واللودر فوق النافذة المنبثقة */
+#toast { z-index: 13000 !important; }
+#preloader { z-index: 12000 !important; }
+
 
 
 

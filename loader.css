@@ -1,38 +1,79 @@
-/* loader.css */
+/* loader.css - مُحسَّن بمظهر عصري وخفيف */
 #preloader {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 255, 0.5); /* شفافية */
-  backdrop-filter: blur(3px);           /* ضبابية خفيفة */
+  inset: 0;
+  /* لون خلفية قابل للتكيّف مع الثيم */
+  --overlay: rgba(255, 255, 255, 0.35);
+  background: var(--overlay);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
+  z-index: 12000;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
-#preloader.hidden {
-  opacity: 0;
-  visibility: hidden;
+/* الوضع الداكن */
+html[data-theme="dark"] #preloader,
+body.dark-mode #preloader {
+  --overlay: rgba(11, 18, 32, 0.30);
 }
 
+#preloader.hidden { opacity: 0; visibility: hidden; }
+
+/* حلقة متدرّجة عصرية بخامة conic-gradient */
 .loader {
-  border: 6px solid rgba(255, 255, 255, 0.6);
-  border-top: 6px solid #0077cc;
+  position: relative;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  width: 70px;
-  height: 70px;
-  animation: spin 1s linear infinite;
-  box-shadow: 0 0 20px rgba(0, 119, 204, 0.8); /* التوهج */
-  transition: transform 0.6s ease, opacity 0.6s ease;
+  /* ألوان العلامة التجارية (يمكن تعديلها لاحقًا) */
+  --c1: #007BFF; /* أزرق المتجر الأساسي */
+  --c2: #00B3FF; /* سماوي فاتح (احتياطي) */
+  --c3: #38BDF8; /* أكسنت سماوي مطابق بالموقع */
+  filter: drop-shadow(0 6px 18px rgba(59, 130, 246, 0.35));
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-#preloader.hidden .loader {
-  transform: scale(0.7);
-  opacity: 0;
+/* درجات أفتح قليلاً في الوضع الداكن لضمان التباين */
+html[data-theme="dark"] .loader,
+body.dark-mode .loader {
+  --c1: #4EA8FF;
+  --c3: #7DD3FC;
 }
 
-@keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loader::before,
+.loader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* تفريغ المركز لعمل حلقة بسمك ~8px */
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 7px));
+}
+
+/* الحلقة الخارجية: قوس ملون طويل */
+.loader::before {
+  background: conic-gradient(from 0deg, var(--c1) 0 140deg, transparent 140deg 360deg);
+  animation: ring-spin-a 0.8s linear infinite;
+}
+
+/* الحلقة الداخلية: أصغر وتدور عكسياً بلون آخر */
+.loader::after {
+  inset: 10px; /* تصغير لتصبح حلقة داخلية */
+  background: conic-gradient(from 180deg, var(--c3) 0 110deg, transparent 110deg 360deg);
+  animation: ring-spin-b 0.9s linear infinite reverse;
+}
+
+#preloader.hidden .loader { transform: scale(0.86); opacity: 0; }
+
+@keyframes ring-spin-a { to { transform: rotate(1turn); } }
+@keyframes ring-spin-b { to { transform: rotate(1turn); } }
+
+/* مراعاة تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  .loader::before { animation-duration: 1.4s; }
+  .loader::after  { animation-duration: 1.6s; }
 }
