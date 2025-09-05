@@ -325,6 +325,10 @@ padding-left: 45px;
   background-color: #dc3545;
   color: white;
 }
+.order-status.مسترد {
+  background-color: #6c757d;
+  color: white;
+}
 .order-status.قيد_المعالجة {
   background-color: #17a2b8;
   color: white;

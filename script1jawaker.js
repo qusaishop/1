@@ -119,64 +119,95 @@ async function rotateSessionKeyAfterOrder(uid, ttlSeconds = 0) {
   }
 }
 
-/* ================== الأسعار كما هي ================== */
-async function loadPrices(useruid = null) {
+/* ================== تسريع تحميل الأسعار (SWR + Cache) ================== */
+function persistOffers(data) {
   try {
-    const url = new URL("https://jawaker.qousaistore66.workers.dev/");
-    url.searchParams.set("mode", "all");
-    if (useruid) url.searchParams.set("useruid", useruid);
-
-    const res = await fetch(url.toString(), { method: "GET" });
-    const data = await res.json();
-
-    if (!data || data.success === false) {
-      throw new Error(data?.error || "فشل جلب الأسعار");
-    }
-
-    localStorage.setItem("offersPrices", JSON.stringify(data));
-  } catch (e) {
-    showToast("❗ فشل في تحميل الأسعار، ستتم المحاولة لاحقًا", "error");
-    console.error("Prices load error:", e);
-  }
+    const prices = (data && typeof data === 'object' && data.prices) ? data.prices : data;
+    if (!prices || typeof prices !== 'object') return;
+    const wrapped = Object.assign({}, prices, { prices, ts: Date.now(), source: 'jawaker' });
+    localStorage.setItem('offersPrices', JSON.stringify(wrapped));
+  } catch (e) { console.warn('persistOffers failed:', e); }
 }
 
-// مراقبة حالة تسجيل الدخول ثم جلب الأسعار بمستوى المستخدم إن وُجد
-firebase.auth().onAuthStateChanged(async (user) => {
+function primeOffersFromCache(maxAgeMs = 15 * 60 * 1000) {
   try {
-    if (user) {
-      await loadPrices(user.uid);
-      const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        const firebaseUsername = userData.username || "";
-      }
-    } else {
-      await loadPrices(null);
+    const raw = localStorage.getItem('offersPrices');
+    if (!raw) return false;
+    const obj = JSON.parse(raw);
+    const ts = obj && obj.ts ? Number(obj.ts) : 0;
+    const fresh = ts && (Date.now() - ts) <= maxAgeMs;
+    localStorage.setItem('offersPrices', raw);
+    return fresh;
+  } catch { return false; }
+}
+
+async function loadPrices(useruid = null, { timeoutMs = 5000, silentOnCached = true } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort('timeout'), timeoutMs);
+  try {
+    const url = new URL('https://jawaker.qousaistore66.workers.dev/');
+    url.searchParams.set('mode', 'all');
+    if (useruid) url.searchParams.set('useruid', useruid);
+    const res = await fetch(url.toString(), { method: 'GET', signal: controller.signal, cache: 'no-store' });
+    const data = await res.json();
+    if (!data || data.success === false) throw new Error(data?.error || 'فشل جلب الأسعار');
+    persistOffers(data);
+  } catch (e) {
+    const hasCache = !!localStorage.getItem('offersPrices');
+    if (!(silentOnCached && hasCache)) {
+      showToast('❗ فشل في تحميل الأسعار، ستتم المحاولة لاحقًا', 'error');
+      console.error('Prices load error:', e);
     }
-  } catch (error) {
-    console.warn("Auth state post-loadPrices error:", error);
-  }
-});
+  } finally { clearTimeout(timer); }
+}
+
+// عرض سريع من الكاش + تحديث في الخلفية
+(function fastPricesBoot(){
+  primeOffersFromCache();
+  loadPrices(null, { timeoutMs: 4000, silentOnCached: true });
+  firebase.auth().onAuthStateChanged(async (user) => {
+    try {
+      if (user) {
+        loadPrices(user.uid, { timeoutMs: 6000, silentOnCached: true });
+        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          const firebaseUsername = userData.username || '';
+        }
+      } else {
+        loadPrices(null, { timeoutMs: 5000, silentOnCached: true });
+      }
+    } catch (error) { console.warn('Auth state post-loadPrices error:', error); }
+  });
+})();
 
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pid = document.getElementById("player-id").value.trim();
-  const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
+  // التقط قيمة الآيدي من حقل المودال أو الحقل الأساسي إن وُجد
+  const pidInput = document.getElementById("player-id") || document.getElementById("modal-player-id");
+  const pid = pidInput ? (pidInput.value || "").trim() : "";
+
+  // التقط العرض المحدد من الكلاسات، مع احتياط باستخدام _pm_currentCard إن لم توجد كلاس selected
+  let selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     tokens: el.dataset.tokens || null,
     offerName: el.dataset.offer || null
   }));
+  if (selectedOffers.length === 0 && window._pm_currentCard && window._pm_currentCard.dataset) {
+    const el = window._pm_currentCard;
+    selectedOffers = [{
+      type: el.dataset.type,
+      tokens: el.dataset.tokens || null,
+      offerName: el.dataset.offer || null
+    }];
+  }
 
   if (!pid || selectedOffers.length === 0) {
     showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
     return;
   }
 
-  const turnstileToken = turnstile.getResponse();
-  if (!turnstileToken) {
-    showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
-    return;
-  }
+  // تم تعطيل Turnstile بناءً على طلبك
 
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -255,7 +286,6 @@ async function sendOrder() {
         offers: selectedOffers,
         currency: "دأ",
         currentUrl,
-        turnstileToken,
         authkey
       })
     });
@@ -480,3 +510,4 @@ const detectTheme = () => {
 document.addEventListener('DOMContentLoaded', () => {
   // onAuthStateChanged أعلاه سيتكفّل بتحميل الأسعار
 });
+

@@ -1,40 +1,33 @@
-const bannerBackgrounds = [
-
-];
-
-// تحميل الصور مسبقاً
-bannerBackgrounds.forEach(src => {
-  const img = new Image();
-  img.src = src;
-});
-
-let currentIndex = 1;
-let showingBanner1 = true;
-
-const banner1 = document.getElementById("banner1");
-const banner2 = document.getElementById("banner2");
-
-function updateTopBanner() {
-  const nextImage = bannerBackgrounds[currentIndex];
-
-  if (showingBanner1) {
-    banner2.style.backgroundImage = `url('${nextImage}')`;
-    banner2.classList.add("active");
-    banner1.classList.remove("active");
-  } else {
-    banner1.style.backgroundImage = `url('${nextImage}')`;
+// لافتة علوية (مع حراسة لمنع أخطاء في حال عدم وجودها)
+const bannerBackgrounds = [];
+(function initTopBanner(){
+  try {
+    if (!Array.isArray(bannerBackgrounds) || bannerBackgrounds.length === 0) return;
+    const banner1 = document.getElementById("banner1");
+    const banner2 = document.getElementById("banner2");
+    if (!banner1 || !banner2) return;
+    // تحميل مسبق
+    bannerBackgrounds.forEach(src => { const img = new Image(); img.src = src; });
+    let currentIndex = 1, showingBanner1 = true;
+    function updateTopBanner() {
+      const nextImage = bannerBackgrounds[currentIndex];
+      if (showingBanner1) {
+        banner2.style.backgroundImage = `url('${nextImage}')`;
+        banner2.classList.add("active");
+        banner1.classList.remove("active");
+      } else {
+        banner1.style.backgroundImage = `url('${nextImage}')`;
+        banner1.classList.add("active");
+        banner2.classList.remove("active");
+      }
+      showingBanner1 = !showingBanner1;
+      currentIndex = (currentIndex + 1) % bannerBackgrounds.length;
+    }
+    banner1.style.backgroundImage = `url('${bannerBackgrounds[0]}')`;
     banner1.classList.add("active");
-    banner2.classList.remove("active");
-  }
-
-  showingBanner1 = !showingBanner1;
-  currentIndex = (currentIndex + 1) % bannerBackgrounds.length;
-}
-
-banner1.style.backgroundImage = `url('${bannerBackgrounds[0]}')`;
-banner1.classList.add("active");
-
-setInterval(updateTopBanner, 10000);
+    if (bannerBackgrounds.length > 1) setInterval(updateTopBanner, 10000);
+  } catch (_) {}
+})();
 
 
 
