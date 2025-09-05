@@ -124,27 +124,21 @@ function persistOffers(data) {
   try {
     const prices = (data && typeof data === 'object' && data.prices) ? data.prices : data;
     if (!prices || typeof prices !== 'object') return;
-    // نحافظ على توافق قديم: نجعل مفاتيح الأسعار على المستوى الأعلى أيضًا
     const wrapped = Object.assign({}, prices, { prices, ts: Date.now(), source: 'blood' });
     localStorage.setItem('offersPrices', JSON.stringify(wrapped));
-  } catch (e) {
-    console.warn('persistOffers failed:', e);
-  }
+  } catch (e) { console.warn('persistOffers failed:', e); }
 }
 
-function primeOffersFromCache(maxAgeMs = 15 * 60 * 1000) { // 15 دقائق
+function primeOffersFromCache(maxAgeMs = 15 * 60 * 1000) {
   try {
     const raw = localStorage.getItem('offersPrices');
     if (!raw) return false;
     const obj = JSON.parse(raw);
     const ts = obj && obj.ts ? Number(obj.ts) : 0;
     const fresh = ts && (Date.now() - ts) <= maxAgeMs;
-    // أعد الكتابة لتحفيز مستمعي نفس التبويب وإعادة الرسم الفوري
     localStorage.setItem('offersPrices', raw);
     return fresh;
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }
 
 async function loadPrices(useruid = null, { timeoutMs = 5000, silentOnCached = true } = {}) {
@@ -154,7 +148,6 @@ async function loadPrices(useruid = null, { timeoutMs = 5000, silentOnCached = t
     const url = new URL('https://blood.qousaistore55.workers.dev/');
     url.searchParams.set('mode', 'all');
     if (useruid) url.searchParams.set('useruid', useruid);
-
     const res = await fetch(url.toString(), { method: 'GET', signal: controller.signal, cache: 'no-store' });
     const data = await res.json();
     if (!data || data.success === false) throw new Error(data?.error || 'فشل جلب الأسعار');
@@ -165,25 +158,17 @@ async function loadPrices(useruid = null, { timeoutMs = 5000, silentOnCached = t
       showToast('❗ فشل في تحميل الأسعار، ستتم المحاولة لاحقًا', 'error');
       console.error('Prices load error:', e);
     }
-  } finally {
-    clearTimeout(timer);
-  }
+  } finally { clearTimeout(timer); }
 }
 
-// مراقبة حالة تسجيل الدخول ثم جلب الأسعار بمستوى المستخدم إن وُجد
 // عرض سريع من الكاش + تحديث في الخلفية
 (function fastPricesBoot(){
-  // أعطِ فرصة فورية للرسم من الكاش إن وُجد
-  const fresh = primeOffersFromCache();
-  // جلب سريع بدون انتظار حالة الدخول (للمستخدمين الجدد/غير المسجلين)
+  primeOffersFromCache();
   loadPrices(null, { timeoutMs: 4000, silentOnCached: true });
-  // تحديث بالخلفية بدون إعاقة الواجهة
   firebase.auth().onAuthStateChanged(async (user) => {
     try {
       if (user) {
-        // جلب أسعار مخصصة للمستخدم
         loadPrices(user.uid, { timeoutMs: 6000, silentOnCached: true });
-        // لا داعي للانتظار؛ استمر بجلب بيانات المستخدم إن لزم
         const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
         if (userDoc.exists) {
           const userData = userDoc.data();
@@ -192,31 +177,37 @@ async function loadPrices(useruid = null, { timeoutMs = 5000, silentOnCached = t
       } else {
         loadPrices(null, { timeoutMs: 5000, silentOnCached: true });
       }
-    } catch (error) {
-      console.warn('Auth state post-loadPrices error:', error);
-    }
+    } catch (error) { console.warn('Auth state post-loadPrices error:', error); }
   });
 })();
 
 /* ================== إرسال الطلب (مع كشف فشل رمز الجلسة) ================== */
 async function sendOrder() {
-  const pid = document.getElementById("player-id").value.trim();
-  const selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
+  // التقط قيمة الآيدي من حقل المودال أو الحقل الأساسي إن وُجد
+  const pidInput = document.getElementById("player-id") || document.getElementById("modal-player-id");
+  const pid = pidInput ? (pidInput.value || "").trim() : "";
+
+  // التقط العرض المحدد من الكلاسات، مع احتياط باستخدام _pm_currentCard إن لم توجد كلاس selected
+  let selectedOffers = Array.from(document.querySelectorAll('.offer-box.selected')).map(el => ({
     type: el.dataset.type,
     gold: el.dataset.gold || null,
     offerName: el.dataset.offer || null
   }));
+  if (selectedOffers.length === 0 && window._pm_currentCard && window._pm_currentCard.dataset) {
+    const el = window._pm_currentCard;
+    selectedOffers = [{
+      type: el.dataset.type,
+      gold: el.dataset.gold || null,
+      offerName: el.dataset.offer || null
+    }];
+  }
 
   if (!pid || selectedOffers.length === 0) {
     showToast("❗ يرجى تعبئة الحقول المطلوبة قبل الإرسال!", "error");
     return;
   }
 
-  const turnstileToken = turnstile.getResponse();
-  if (!turnstileToken) {
-    showToast("❗ يرجى اجتياز اختبار الأمان قبل الإرسال!", "error");
-    return;
-  }
+  // تم تعطيل Turnstile بناءً على طلبك
 
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -295,7 +286,6 @@ async function sendOrder() {
         offers: selectedOffers,
         currency: "دأ",
         currentUrl,
-        turnstileToken,
         authkey
       })
     });

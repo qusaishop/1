@@ -94,6 +94,27 @@
     #purchase-modal .pm-title{ font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px }
     #purchase-modal .pm-input{ width:100%; margin:12px 0 6px }
     #purchase-modal .pm-input input{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--card-border); font-size:16px; outline:none; background:var(--input-bg); color:var(--input-text) }
+    /* زر اللصق بجانب حقل الايدي داخل المودال */
+    #purchase-modal .pm-input{ position: relative; }
+    #purchase-modal .pm-input input{ padding-inline-end: 56px; }
+    #purchase-modal .pm-paste{
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      inset-inline-end: 10px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+    #purchase-modal .pm-paste i{ pointer-events: none; }
+    #purchase-modal .pm-paste:hover{ filter: brightness(0.98); }
     #purchase-modal .pm-actions{ display:flex; gap:12px; margin-top:12px }
     #purchase-modal .btn{ flex:1; padding:12px 16px; border-radius:14px; font-weight:800; cursor:pointer; border:1px solid transparent }
     #purchase-modal .btn-primary{ background:var(--btn-bg); color:var(--btn-text) }
@@ -579,7 +600,11 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
             </div>
           </div>
           <div class="pm-input">
-<input id="player-id" inputmode="numeric" autocomplete="off" placeholder="ادخل الايدي هنا" />
+            <input id="player-id" inputmode="numeric" autocomplete="off" placeholder="ادخل الايدي هنا" />
+            <button type="button" id="pm-paste" class="pm-paste" aria-label="لصق الايدي" title="لصق">
+              <i class="fa-regular fa-clipboard"></i>
+              <span class="rtl" style="font-weight:800;">لصق</span>
+            </button>
           </div>
           <div class="pm-actions">
             <button type="button" id="pm-cancel" class="btn btn-outline">إلغاء</button>
@@ -757,6 +782,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
       } catch {}
       if (pricesObj && Object.keys(pricesObj).length > 0) {
         renderOffers(pricesObj);
+        try { if (typeof updatePurchaseModalPriceIfOpen === 'function') updatePurchaseModalPriceIfOpen(); } catch(_){}
       } else if (tries < 20) {
         tries++;
         setTimeout(tryRender, 200);
@@ -777,6 +803,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
         pricesObj = raw.prices || raw;
       } catch {}
       renderOffers(pricesObj);
+      try { if (typeof updatePurchaseModalPriceIfOpen === 'function') updatePurchaseModalPriceIfOpen(); } catch(_){}
     }
   });
 
@@ -792,6 +819,7 @@ html[data-theme="dark"] #myOffersContainer .offer-box.card.auto{
           pricesObj = raw.prices || raw;
         } catch {}
         renderOffers(pricesObj);
+        try { if (typeof updatePurchaseModalPriceIfOpen === 'function') updatePurchaseModalPriceIfOpen(); } catch(_){}
       }
     };
   })();
@@ -898,6 +926,18 @@ function _readOfferPriceForElement(el){
   return { key, price: p, priceText: isNaN(num)? '—' : `${num.toFixed(3)} د.أ` };
 }
 
+  // تحديث سعر المودال لحظياً إن كان مفتوحاً عند وصول الأسعار
+  function updatePurchaseModalPriceIfOpen(){
+    try{
+      const pm = document.getElementById('purchase-modal');
+      if (!pm || !pm.classList.contains('show')) return;
+      if (!window._pm_currentCard) return;
+      const { priceText } = _readOfferPriceForElement(window._pm_currentCard);
+      const el = document.getElementById('pm-price');
+      if (el) el.textContent = priceText || '—';
+    }catch(_){/* ignore */}
+  }
+
   // مراقبة إغلاق البطاقة أثناء فتح النافذة
   let _pm_watchInterval = null;
   function openPurchaseModal(el){
@@ -992,6 +1032,40 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { toast.style.transform = 'translateY(0)'; toast.style.opacity = '1'; }, 50);
     setTimeout(() => { toast.style.transform = 'translateY(100px)'; toast.style.opacity = '0'; setTimeout(() => { toast.style.visibility = 'hidden'; }, 500); }, duration);
   }
+
+  // زر لصق الايدي
+  async function pastePlayerId(){
+    try{
+      const input = document.getElementById('player-id');
+      if (!input) return;
+      if (!navigator.clipboard || !navigator.clipboard.readText){
+        showToast('المتصفح لا يسمح بالوصول للحافظة تلقائياً', 'warning');
+        input.focus();
+        return;
+      }
+      const text = await navigator.clipboard.readText();
+      let val = (text || '').trim();
+      const im = (input.getAttribute('inputmode')||'').toLowerCase();
+      if (im.includes('numeric') || im.includes('tel')){
+        val = val.replace(/\D+/g, '');
+      }
+      if (!val){
+        showToast('لا يوجد نص في الحافظة', 'warning');
+        return;
+      }
+      input.value = val;
+      try{ input.dispatchEvent(new Event('input', {bubbles:true})); }catch(_){}
+      input.focus();
+      showToast('تم لصق الايدي', 'success');
+    }catch(e){
+      showToast('تعذر قراءة الحافظة. الصق يدوياً', 'warning');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    const btn = document.getElementById('pm-paste');
+    if (btn) btn.addEventListener('click', pastePlayerId);
+  });
 
   // ===== تهيئة بطاقات التفعيل/التعطيل من Firestore =====
   firebase.auth().onAuthStateChanged(async (user) => {
